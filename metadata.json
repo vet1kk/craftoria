@@ -1,0 +1,5 @@
+{
+  "name": "Craftoria de la Victoria",
+  "description": "A restaurant menu and ordering system that integrates with Telegram for order notifications.",
+  "requestFramePermissions": []
+}
