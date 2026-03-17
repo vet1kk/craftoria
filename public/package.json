@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "NG_CLI_ANALYTICS=false ng serve",
+    "dev:php": "php -S 127.0.0.1:8080 -t .",
     "build": "NG_CLI_ANALYTICS=false ng build",
-    "build:local-analytics": "if [ -f src/environments/environment.local.ts ]; then NG_CLI_ANALYTICS=false ng build --configuration=production-local-analytics; else NG_CLI_ANALYTICS=false ng build; fi",
+    "build:local-analytics": "if [ -f environments/environment.local.ts ]; then NG_CLI_ANALYTICS=false ng build --configuration=production-local-analytics; else NG_CLI_ANALYTICS=false ng build; fi",
     "preview": "NG_CLI_ANALYTICS=false ng serve --configuration=production",
-    "preview:local-analytics": "if [ -f src/environments/environment.local.ts ]; then NG_CLI_ANALYTICS=false ng serve --configuration=production-local-analytics; else NG_CLI_ANALYTICS=false ng serve --configuration=production; fi"
+    "preview:local-analytics": "if [ -f environments/environment.local.ts ]; then NG_CLI_ANALYTICS=false ng serve --configuration=production-local-analytics; else NG_CLI_ANALYTICS=false ng serve --configuration=production; fi"
   },
   "dependencies": {
     "@angular/build": "^21.1.0",

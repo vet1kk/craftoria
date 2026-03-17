@@ -7,13 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+public/node_modules
+public/dist
+public/dist-ssr
 *.local
-.angular
-src/environments/environment.local.ts
-src/environments/environment.production.ts
+public/.angular
+public/environments/environment.local.ts
+public/environments/environment.production.ts
+vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+.phpunit.cache
+/storage/*.key
+/storage/pail
+/public/hot
+/public/storage
 
 # Editor directories and files
 .vscode/*
