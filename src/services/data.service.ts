@@ -323,7 +323,6 @@ export class DataService {
       galleryImageUrls: [
         'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=900&q=80',
         'https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=900&q=80',
-        'https://images.unsplash.com/photo-1548365328-9f547fb0953b?auto=format&fit=crop&w=900&q=80'
       ],
       ingredients: [
         { ingredientId: 'pizza-dough', quantity: 280 },
@@ -390,7 +389,7 @@ export class DataService {
         { ingredientId: 'lemon-slices', quantity: 20 }
       ],
       packageDetails: {
-        packaging: 'Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою. Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою. Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою.',
+        packaging: 'Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою.',
         contents: '400 мл лимонаду, лід, часточки лимона та м’ята.',
         storage: 'Вживати охолодженим. Після отримання не залишати при кімнатній температурі довше 1 години.',
         shelfLife: 'До 8 годин у холодильнику без льоду.'
