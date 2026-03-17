@@ -36,6 +36,7 @@
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "composer setup:postgres",
             "@php artisan key:generate --ansi",
             "@php artisan config:clear --ansi",
             "cd public && npm install",
@@ -53,6 +54,12 @@
         ],
         "check:php-fpm": [
             ".config/php/run.sh check"
+        ],
+        "setup:postgres": [
+            "bash .config/postgres/run.sh setup"
+        ],
+        "check:postgres": [
+            "bash .config/postgres/run.sh check"
         ],
         "serve:nginx": [
             ".config/php/run.sh"
