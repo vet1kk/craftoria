@@ -266,7 +266,6 @@ export class DataService {
       galleryImageUrls: [
         'https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=900&q=80',
         'https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=900&q=80',
-        'https://images.unsplash.com/photo-1585238342024-78d387f4a707?auto=format&fit=crop&w=900&q=80'
       ],
       ingredients: [
         { ingredientId: 'brioche-bun', quantity: 75 },
@@ -381,7 +380,6 @@ export class DataService {
       galleryImageUrls: [
         'https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=900&q=80',
         'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=900&q=80',
-        'https://images.unsplash.com/photo-1523371683702-7f0f0d6f4f5a?auto=format&fit=crop&w=900&q=80'
       ],
       ingredients: [
         { ingredientId: 'water', quantity: 220 },
@@ -392,7 +390,7 @@ export class DataService {
         { ingredientId: 'lemon-slices', quantity: 20 }
       ],
       packageDetails: {
-        packaging: 'Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою.',
+        packaging: 'Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою. Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою. Прозорий стакан 500 мл із пласкою кришкою та паперовою трубочкою.',
         contents: '400 мл лимонаду, лід, часточки лимона та м’ята.',
         storage: 'Вживати охолодженим. Після отримання не залишати при кімнатній температурі довше 1 години.',
         shelfLife: 'До 8 годин у холодильнику без льоду.'
@@ -407,7 +405,6 @@ export class DataService {
       price: 35,
       imageUrl: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80',
       galleryImageUrls: [
-        'https://images.unsplash.com/photo-1617305855058-336dcb5efc46?auto=format&fit=crop&w=900&q=80',
         'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?auto=format&fit=crop&w=900&q=80',
         'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80'
       ],

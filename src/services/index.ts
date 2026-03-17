@@ -1,6 +1,7 @@
 export * from './auth.service';
 export * from './analytics.service';
 export * from './data.service';
+export * from './menu.service';
 export * from './cart.service';
 export * from './cart-drawer.service';
 export * from './order.service';
