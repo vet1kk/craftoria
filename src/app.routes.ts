@@ -9,6 +9,11 @@ export const appRoutes: Routes = [
       import('./pages/menu/menu.component').then((module) => module.MenuComponent)
   },
   {
+    path: 'item/:id',
+    loadComponent: () =>
+      import('./pages/item-detail/item-detail.component').then((module) => module.ItemDetailComponent)
+  },
+  {
     path: 'account',
     loadComponent: () =>
       import('./pages/account/account.component').then((module) => module.AccountComponent)
