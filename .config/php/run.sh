@@ -9,6 +9,16 @@ xdebug="$(php-config --extension-dir)/xdebug.so"; [ -f "$xdebug" ] && printf 'ze
 ln -sf "$PWD/.config/php/conf.d/99-xdebug.ini" storage/framework/php-fpm/conf.d/99-xdebug.ini
 export PHP_INI_SCAN_DIR="$PWD/storage/framework/php-fpm/conf.d"
 [ "${1:-serve}" = check ] && exec php-fpm -p "$PWD" -y "$PWD/.config/php/php-fpm.conf" -c "$PWD/.config/php/php.ini" -t
+nginx_pid_file="$PWD/storage/framework/nginx/nginx.pid"
+if [ -f "$nginx_pid_file" ]; then
+    nginx_pid="$(cat "$nginx_pid_file")"
+    if [ -n "${nginx_pid:-}" ] && kill -0 "$nginx_pid" 2>/dev/null; then
+        nginx -p . -c .config/nginx/nginx.conf -s reload >/dev/null 2>&1 || true
+        echo "Project nginx is already running on port 80 (pid $nginx_pid)." >&2
+        echo "Reused the running server instead of starting a second instance." >&2
+        exit 0
+    fi
+fi
 php-fpm -p "$PWD" -y "$PWD/.config/php/php-fpm.conf" -c "$PWD/.config/php/php.ini" -F -O > storage/logs/php-fpm.stdout.log 2>&1 & p=$!
 trap 'kill ${n:-} $p 2>/dev/null || true; wait ${n:-} $p 2>/dev/null || true' EXIT INT TERM
 for _ in {1..20}; do if lsof -nP -iTCP:9000 -sTCP:LISTEN >/dev/null 2>&1; then break; fi; sleep 1; done

@@ -16,6 +16,7 @@
               "base": "dist",
               "browser": "."
             },
+            "baseHref": "/",
             "browser": "main.ts",
             "index": "index.html",
             "styles": [
