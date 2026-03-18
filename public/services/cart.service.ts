@@ -1,11 +1,16 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 
 import { CartItem, MenuItem } from '../models';
+import { I18nService } from './i18n.service';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
+  private readonly toastService = inject(ToastService);
+  private readonly i18n = inject(I18nService);
+
   readonly items = signal<CartItem[]>([]);
 
   readonly totalCount = computed(() =>
@@ -39,6 +44,8 @@ export class CartService {
           : cartItem
       );
     });
+
+    this.toastService.success(this.i18n.translate('ui.toast.addedToCart', { name: item.name }));
   }
 
   decreaseQuantity(itemId: string): void {

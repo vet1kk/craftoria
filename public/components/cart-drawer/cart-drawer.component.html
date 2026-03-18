@@ -28,9 +28,16 @@
         } @else {
           @for (item of cartService.items(); track item.menuItem.id) {
             <div class="flex gap-3 sm:gap-4">
-              <img [src]="item.menuItem.imageUrl"
-                   [alt]="item.menuItem.name"
-                   class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-stone-100 shrink-0">
+              @if (item.menuItem.imageUrl) {
+                <img [src]="item.menuItem.imageUrl"
+                     [alt]="item.menuItem.name"
+                     class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-stone-100 shrink-0">
+              } @else {
+                <div class="relative p-2 flex aspect-square snap-start flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-stone-200 bg-stone-50/70">
+                  <span class="relative text-2xl">📷</span>
+                  <span class="mt-2 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400">{{ 'ui.itemDetail.emptySlot' | t }}</span>
+                </div>
+              }
               <div class="flex-1 min-w-0">
                 <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start">
                   <h3 class="font-medium text-stone-800 wrap-break-word">{{ item.menuItem.name }}</h3>

@@ -18,20 +18,31 @@ export class I18nService {
     ua: uaTranslations
   } as const;
 
-  translate(key: string, fallback?: string): string {
+  translate(key: string, params?: Record<string, string> | string): string {
+    const fallback = typeof params === 'string' ? params : undefined;
+    const interpolationParams = typeof params === 'object' ? params : undefined;
+
     const localizedValue = this.readDictionaryValue(this.dictionaries[this.localeService.locale()], key);
 
     if (typeof localizedValue === 'string') {
-      return localizedValue;
+      return this.interpolate(localizedValue, interpolationParams);
     }
 
     const englishValue = this.readDictionaryValue(this.dictionaries.en, key);
 
     if (typeof englishValue === 'string') {
-      return englishValue;
+      return this.interpolate(englishValue, interpolationParams);
     }
 
     return fallback ?? key;
+  }
+
+  private interpolate(template: string, params?: Record<string, string>): string {
+    if (!params) {
+      return template;
+    }
+
+    return template.replace(/\{\{(\w+)}}/g, (_, paramKey) => params[paramKey] ?? `{{${paramKey}}}`);
   }
 
   private readDictionaryValue(dictionary: TranslationDictionary, key: string): string | TranslationDictionary | undefined {

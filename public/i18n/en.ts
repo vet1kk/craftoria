@@ -183,6 +183,9 @@ export const enTranslations = {
     footer: {
       copyright: '© 2026 Craftoria de la Victoria. All rights reserved.',
       developedBy: 'Developed by Vitaly Lyskov'
+    },
+    toast: {
+      addedToCart: '{{name}} added to cart'
     }
   }
 } as const;

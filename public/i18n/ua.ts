@@ -183,6 +183,9 @@ export const uaTranslations = {
     footer: {
       copyright: '© 2026 Craftoria de la Victoria. Усі права захищено.',
       developedBy: 'Розроблено Vitaly Lyskov'
+    },
+    toast: {
+      addedToCart: '{{name}} додано до кошика'
     }
   }
 } as const;
