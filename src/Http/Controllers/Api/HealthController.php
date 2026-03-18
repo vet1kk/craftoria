@@ -9,6 +9,11 @@ use Illuminate\Http\JsonResponse;
 
 class HealthController extends Controller
 {
+    /**
+     * Return the API health payload.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function __invoke(): JsonResponse
     {
         return response()->json([
