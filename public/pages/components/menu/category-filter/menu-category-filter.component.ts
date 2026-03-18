@@ -1,15 +1,11 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { Category } from '../../../../models';
-import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-menu-category-filter',
   standalone: true,
   templateUrl: './menu-category-filter.component.html',
-  imports: [
-    NgOptimizedImage
-  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MenuCategoryFilterComponent {

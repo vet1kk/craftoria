@@ -49,18 +49,19 @@
                      formControlName="email"
                      type="email"
                      autocomplete="email"
-                     (input)="clearAuthError()"
+                     (input)="clearAuthError(); updateLoginControlErrorState('email')"
+                     (blur)="updateLoginControlErrorState('email')"
                      class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                     [class.border-red-300]="hasLoginControlError('email')"
-                     [class.bg-red-50]="hasLoginControlError('email')"
-                     [class.text-red-900]="hasLoginControlError('email')"
-                     [class.focus:ring-red-200]="hasLoginControlError('email')"
-                     [class.focus:border-red-400]="hasLoginControlError('email')"
-                     [class.border-stone-300]="!hasLoginControlError('email')"
-                     [class.focus:ring-orange-500]="!hasLoginControlError('email')"
-                     [class.focus:border-orange-400]="!hasLoginControlError('email')"
+                     [class.border-red-300]="loginEmailHasError()"
+                     [class.bg-red-50]="loginEmailHasError()"
+                     [class.text-red-900]="loginEmailHasError()"
+                     [class.focus:ring-red-200]="loginEmailHasError()"
+                     [class.focus:border-red-400]="loginEmailHasError()"
+                     [class.border-stone-300]="!loginEmailHasError()"
+                     [class.focus:ring-orange-500]="!loginEmailHasError()"
+                     [class.focus:border-orange-400]="!loginEmailHasError()"
                      placeholder="name@example.com">
-              @if (getLoginControlError('email'); as emailError) {
+              @if (loginEmailErrorMessage(); as emailError) {
                 <p class="text-sm text-red-700">{{ emailError }}</p>
               }
             </div>
@@ -74,18 +75,19 @@
                      formControlName="password"
                      type="password"
                      autocomplete="current-password"
-                     (input)="clearAuthError()"
+                     (input)="clearAuthError(); updateLoginControlErrorState('password')"
+                     (blur)="updateLoginControlErrorState('password')"
                      class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                     [class.border-red-300]="hasLoginControlError('password')"
-                     [class.bg-red-50]="hasLoginControlError('password')"
-                     [class.text-red-900]="hasLoginControlError('password')"
-                     [class.focus:ring-red-200]="hasLoginControlError('password')"
-                     [class.focus:border-red-400]="hasLoginControlError('password')"
-                     [class.border-stone-300]="!hasLoginControlError('password')"
-                     [class.focus:ring-orange-500]="!hasLoginControlError('password')"
-                     [class.focus:border-orange-400]="!hasLoginControlError('password')"
+                     [class.border-red-300]="loginPasswordHasError()"
+                     [class.bg-red-50]="loginPasswordHasError()"
+                     [class.text-red-900]="loginPasswordHasError()"
+                     [class.focus:ring-red-200]="loginPasswordHasError()"
+                     [class.focus:border-red-400]="loginPasswordHasError()"
+                     [class.border-stone-300]="!loginPasswordHasError()"
+                     [class.focus:ring-orange-500]="!loginPasswordHasError()"
+                     [class.focus:border-orange-400]="!loginPasswordHasError()"
                      [placeholder]="'ui.account.passwordPlaceholder' | t">
-              @if (getLoginControlError('password'); as passwordError) {
+              @if (loginPasswordErrorMessage(); as passwordError) {
                 <p class="text-sm text-red-700">{{ passwordError }}</p>
               }
             </div>
@@ -117,18 +119,19 @@
                      formControlName="fullName"
                      type="text"
                      autocomplete="name"
-                     (input)="clearAuthError()"
+                     (input)="clearAuthError(); updateRegistrationControlErrorState('fullName')"
+                     (blur)="updateRegistrationControlErrorState('fullName')"
                      class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                     [class.border-red-300]="hasRegistrationControlError('fullName')"
-                     [class.bg-red-50]="hasRegistrationControlError('fullName')"
-                     [class.text-red-900]="hasRegistrationControlError('fullName')"
-                     [class.focus:ring-red-200]="hasRegistrationControlError('fullName')"
-                     [class.focus:border-red-400]="hasRegistrationControlError('fullName')"
-                     [class.border-stone-300]="!hasRegistrationControlError('fullName')"
-                     [class.focus:ring-orange-500]="!hasRegistrationControlError('fullName')"
-                     [class.focus:border-orange-400]="!hasRegistrationControlError('fullName')"
+                     [class.border-red-300]="registrationFullNameHasError()"
+                     [class.bg-red-50]="registrationFullNameHasError()"
+                     [class.text-red-900]="registrationFullNameHasError()"
+                     [class.focus:ring-red-200]="registrationFullNameHasError()"
+                     [class.focus:border-red-400]="registrationFullNameHasError()"
+                     [class.border-stone-300]="!registrationFullNameHasError()"
+                     [class.focus:ring-orange-500]="!registrationFullNameHasError()"
+                     [class.focus:border-orange-400]="!registrationFullNameHasError()"
                      [placeholder]="'ui.account.fullNamePlaceholder' | t">
-              @if (getRegistrationControlError('fullName'); as fullNameError) {
+              @if (registrationFullNameErrorMessage(); as fullNameError) {
                 <p class="text-sm text-red-700">{{ fullNameError }}</p>
               }
             </div>
@@ -140,18 +143,19 @@
                       formControlName="email"
                       type="email"
                       autocomplete="email"
-                      (input)="clearAuthError()"
+                      (input)="clearAuthError(); updateRegistrationControlErrorState('email')"
+                      (blur)="updateRegistrationControlErrorState('email')"
                       class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                      [class.border-red-300]="hasRegistrationControlError('email')"
-                      [class.bg-red-50]="hasRegistrationControlError('email')"
-                      [class.text-red-900]="hasRegistrationControlError('email')"
-                      [class.focus:ring-red-200]="hasRegistrationControlError('email')"
-                      [class.focus:border-red-400]="hasRegistrationControlError('email')"
-                      [class.border-stone-300]="!hasRegistrationControlError('email')"
-                      [class.focus:ring-orange-500]="!hasRegistrationControlError('email')"
-                      [class.focus:border-orange-400]="!hasRegistrationControlError('email')"
+                      [class.border-red-300]="registrationEmailHasError()"
+                      [class.bg-red-50]="registrationEmailHasError()"
+                      [class.text-red-900]="registrationEmailHasError()"
+                      [class.focus:ring-red-200]="registrationEmailHasError()"
+                      [class.focus:border-red-400]="registrationEmailHasError()"
+                      [class.border-stone-300]="!registrationEmailHasError()"
+                      [class.focus:ring-orange-500]="!registrationEmailHasError()"
+                      [class.focus:border-orange-400]="!registrationEmailHasError()"
                       placeholder="name@example.com">
-              @if (getRegistrationControlError('email'); as registrationEmailError) {
+              @if (registrationEmailErrorMessage(); as registrationEmailError) {
                 <p class="text-sm text-red-700">{{ registrationEmailError }}</p>
               }
             </div>
@@ -162,18 +166,19 @@
                      formControlName="phone"
                      type="tel"
                      autocomplete="tel"
-                     (input)="clearAuthError()"
+                     (input)="clearAuthError(); updateRegistrationControlErrorState('phone')"
+                     (blur)="updateRegistrationControlErrorState('phone')"
                      class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                     [class.border-red-300]="hasRegistrationControlError('phone')"
-                     [class.bg-red-50]="hasRegistrationControlError('phone')"
-                     [class.text-red-900]="hasRegistrationControlError('phone')"
-                     [class.focus:ring-red-200]="hasRegistrationControlError('phone')"
-                     [class.focus:border-red-400]="hasRegistrationControlError('phone')"
-                     [class.border-stone-300]="!hasRegistrationControlError('phone')"
-                     [class.focus:ring-orange-500]="!hasRegistrationControlError('phone')"
-                     [class.focus:border-orange-400]="!hasRegistrationControlError('phone')"
+                     [class.border-red-300]="registrationPhoneHasError()"
+                     [class.bg-red-50]="registrationPhoneHasError()"
+                     [class.text-red-900]="registrationPhoneHasError()"
+                     [class.focus:ring-red-200]="registrationPhoneHasError()"
+                     [class.focus:border-red-400]="registrationPhoneHasError()"
+                     [class.border-stone-300]="!registrationPhoneHasError()"
+                     [class.focus:ring-orange-500]="!registrationPhoneHasError()"
+                     [class.focus:border-orange-400]="!registrationPhoneHasError()"
                      placeholder="+380 67 123 4567">
-              @if (getRegistrationControlError('phone'); as phoneError) {
+              @if (registrationPhoneErrorMessage(); as phoneError) {
                 <p class="text-sm text-red-700">{{ phoneError }}</p>
               }
             </div>
@@ -185,18 +190,19 @@
                        formControlName="password"
                        type="password"
                        autocomplete="new-password"
-                       (input)="clearAuthError()"
+                       (input)="clearAuthError(); updateRegistrationControlErrorState('password'); updateRegistrationControlErrorState('confirmPassword')"
+                       (blur)="updateRegistrationControlErrorState('password')"
                        class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                       [class.border-red-300]="hasRegistrationControlError('password')"
-                       [class.bg-red-50]="hasRegistrationControlError('password')"
-                       [class.text-red-900]="hasRegistrationControlError('password')"
-                       [class.focus:ring-red-200]="hasRegistrationControlError('password')"
-                       [class.focus:border-red-400]="hasRegistrationControlError('password')"
-                       [class.border-stone-300]="!hasRegistrationControlError('password')"
-                       [class.focus:ring-orange-500]="!hasRegistrationControlError('password')"
-                       [class.focus:border-orange-400]="!hasRegistrationControlError('password')"
+                       [class.border-red-300]="registrationPasswordHasError()"
+                       [class.bg-red-50]="registrationPasswordHasError()"
+                       [class.text-red-900]="registrationPasswordHasError()"
+                       [class.focus:ring-red-200]="registrationPasswordHasError()"
+                       [class.focus:border-red-400]="registrationPasswordHasError()"
+                       [class.border-stone-300]="!registrationPasswordHasError()"
+                       [class.focus:ring-orange-500]="!registrationPasswordHasError()"
+                       [class.focus:border-orange-400]="!registrationPasswordHasError()"
                        [placeholder]="'ui.account.atLeast6Chars' | t">
-                @if (getRegistrationControlError('password'); as registrationPasswordError) {
+                @if (registrationPasswordErrorMessage(); as registrationPasswordError) {
                   <p class="text-sm text-red-700">{{ registrationPasswordError }}</p>
                 }
               </div>
@@ -207,18 +213,19 @@
                        formControlName="confirmPassword"
                        type="password"
                        autocomplete="new-password"
-                       (input)="clearAuthError()"
+                       (input)="clearAuthError(); updateRegistrationControlErrorState('confirmPassword')"
+                       (blur)="updateRegistrationControlErrorState('confirmPassword')"
                        class="w-full px-4 py-3 rounded-xl border bg-white transition-colors focus:outline-none focus:ring-2"
-                       [class.border-red-300]="hasRegistrationControlError('confirmPassword')"
-                       [class.bg-red-50]="hasRegistrationControlError('confirmPassword')"
-                       [class.text-red-900]="hasRegistrationControlError('confirmPassword')"
-                       [class.focus:ring-red-200]="hasRegistrationControlError('confirmPassword')"
-                       [class.focus:border-red-400]="hasRegistrationControlError('confirmPassword')"
-                       [class.border-stone-300]="!hasRegistrationControlError('confirmPassword')"
-                       [class.focus:ring-orange-500]="!hasRegistrationControlError('confirmPassword')"
-                       [class.focus:border-orange-400]="!hasRegistrationControlError('confirmPassword')"
+                       [class.border-red-300]="registrationConfirmPasswordHasError()"
+                       [class.bg-red-50]="registrationConfirmPasswordHasError()"
+                       [class.text-red-900]="registrationConfirmPasswordHasError()"
+                       [class.focus:ring-red-200]="registrationConfirmPasswordHasError()"
+                       [class.focus:border-red-400]="registrationConfirmPasswordHasError()"
+                       [class.border-stone-300]="!registrationConfirmPasswordHasError()"
+                       [class.focus:ring-orange-500]="!registrationConfirmPasswordHasError()"
+                       [class.focus:border-orange-400]="!registrationConfirmPasswordHasError()"
                        [placeholder]="'ui.account.confirmPasswordPlaceholder' | t">
-                @if (getRegistrationControlError('confirmPassword'); as confirmPasswordError) {
+                @if (registrationConfirmPasswordErrorMessage(); as confirmPasswordError) {
                   <p class="text-sm text-red-700">{{ confirmPasswordError }}</p>
                 }
               </div>

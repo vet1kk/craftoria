@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ClientRegistrationData, User } from '../models';
 import { extractApiErrorMessage } from './api-error';
+import { I18nService } from './i18n.service';
 import { ApiUser, UserService } from './user.service';
 
 interface ApiResourceResponse<T> {
@@ -21,6 +22,7 @@ interface ApiSessionResponse {
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly i18n = inject(I18nService);
   private readonly userService = inject(UserService);
 
   readonly currentUser = signal<User | null>(null);
@@ -59,7 +61,7 @@ export class AuthService {
     } catch (error: unknown) {
       return {
         success: false,
-        message: extractApiErrorMessage(error, 'Не вдалося увійти.')
+        message: extractApiErrorMessage(error, 'Enabled to log in. Please check your credentials and try again.', this.i18n)
       };
     }
   }
@@ -80,7 +82,7 @@ export class AuthService {
     } catch (error: unknown) {
       return {
         success: false,
-        message: extractApiErrorMessage(error, 'Не вдалося створити обліковий запис.')
+        message: extractApiErrorMessage(error, 'Enabled to register. Please try again.', this.i18n)
       };
     }
   }

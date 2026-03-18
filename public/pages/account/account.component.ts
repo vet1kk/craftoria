@@ -40,6 +40,21 @@ export class AccountComponent {
   readonly isSubmitting = signal(false);
   readonly repeatOrderError = signal('');
 
+  readonly loginEmailHasError = signal(false);
+  readonly loginPasswordHasError = signal(false);
+  readonly loginEmailErrorMessage = signal<string | null>(null);
+  readonly loginPasswordErrorMessage = signal<string | null>(null);
+  readonly registrationFullNameHasError = signal(false);
+  readonly registrationEmailHasError = signal(false);
+  readonly registrationPhoneHasError = signal(false);
+  readonly registrationPasswordHasError = signal(false);
+  readonly registrationConfirmPasswordHasError = signal(false);
+  readonly registrationFullNameErrorMessage = signal<string | null>(null);
+  readonly registrationEmailErrorMessage = signal<string | null>(null);
+  readonly registrationPhoneErrorMessage = signal<string | null>(null);
+  readonly registrationPasswordErrorMessage = signal<string | null>(null);
+  readonly registrationConfirmPasswordErrorMessage = signal<string | null>(null);
+
   readonly loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email, Validators.maxLength(120)]],
     password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(64)]]
@@ -67,6 +82,8 @@ export class AccountComponent {
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      this.updateLoginControlErrorState('email');
+      this.updateLoginControlErrorState('password');
       return;
     }
 
@@ -99,6 +116,11 @@ export class AccountComponent {
 
     if (this.registrationForm.invalid) {
       this.registrationForm.markAllAsTouched();
+      this.updateRegistrationControlErrorState('fullName');
+      this.updateRegistrationControlErrorState('email');
+      this.updateRegistrationControlErrorState('phone');
+      this.updateRegistrationControlErrorState('password');
+      this.updateRegistrationControlErrorState('confirmPassword');
       return;
     }
 
@@ -135,17 +157,22 @@ export class AccountComponent {
     this.authError.set('');
   }
 
-  hasLoginControlError(controlName: LoginControlName): boolean {
+  updateLoginControlErrorState(controlName: LoginControlName): void {
     const control = this.loginForm.controls[controlName];
-    return control.invalid && (control.touched || control.dirty);
+    const hasError = control.invalid && (control.touched || control.dirty);
+    const errorMessage = hasError ? this.getLoginControlErrorMessage(controlName) : null;
+
+    if (controlName === 'email') {
+      this.loginEmailHasError.set(hasError);
+      this.loginEmailErrorMessage.set(errorMessage);
+    } else {
+      this.loginPasswordHasError.set(hasError);
+      this.loginPasswordErrorMessage.set(errorMessage);
+    }
   }
 
-  getLoginControlError(controlName: LoginControlName): string | null {
+  private getLoginControlErrorMessage(controlName: LoginControlName): string {
     const control = this.loginForm.controls[controlName];
-
-    if (!this.hasLoginControlError(controlName)) {
-      return null;
-    }
 
     if (control.hasError('required')) {
       return controlName === 'email'
@@ -172,23 +199,41 @@ export class AccountComponent {
     return this.i18n.translate('ui.account.validation.fieldInvalid');
   }
 
-  hasRegistrationControlError(controlName: RegistrationControlName): boolean {
+  updateRegistrationControlErrorState(controlName: RegistrationControlName): void {
     const control = this.registrationForm.controls[controlName];
-    return (
+    const hasError =
       control.invalid &&
-      (control.touched || control.dirty || this.registrationForm.hasError('passwordMismatch'))
-    );
+      (control.touched || control.dirty || this.registrationForm.hasError('passwordMismatch'));
+    const errorMessage = hasError || (controlName === 'confirmPassword' && this.registrationForm.hasError('passwordMismatch'))
+      ? this.getRegistrationControlErrorMessage(controlName)
+      : null;
+
+    switch (controlName) {
+      case 'fullName':
+        this.registrationFullNameHasError.set(hasError);
+        this.registrationFullNameErrorMessage.set(errorMessage);
+        break;
+      case 'email':
+        this.registrationEmailHasError.set(hasError);
+        this.registrationEmailErrorMessage.set(errorMessage);
+        break;
+      case 'phone':
+        this.registrationPhoneHasError.set(hasError);
+        this.registrationPhoneErrorMessage.set(errorMessage);
+        break;
+      case 'password':
+        this.registrationPasswordHasError.set(hasError);
+        this.registrationPasswordErrorMessage.set(errorMessage);
+        break;
+      case 'confirmPassword':
+        this.registrationConfirmPasswordHasError.set(hasError);
+        this.registrationConfirmPasswordErrorMessage.set(errorMessage);
+        break;
+    }
   }
 
-  getRegistrationControlError(controlName: RegistrationControlName): string | null {
+  private getRegistrationControlErrorMessage(controlName: RegistrationControlName): string {
     const control = this.registrationForm.controls[controlName];
-
-    if (
-      !this.hasRegistrationControlError(controlName) &&
-      !(controlName === 'confirmPassword' && this.registrationForm.hasError('passwordMismatch'))
-    ) {
-      return null;
-    }
 
     if (control.hasError('required')) {
       switch (controlName) {

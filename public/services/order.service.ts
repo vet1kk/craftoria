@@ -6,6 +6,7 @@ import { environment } from '../environments/environment';
 import { OrderRequest } from '../models';
 import { extractApiErrorMessage } from './api-error';
 import { AuthService } from './auth.service';
+import { I18nService } from './i18n.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ import { AuthService } from './auth.service';
 export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly i18n = inject(I18nService);
 
   async submitOrder(orderRequest: OrderRequest): Promise<void> {
     const currentUser = this.authService.currentUser();
@@ -38,7 +40,7 @@ export class OrderService {
         await this.authService.refreshProfile().catch(() => null);
       }
     } catch (error: unknown) {
-      throw new Error(extractApiErrorMessage(error, 'Failed to submit the order. Please try again later.'));
+      throw new Error(extractApiErrorMessage(error, 'Failed to submit the order. Please try again later.', this.i18n));
     }
   }
 }

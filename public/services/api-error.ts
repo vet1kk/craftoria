@@ -1,5 +1,4 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
 import { I18nService } from './i18n.service';
 
 interface LaravelValidationErrors {
@@ -7,7 +6,7 @@ interface LaravelValidationErrors {
   errors?: Record<string, string[]>;
 }
 
-export function extractApiErrorMessage(error: unknown, fallbackMessage: string): string {
+export function extractApiErrorMessage(error: unknown, fallbackMessage: string, i18n: I18nService): string {
   if (!(error instanceof HttpErrorResponse)) {
     return fallbackMessage;
   }
@@ -19,15 +18,14 @@ export function extractApiErrorMessage(error: unknown, fallbackMessage: string):
   }
 
   if (payload && typeof payload === 'object') {
-    const localizationService = inject(I18nService);
     const firstValidationMessage = Object.values(payload.errors ?? {}).flat()[0];
 
     if (firstValidationMessage) {
-      return localizationService.translate(firstValidationMessage, firstValidationMessage);
+      return i18n.translate(firstValidationMessage, firstValidationMessage);
     }
 
     if (payload.message) {
-      return localizationService.translate(payload.message, payload.message);
+      return i18n.translate(payload.message, payload.message);
     }
   }
 
