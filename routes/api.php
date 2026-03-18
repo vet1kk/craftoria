@@ -2,8 +2,57 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\AnalyticsEventController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\IngredientController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProfileController;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HealthController::class);
 Route::get('/health', HealthController::class);
+
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{slug}', [CategoryController::class, 'show']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::post('/orders', [OrderController::class, 'store']);
+Route::post('/analytics/events', [AnalyticsEventController::class, 'store']);
+
+Route::middleware(StartSession::class)->group(function (): void {
+    Route::post('/register', [AuthController::class, 'store']);
+    Route::post('/login', [AuthController::class, 'login']);
+
+    Route::middleware('auth')->group(function (): void {
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update']);
+
+        Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::patch('categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('ingredients', [IngredientController::class, 'index'])->name('ingredients.index');
+        Route::post('ingredients', [IngredientController::class, 'store'])->name('ingredients.store');
+        Route::get('ingredients/{ingredient}', [IngredientController::class, 'show'])->name('ingredients.show');
+        Route::put('ingredients/{ingredient}', [IngredientController::class, 'update'])->name('ingredients.update');
+        Route::patch('ingredients/{ingredient}', [IngredientController::class, 'update']);
+        Route::delete('ingredients/{ingredient}', [IngredientController::class, 'destroy'])->name('ingredients.destroy');
+
+        Route::post('products', [ProductController::class, 'store'])->name('products.store');
+        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::patch('products/{product}', [ProductController::class, 'update']);
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::put('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+        Route::patch('orders/{order}', [OrderController::class, 'update']);
+    });
+});
