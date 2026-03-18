@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { AuthService, CartDrawerService, CartService, DataService } from '../../services';
 import { CartItem, OrderHistoryItem } from '../../models';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { AuthService, CartDrawerService, CartService, DataService, I18nService } from '../../services';
 import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '../components';
 
 type AuthMode = 'login' | 'register';
@@ -18,7 +19,7 @@ type RegistrationControlName =
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ReactiveFormsModule, AccountProfileSummaryComponent, AccountOrderHistoryComponent],
+  imports: [ReactiveFormsModule, AccountProfileSummaryComponent, AccountOrderHistoryComponent, TranslatePipe],
   templateUrl: './account.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -29,6 +30,7 @@ export class AccountComponent {
   private readonly dataService = inject(DataService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
 
   readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = this.authService.isAuthenticated;
@@ -56,6 +58,10 @@ export class AccountComponent {
     }
   );
 
+  constructor() {
+    void this.dataService.ensureCatalogLoaded();
+  }
+
   async login(): Promise<void> {
     this.authError.set('');
 
@@ -66,10 +72,10 @@ export class AccountComponent {
 
     const { email, password } = this.loginForm.getRawValue();
     this.isSubmitting.set(true);
-    const loginResult = this.authService.login(email.trim(), password);
+    const loginResult = await this.authService.login(email.trim(), password);
 
     if (!loginResult.success) {
-      this.authError.set(loginResult.message ?? 'Не вдалося увійти.');
+      this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
       this.isSubmitting.set(false);
       return;
     }
@@ -98,7 +104,7 @@ export class AccountComponent {
 
     const { fullName, email, phone, password } = this.registrationForm.getRawValue();
     this.isSubmitting.set(true);
-    const registrationResult = this.authService.register({
+    const registrationResult = await this.authService.register({
       fullName: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
@@ -106,7 +112,7 @@ export class AccountComponent {
     });
 
     if (!registrationResult.success) {
-      this.authError.set(registrationResult.message ?? 'Не вдалося створити обліковий запис.');
+      this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
       this.isSubmitting.set(false);
       return;
     }
@@ -142,26 +148,28 @@ export class AccountComponent {
     }
 
     if (control.hasError('required')) {
-      return controlName === 'email' ? 'Вкажіть email.' : 'Вкажіть пароль.';
+      return controlName === 'email'
+        ? this.i18n.translate('ui.account.validation.emailRequired')
+        : this.i18n.translate('ui.account.validation.passwordRequired');
     }
 
     if (controlName === 'email' && control.hasError('email')) {
-      return 'Введіть коректну email-адресу.';
+      return this.i18n.translate('ui.account.validation.emailInvalid');
     }
 
     if (controlName === 'email' && control.hasError('maxlength')) {
-      return 'Email має містити не більше 120 символів.';
+      return this.i18n.translate('ui.account.validation.emailMaxLength');
     }
 
     if (controlName === 'password' && control.hasError('minlength')) {
-      return 'Пароль має містити щонайменше 6 символів.';
+      return this.i18n.translate('ui.account.validation.passwordMinLength');
     }
 
     if (controlName === 'password' && control.hasError('maxlength')) {
-      return 'Пароль має містити не більше 64 символів.';
+      return this.i18n.translate('ui.account.validation.passwordMaxLength');
     }
 
-    return 'Перевірте це поле та спробуйте ще раз.';
+    return this.i18n.translate('ui.account.validation.fieldInvalid');
   }
 
   hasRegistrationControlError(controlName: RegistrationControlName): boolean {
@@ -185,51 +193,51 @@ export class AccountComponent {
     if (control.hasError('required')) {
       switch (controlName) {
         case 'fullName':
-          return 'Вкажіть ім’я та прізвище.';
+          return this.i18n.translate('ui.account.validation.fullNameRequired');
         case 'email':
-          return 'Вкажіть email.';
+          return this.i18n.translate('ui.account.validation.emailRequired');
         case 'phone':
-          return 'Вкажіть номер телефону.';
+          return this.i18n.translate('ui.account.validation.phoneRequired');
         case 'password':
-          return 'Вкажіть пароль.';
+          return this.i18n.translate('ui.account.validation.passwordRequired');
         case 'confirmPassword':
-          return 'Підтвердіть пароль.';
+          return this.i18n.translate('ui.account.validation.confirmPasswordRequired');
       }
     }
 
     if (controlName === 'fullName' && control.hasError('minlength')) {
-      return 'Ім’я та прізвище мають містити щонайменше 2 символи.';
+      return this.i18n.translate('ui.account.validation.fullNameMinLength');
     }
 
     if (controlName === 'fullName' && control.hasError('maxlength')) {
-      return 'Ім’я та прізвище мають містити не більше 80 символів.';
+      return this.i18n.translate('ui.account.validation.fullNameMaxLength');
     }
 
     if (controlName === 'email' && control.hasError('email')) {
-      return 'Введіть коректну email-адресу.';
+      return this.i18n.translate('ui.account.validation.emailInvalid');
     }
 
     if (controlName === 'email' && control.hasError('maxlength')) {
-      return 'Email має містити не більше 120 символів.';
+      return this.i18n.translate('ui.account.validation.emailMaxLength');
     }
 
     if (controlName === 'phone' && control.hasError('pattern')) {
-      return 'Введіть коректний номер телефону.';
+      return this.i18n.translate('ui.account.validation.phoneInvalid');
     }
 
     if (controlName === 'password' && control.hasError('minlength')) {
-      return 'Пароль має містити щонайменше 6 символів.';
+      return this.i18n.translate('ui.account.validation.passwordMinLength');
     }
 
     if (controlName === 'password' && control.hasError('maxlength')) {
-      return 'Пароль має містити не більше 64 символів.';
+      return this.i18n.translate('ui.account.validation.passwordMaxLength');
     }
 
     if (controlName === 'confirmPassword' && this.registrationForm.hasError('passwordMismatch')) {
-      return 'Паролі не збігаються.';
+      return this.i18n.translate('ui.account.validation.passwordMismatch');
     }
 
-    return 'Перевірте це поле та спробуйте ще раз.';
+    return this.i18n.translate('ui.account.validation.fieldInvalid');
   }
 
   clearAuthError(): void {
@@ -239,23 +247,24 @@ export class AccountComponent {
   }
 
   repeatOrder(order: OrderHistoryItem): void {
-    const repeatedItems: CartItem[] = order.items
-      .map((orderItem) => {
-        const menuItem = this.dataService.menuItems.find((item) => item.id === orderItem.id);
+    const repeatedItems = order.items.reduce<CartItem[]>((items, orderItem) => {
+      const menuItem = this.dataService.menuItems().find((item) => item.id === orderItem.productId);
 
-        if (!menuItem) {
-          return null;
-        }
+      if (!menuItem) {
+        return items;
+      }
 
-        return {
-          menuItem,
-          quantity: orderItem.quantity
-        };
-      })
-      .filter((item): item is CartItem => item !== null);
+      items.push({
+        menuItem,
+        quantity: orderItem.quantity,
+        ...(orderItem.notes ? { notes: orderItem.notes } : {})
+      });
+
+      return items;
+    }, []);
 
     if (repeatedItems.length === 0) {
-      this.repeatOrderError.set('Не вдалося повторити це замовлення, бо його позиції більше недоступні.');
+      this.repeatOrderError.set(this.i18n.translate('ui.account.repeatOrderFailed'));
       return;
     }
 

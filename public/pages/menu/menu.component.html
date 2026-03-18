@@ -1,16 +1,32 @@
 <div class="pb-24">
   <app-menu-hero></app-menu-hero>
 
-  <app-menu-category-filter
-    [categories]="dataService.categories"
-    [selectedCategory]="selectedCategory()"
-    (categoryChange)="selectedCategory.set($event)">
-  </app-menu-category-filter>
+  @if (showCategories()) {
+    <app-menu-category-filter
+      [categories]="dataService.categories()"
+      [selectedCategorySlug]="selectedCategorySlug()"
+      (categoryChange)="selectedCategorySlug.set($event)">
+    </app-menu-category-filter>
+  }
 
   <div class="max-w-4xl mx-auto px-4 py-8">
-    @if (filteredItems().length === 0) {
+    @if (dataService.isCatalogLoading() && dataService.menuItems().length === 0) {
+      <div class="py-20 text-center text-stone-400">
+        <p class="text-lg">{{ 'ui.menu.loading' | t }}</p>
+      </div>
+    } @else if (dataService.catalogError()) {
+      <div class="rounded-3xl border border-red-200 bg-red-50 px-5 py-8 text-center text-red-700">
+        <p class="text-lg font-semibold">{{ 'ui.menu.errorTitle' | t }}</p>
+        <p class="mt-2 text-sm">{{ dataService.catalogError() }}</p>
+        <button type="button"
+                (click)="dataService.ensureCatalogLoaded(true)"
+                class="mt-5 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-stone-800">
+          {{ 'ui.actions.retry' | t }}
+        </button>
+      </div>
+    } @else if (filteredItems().length === 0) {
       <div class="text-center py-20 text-stone-400">
-        <p class="text-lg">У цій категорії поки немає позицій.</p>
+        <p class="text-lg">{{ 'ui.menu.emptyCategory' | t }}</p>
       </div>
     } @else {
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">

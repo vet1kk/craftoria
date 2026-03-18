@@ -1,10 +1,11 @@
-import { DecimalPipe, NgOptimizedImage } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
-import { CartService, DataService, MenuService } from '../../services';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { CartService, DataService, I18nService, MenuService } from '../../services';
 
 const ITEM_IMAGE_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#f5f5f4"/><text x="200" y="150" text-anchor="middle" dominant-baseline="middle" fill="#78716c" font-family="Arial, sans-serif" font-size="24">Craftoria</text></svg>'
@@ -18,7 +19,7 @@ interface GallerySlot {
 @Component({
   selector: 'app-item-detail',
   standalone: true,
-  imports: [DecimalPipe, NgOptimizedImage, RouterLink],
+  imports: [DecimalPipe, RouterLink, TranslatePipe],
   templateUrl: './item-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -26,15 +27,18 @@ export class ItemDetailComponent {
   readonly dataService = inject(DataService);
   readonly menuService = inject(MenuService);
   readonly cartService = inject(CartService);
+  readonly i18n = inject(I18nService);
   readonly selectedImageIndex = signal(0);
   readonly imageFallbacks = signal<Record<string, string>>({});
+  readonly isLoading = signal(true);
+  readonly loadError = signal('');
   private readonly route = inject(ActivatedRoute);
-  private readonly itemId = toSignal(
-    this.route.paramMap.pipe(map((params) => params.get('id') ?? '')),
-    { initialValue: this.route.snapshot.paramMap.get('id') ?? '' }
+  private readonly itemSlug = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')),
+    { initialValue: this.route.snapshot.paramMap.get('slug') ?? '' }
   );
 
-  readonly item = computed(() => this.menuService.getMenuItemById(this.itemId()));
+  readonly item = computed(() => this.menuService.getMenuItemBySlug(this.itemSlug()));
   readonly category = computed(() => {
     const menuItem = this.item();
 
@@ -107,8 +111,30 @@ export class ItemDetailComponent {
 
   constructor() {
     effect(() => {
-      this.itemId();
+      const slug = this.itemSlug();
+
       this.selectedImageIndex.set(0);
+      this.loadError.set('');
+
+      if (!slug) {
+        this.isLoading.set(false);
+        return;
+      }
+
+      if (this.menuService.getMenuItemBySlug(slug)) {
+        this.isLoading.set(false);
+        return;
+      }
+
+      this.isLoading.set(true);
+
+      void this.dataService.loadMenuItem(slug).then((item) => {
+        this.isLoading.set(false);
+
+        if (!item) {
+          this.loadError.set(this.i18n.translate('ui.itemDetail.notFoundHint'));
+        }
+      });
     });
 
     effect(() => {
@@ -117,7 +143,6 @@ export class ItemDetailComponent {
 
       if (selectedIndex >= images.length && images.length > 0) {
         this.selectedImageIndex.set(images.length - 1);
-        return;
       }
     });
   }

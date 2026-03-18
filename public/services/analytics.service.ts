@@ -1,5 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { ApplicationRef, inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ApplicationRef, DestroyRef, inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, take } from 'rxjs';
@@ -18,34 +19,49 @@ declare global {
 })
 export class AnalyticsService {
   private readonly document = inject(DOCUMENT);
+  private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
   private readonly measurementId = environment.gaMeasurementId.trim();
   private readonly appRef = inject(ApplicationRef);
-  private isInitialized = false;
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly sessionId = this.readSessionId();
+  private isGoogleAnalyticsInitialized = false;
 
   constructor() {
-    if (!isPlatformBrowser(this.platformId) || !this.measurementId) {
+    if (!isPlatformBrowser(this.platformId)) {
       return;
     }
+
     this.appRef.isStable
       .pipe(filter(Boolean), take(1))
       .subscribe(() => {
-        this.injectGoogleAnalytics();
+        if (this.measurementId) {
+          this.injectGoogleAnalytics();
+        }
+
         this.trackRouteChanges();
       });
   }
 
   logEvent(eventName: string, params: Record<string, unknown> = {}): void {
-    if (!this.isInitialized || typeof window === 'undefined' || !window.gtag) {
-      return;
+    if (this.isGoogleAnalyticsInitialized && typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', eventName, params);
     }
 
-    window.gtag('event', eventName, params);
+    this.http.post(`${environment.apiBaseUrl}/analytics/events`, {
+      session_id: this.sessionId,
+      name: eventName,
+      url: this.document.location?.href,
+      properties: params,
+      occurred_at: new Date().toISOString()
+    }).subscribe({
+      error: () => undefined
+    });
   }
 
   setUserProperties(properties: Record<string, unknown>): void {
-    if (!this.isInitialized || typeof window === 'undefined' || !window.gtag) {
+    if (!this.isGoogleAnalyticsInitialized || typeof window === 'undefined' || !window.gtag) {
       return;
     }
 
@@ -53,7 +69,7 @@ export class AnalyticsService {
   }
 
   private injectGoogleAnalytics(): void {
-    if (this.isInitialized) {
+    if (this.isGoogleAnalyticsInitialized) {
       return;
     }
 
@@ -85,14 +101,14 @@ export class AnalyticsService {
       window.gtag('config', this.measurementId, { send_page_view: false });
     }
 
-    this.isInitialized = true;
+    this.isGoogleAnalyticsInitialized = true;
   }
 
   private trackRouteChanges(): void {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed()
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((event) => {
         this.trackPageView(event.urlAfterRedirects);
@@ -100,14 +116,34 @@ export class AnalyticsService {
   }
 
   private trackPageView(path: string): void {
-    if (!window.gtag) {
-      return;
+    if (this.isGoogleAnalyticsInitialized && window.gtag) {
+      window.gtag('config', this.measurementId, {
+        page_path: path,
+        page_title: this.document.title,
+        page_location: this.document.location?.href
+      });
     }
 
-    window.gtag('config', this.measurementId, {
+    this.logEvent('page_view', {
       page_path: path,
-      page_title: this.document.title,
-      page_location: this.document.location?.href
+      page_title: this.document.title
     });
+  }
+
+  private readSessionId(): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
+
+    const existingSessionId = sessionStorage.getItem('craftoria.analytics-session-id');
+
+    if (existingSessionId) {
+      return existingSessionId;
+    }
+
+    const sessionId = crypto.randomUUID();
+    sessionStorage.setItem('craftoria.analytics-session-id', sessionId);
+
+    return sessionId;
   }
 }

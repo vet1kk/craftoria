@@ -4,18 +4,18 @@
       <section class="w-full max-w-2xl bg-white rounded-3xl shadow-sm border border-stone-100 p-5 sm:p-8">
         <div class="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700">
           <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-          Доступ до акаунта
+          {{ 'ui.account.accessBadge' | t }}
         </div>
 
         <div class="mt-5">
           <h1 class="text-2xl sm:text-3xl font-bold text-stone-800">
-            {{ authMode() === 'login' ? 'Увійдіть до свого акаунта' : 'Створіть клієнтський акаунт' }}
+            {{ authMode() === 'login' ? ('ui.account.loginTitle' | t) : ('ui.account.registerTitle' | t) }}
           </h1>
           <p class="text-stone-500 mt-3">
             @if (authMode() === 'login') {
-              Переглядайте свій профіль та історію замовлень.
+              {{ 'ui.account.loginHint' | t }}
             } @else {
-              Зареєструйте новий акаунт, щоб отримати доступ до профілю та майбутньої історії замовлень.
+              {{ 'ui.account.registerHint' | t }}
             }
           </p>
         </div>
@@ -28,7 +28,7 @@
                   [class.text-stone-900]="authMode() === 'login'"
                   [class.shadow-sm]="authMode() === 'login'"
                   [class.text-stone-500]="authMode() !== 'login'">
-            Вхід
+            {{ 'ui.account.tabLogin' | t }}
           </button>
           <button type="button"
                   (click)="registrationForm.reset(); setAuthMode('register'); clearAuthError()"
@@ -37,14 +37,14 @@
                   [class.text-stone-900]="authMode() === 'register'"
                   [class.shadow-sm]="authMode() === 'register'"
                   [class.text-stone-500]="authMode() !== 'register'">
-            Реєстрація
+            {{ 'ui.account.tabRegister' | t }}
           </button>
         </div>
 
         @if (authMode() === 'login') {
           <form [formGroup]="loginForm" (ngSubmit)="login()" class="mt-6 space-y-5" novalidate>
             <div class="space-y-2">
-              <label for="account-email" class="block text-sm font-medium text-stone-700">Електронна пошта</label>
+              <label for="account-email" class="block text-sm font-medium text-stone-700">{{ 'ui.account.emailLabel' | t }}</label>
               <input id="account-email"
                      formControlName="email"
                      type="email"
@@ -67,8 +67,8 @@
 
             <div class="space-y-2">
               <div class="flex items-center justify-between gap-3">
-                <label for="account-password" class="block text-sm font-medium text-stone-700">Пароль</label>
-                <span class="text-xs text-stone-400">Мінімум 6 символів</span>
+                <label for="account-password" class="block text-sm font-medium text-stone-700">{{ 'ui.account.passwordLabel' | t }}</label>
+                <span class="text-xs text-stone-400">{{ 'ui.account.passwordHint' | t }}</span>
               </div>
               <input id="account-password"
                      formControlName="password"
@@ -84,7 +84,7 @@
                      [class.border-stone-300]="!hasLoginControlError('password')"
                      [class.focus:ring-orange-500]="!hasLoginControlError('password')"
                      [class.focus:border-orange-400]="!hasLoginControlError('password')"
-                     placeholder="Введіть ваш пароль">
+                     [placeholder]="'ui.account.passwordPlaceholder' | t">
               @if (getLoginControlError('password'); as passwordError) {
                 <p class="text-sm text-red-700">{{ passwordError }}</p>
               }
@@ -102,17 +102,17 @@
               @if (isSubmitting()) {
                 <span class="inline-flex items-center gap-2">
                     <span class="inline-block w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-                   Входимо...
+                   {{ 'ui.account.loggingIn' | t }}
                  </span>
               } @else {
-                <span>Увійти</span>
+                <span>{{ 'ui.account.loginButton' | t }}</span>
               }
             </button>
           </form>
         } @else {
           <form [formGroup]="registrationForm" (ngSubmit)="register()" class="mt-6 space-y-5" novalidate>
             <div class="space-y-2">
-              <label for="register-full-name" class="block text-sm font-medium text-stone-700">Ім’я та прізвище</label>
+              <label for="register-full-name" class="block text-sm font-medium text-stone-700">{{ 'ui.account.fullNameLabel' | t }}</label>
               <input id="register-full-name"
                      formControlName="fullName"
                      type="text"
@@ -127,14 +127,14 @@
                      [class.border-stone-300]="!hasRegistrationControlError('fullName')"
                      [class.focus:ring-orange-500]="!hasRegistrationControlError('fullName')"
                      [class.focus:border-orange-400]="!hasRegistrationControlError('fullName')"
-                     placeholder="Ваше ім’я та прізвище">
+                     [placeholder]="'ui.account.fullNamePlaceholder' | t">
               @if (getRegistrationControlError('fullName'); as fullNameError) {
                 <p class="text-sm text-red-700">{{ fullNameError }}</p>
               }
             </div>
 
             <div class="space-y-2">
-              <label for="register-email" class="block text-sm font-medium text-stone-700">Електронна пошта</label>
+              <label for="register-email" class="block text-sm font-medium text-stone-700">{{ 'ui.account.emailLabel' | t }}</label>
               <input
                       id="register-email"
                       formControlName="email"
@@ -157,7 +157,7 @@
             </div>
 
             <div class="space-y-2">
-              <label for="register-phone" class="block text-sm font-medium text-stone-700">Телефон</label>
+              <label for="register-phone" class="block text-sm font-medium text-stone-700">{{ 'ui.account.phoneLabel' | t }}</label>
               <input id="register-phone"
                      formControlName="phone"
                      type="tel"
@@ -180,7 +180,7 @@
 
             <div class="grid gap-5 sm:grid-cols-2">
               <div class="space-y-2">
-                <label for="register-password" class="block text-sm font-medium text-stone-700">Пароль</label>
+                <label for="register-password" class="block text-sm font-medium text-stone-700">{{ 'ui.account.passwordLabel' | t }}</label>
                 <input id="register-password"
                        formControlName="password"
                        type="password"
@@ -195,14 +195,14 @@
                        [class.border-stone-300]="!hasRegistrationControlError('password')"
                        [class.focus:ring-orange-500]="!hasRegistrationControlError('password')"
                        [class.focus:border-orange-400]="!hasRegistrationControlError('password')"
-                       placeholder="Щонайменше 6 символів">
+                       [placeholder]="'ui.account.atLeast6Chars' | t">
                 @if (getRegistrationControlError('password'); as registrationPasswordError) {
                   <p class="text-sm text-red-700">{{ registrationPasswordError }}</p>
                 }
               </div>
 
               <div class="space-y-2">
-                <label for="register-confirm-password" class="block text-sm font-medium text-stone-700">Підтвердіть пароль</label>
+                <label for="register-confirm-password" class="block text-sm font-medium text-stone-700">{{ 'ui.account.confirmPasswordLabel' | t }}</label>
                 <input id="register-confirm-password"
                        formControlName="confirmPassword"
                        type="password"
@@ -217,7 +217,7 @@
                        [class.border-stone-300]="!hasRegistrationControlError('confirmPassword')"
                        [class.focus:ring-orange-500]="!hasRegistrationControlError('confirmPassword')"
                        [class.focus:border-orange-400]="!hasRegistrationControlError('confirmPassword')"
-                       placeholder="Повторіть пароль">
+                       [placeholder]="'ui.account.confirmPasswordPlaceholder' | t">
                 @if (getRegistrationControlError('confirmPassword'); as confirmPasswordError) {
                   <p class="text-sm text-red-700">{{ confirmPasswordError }}</p>
                 }
@@ -236,10 +236,10 @@
               @if (isSubmitting()) {
                 <span class="inline-flex items-center gap-2">
                     <span class="inline-block w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-                   Створюємо акаунт...
+                   {{ 'ui.account.creatingAccount' | t }}
                  </span>
               } @else {
-                <span>Створити клієнтський акаунт</span>
+                <span>{{ 'ui.account.registerButton' | t }}</span>
               }
             </button>
           </form>

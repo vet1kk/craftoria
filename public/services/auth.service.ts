@@ -1,58 +1,106 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
-import { ClientRegistrationData, toUser, User } from '../models';
-import { UserService } from './user.service';
+import { environment } from '../environments/environment';
+import { ClientRegistrationData, User } from '../models';
+import { extractApiErrorMessage } from './api-error';
+import { ApiUser, UserService } from './user.service';
+
+interface ApiResourceResponse<T> {
+  data: T;
+}
+
+interface ApiSessionResponse {
+  authenticated: boolean;
+  user: ApiUser | null;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  private readonly http = inject(HttpClient);
+  private readonly userService = inject(UserService);
 
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
   readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
-  // TODO(api): Replace the local credential lookup with a backend login endpoint
-  // that returns the authenticated user and session/token payload.
-  login(email: string, password: string): { success: boolean; message?: string } {
-    const matchedUser = this.userService.findUserByCredentials(email, password);
+  async initialize(): Promise<void> {
+    try {
+      const session = await firstValueFrom(
+        this.http.get<ApiSessionResponse>(`${environment.apiBaseUrl}/session`)
+      );
 
-    if (!matchedUser) {
-      return {
-        success: false,
-        message: 'Невірний email або пароль.'
-      };
+      if (!session.authenticated || !session.user) {
+        this.currentUser.set(null);
+        return;
+      }
+
+      this.currentUser.set(this.userService.mapUser(session.user));
+    } catch {
+      this.currentUser.set(null);
     }
-
-    this.currentUser.set(toUser(matchedUser));
-
-    return { success: true };
   }
 
-  // TODO(api): Replace the local registration flow with a backend sign-up endpoint.
-  register(registrationData: ClientRegistrationData): { success: boolean; message?: string } {
+  async login(email: string, password: string): Promise<{ success: boolean; message?: string }> {
     try {
-      const createdUser = this.userService.createClientUser(registrationData);
-      this.currentUser.set(toUser(createdUser));
+      const response = await firstValueFrom(
+        this.http.post<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/login`, {
+          email,
+          password
+        })
+      );
+
+      this.currentUser.set(this.userService.mapUser(response.data));
+
       return { success: true };
     } catch (error: unknown) {
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Не вдалося створити обліковий запис.'
+        message: extractApiErrorMessage(error, 'Не вдалося увійти.')
       };
     }
   }
 
-  // TODO(api): When backend auth is added, this should also call a logout/session revoke endpoint
-  // or clear persisted auth tokens managed by the API client.
-  logout(): void {
-    this.currentUser.set(null);
+  async register(registrationData: ClientRegistrationData): Promise<{ success: boolean; message?: string }> {
+    try {
+      await firstValueFrom(
+        this.http.post<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/register`, {
+          name: registrationData.fullName,
+          email: registrationData.email,
+          phone: registrationData.phone,
+          password: registrationData.password,
+          password_confirmation: registrationData.password
+        })
+      );
+
+      return this.login(registrationData.email, registrationData.password);
+    } catch (error: unknown) {
+      return {
+        success: false,
+        message: extractApiErrorMessage(error, 'Не вдалося створити обліковий запис.')
+      };
+    }
   }
 
-  // TODO(api): Replace this local session update with either a "current user" refetch
-  // or the response from backend profile/order endpoints.
-  updateCurrentUser(user: User): void {
-    this.currentUser.set(toUser(user));
+  async logout(): Promise<void> {
+    try {
+      await firstValueFrom(this.http.post<void>(`${environment.apiBaseUrl}/logout`, {}));
+    } finally {
+      this.currentUser.set(null);
+    }
+  }
+
+  async refreshProfile(): Promise<User | null> {
+    const response = await firstValueFrom(
+      this.http.get<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/profile`)
+    );
+    const mappedUser = this.userService.mapUser(response.data);
+
+    this.currentUser.set(mappedUser);
+
+    return mappedUser;
   }
 }

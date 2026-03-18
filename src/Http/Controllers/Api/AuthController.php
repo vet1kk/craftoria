@@ -19,7 +19,7 @@ class AuthController extends Controller
     /**
      * Register a new client user account.
      *
-     * @param  \App\Http\Requests\RegisterUserRequest  $request
+     * @param \App\Http\Requests\RegisterUserRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(RegisterUserRequest $request): JsonResponse
@@ -40,7 +40,7 @@ class AuthController extends Controller
     /**
      * Authenticate a user with email and password.
      *
-     * @param  \App\Http\Requests\LoginRequest  $request
+     * @param \App\Http\Requests\LoginRequest $request
      * @return \App\Http\Resources\UserResource
      */
     public function login(LoginRequest $request): UserResource
@@ -50,7 +50,7 @@ class AuthController extends Controller
             'password' => $request->validated('password'),
         ];
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => 'The provided credentials are incorrect.',
             ]);
@@ -65,9 +65,32 @@ class AuthController extends Controller
     }
 
     /**
+     * Return the current session authentication state.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function session(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user instanceof User) {
+            return response()->json([
+                'authenticated' => false,
+                'user' => null,
+            ]);
+        }
+
+        return response()->json([
+            'authenticated' => true,
+            'user' => (new UserResource($user->load(['orders.items'])))->resolve($request),
+        ]);
+    }
+
+    /**
      * Log out the authenticated user.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout(Request $request): JsonResponse

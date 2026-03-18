@@ -12,47 +12,43 @@ use Illuminate\Support\Facades\DB;
 class ProductService
 {
     /**
-     * @param  string|null  $category
-     * @param  string|null  $search
+     * @param string|null $category
+     * @param string|null $search
      * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product>
      */
     public function listPublic(?string $category = null, ?string $search = null): Collection
     {
-        return Product::query()
-            ->publiclyVisible()
-            ->with(['category', 'images', 'metadata', 'ingredients'])
-            ->when($category !== null && $category !== '', function ($query) use ($category): void {
-                $query->where(function ($categoryQuery) use ($category): void {
-                    $categoryQuery
-                        ->where('category_id', $category)
-                        ->orWhereHas('category', static function ($relatedCategoryQuery) use ($category): void {
-                            $relatedCategoryQuery->where('slug', $category);
-                        });
-                });
-            })
-            ->when($search !== null && $search !== '', function ($query) use ($search): void {
-                $query->where(function ($searchQuery) use ($search): void {
-                    $searchQuery
-                        ->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('position')
-            ->orderBy('name')
-            ->get();
+        $products = Product::query()
+                           ->publiclyVisible()
+                           ->with(['category', 'images', 'metadata', 'ingredients'])
+                           ->when($category !== null && $category !== '' && strtolower($category) !== 'all', function ($query) use ($category): void {
+                               $query->whereHas('category', static function ($categoryQuery) use ($category): void {
+                                   $categoryQuery->where('slug', $category);
+                               });
+                           })
+                           ->orderBy('position')
+                           ->get();
+
+        if ($search !== null && $search !== '') {
+            $products = $products
+                ->filter(fn(Product $product): bool => $this->matchesTranslatedSearch($product, $search))
+                ->values();
+        }
+
+        return $this->sortByPositionAndName($products);
     }
 
     /**
-     * @param  string  $slug
+     * @param string $slug
      * @return \App\Models\Product
      */
     public function findPublicBySlug(string $slug): Product
     {
         return Product::query()
-            ->publiclyVisible()
-            ->with(['category', 'images', 'metadata', 'ingredients'])
-            ->where('slug', $slug)
-            ->firstOrFail();
+                      ->publiclyVisible()
+                      ->with(['category', 'images', 'metadata', 'ingredients'])
+                      ->where('slug', $slug)
+                      ->firstOrFail();
     }
 
     /**
@@ -60,15 +56,16 @@ class ProductService
      */
     public function listAll(): Collection
     {
-        return Product::query()
-            ->with(['category', 'images', 'metadata', 'ingredients'])
-            ->orderBy('position')
-            ->orderBy('name')
-            ->get();
+        return $this->sortByPositionAndName(
+            Product::query()
+                   ->with(['category', 'images', 'metadata', 'ingredients'])
+                   ->orderBy('position')
+                   ->get()
+        );
     }
 
     /**
-     * @param  array  $validated
+     * @param array $validated
      * @return \App\Models\Product
      *
      * @throws \Throwable
@@ -84,7 +81,7 @@ class ProductService
     }
 
     /**
-     * @param  \App\Models\Product  $product
+     * @param \App\Models\Product $product
      * @return \App\Models\Product
      */
     public function loadDetails(Product $product): Product
@@ -93,8 +90,8 @@ class ProductService
     }
 
     /**
-     * @param  \App\Models\Product  $product
-     * @param  array  $validated
+     * @param \App\Models\Product $product
+     * @param array $validated
      * @return \App\Models\Product
      *
      * @throws \Throwable
@@ -110,7 +107,7 @@ class ProductService
     }
 
     /**
-     * @param  \App\Models\Product  $product
+     * @param \App\Models\Product $product
      * @return void
      */
     public function delete(Product $product): void
@@ -119,8 +116,8 @@ class ProductService
     }
 
     /**
-     * @param  \App\Models\Product  $product
-     * @param  array  $validated
+     * @param \App\Models\Product $product
+     * @param array $validated
      * @return void
      */
     private function syncRelations(Product $product, array $validated): void
@@ -129,7 +126,7 @@ class ProductService
             $product->metadata()->delete();
             $product->metadata()->createMany(
                 collect($validated['metadata'] ?? [])
-                    ->map(fn (array $entry): array => [
+                    ->map(fn(array $entry): array => [
                         'type' => $entry['type'],
                         'value' => $entry['value'] ?? '',
                     ])
@@ -141,7 +138,7 @@ class ProductService
             $product->images()->delete();
             $product->images()->createMany(
                 collect($validated['images'] ?? [])
-                    ->map(fn (array $entry, int $index): array => [
+                    ->map(fn(array $entry, int $index): array => [
                         'image_url' => $entry['image_url'],
                         'position' => $entry['position'] ?? $index,
                     ])
@@ -153,7 +150,7 @@ class ProductService
             $product->productIngredients()->delete();
             $product->productIngredients()->createMany(
                 collect($validated['ingredients'] ?? [])
-                    ->map(fn (array $entry, int $index): array => [
+                    ->map(fn(array $entry, int $index): array => [
                         'ingredient_id' => $entry['ingredient_id'],
                         'quantity' => $entry['quantity'],
                         'position' => $entry['position'] ?? $index,
@@ -161,5 +158,38 @@ class ProductService
                     ->all()
             );
         }
+    }
+
+    /**
+     * Check whether a translated product field matches the search term.
+     */
+    private function matchesTranslatedSearch(Product $product, string $search): bool
+    {
+        $needle = mb_strtolower(trim($search));
+
+        if ($needle === '') {
+            return true;
+        }
+
+        return str_contains(mb_strtolower($product->name), $needle)
+            || str_contains(mb_strtolower((string)$product->description), $needle)
+            || str_contains(mb_strtolower($product->slug), $needle)
+            || str_contains(mb_strtolower((string)$product->sku), $needle)
+            || str_contains(mb_strtolower((string)optional($product->category)->name), $needle);
+    }
+
+    /**
+     * Sort products by position first and localized name second.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product>
+     */
+    private function sortByPositionAndName(Collection $products): Collection
+    {
+        $sorted = $products->sortBy(
+            fn(Product $p): string => sprintf('%05d-%s', $p->position, mb_strtolower($p->name))
+        );
+
+        return new \Illuminate\Database\Eloquent\Collection($sorted->values());
     }
 }

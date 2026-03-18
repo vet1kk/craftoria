@@ -1,168 +1,96 @@
 import { Injectable } from '@angular/core';
 
-import { ClientRegistrationData, OrderHistoryItem, OrderLineItem, User } from '../models';
-import { DataService } from './data.service';
+import { OrderHistoryItem, OrderLineItem, OrderStatus, User } from '../models';
 
-// TODO(api): Remove this localStorage fallback once user/auth/order data comes from backend endpoints.
-const USERS_STORAGE_KEY = 'craftoria.mock-users';
+export interface ApiOrderItem {
+  id: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  notes?: string | null;
+}
+
+interface ApiOrder {
+  id: string;
+  order_number: string;
+  status: string;
+  customer_phone?: string | null;
+  currency: string;
+  total_amount: number;
+  placed_at?: string | null;
+  created_at?: string | null;
+  items?: ApiOrderItem[];
+}
+
+export interface ApiUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'admin' | 'client';
+  created_at?: string | null;
+  orders?: ApiOrder[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly users: User[];
-
-  constructor(private readonly dataService: DataService) {
-    this.users = this.loadUsers();
-  }
-
-  // TODO(api): This local credential search is temporary until AuthService uses a backend login endpoint.
-  findUserByCredentials(email: string, password: string): User | null {
-    const normalizedEmail = this.normalizeEmail(email);
-    const matchedUser = this.users.find((user) => this.normalizeEmail(user.email) === normalizedEmail && user.password === password);
-
-    if (!matchedUser) {
-      return null;
-    }
-
-    return this.copyUser(matchedUser);
-  }
-
-  // TODO(api): Replace local user creation with the backend registration endpoint.
-  createClientUser(registrationData: ClientRegistrationData): User {
-    const normalizedEmail = this.normalizeEmail(registrationData.email);
-    const normalizedPhone = registrationData.phone.trim();
-
-    if (this.hasUserWithEmail(normalizedEmail)) {
-      throw new Error('Обліковий запис із таким email вже існує.');
-    }
-
-    const createdUser: User = {
-      id: `client-${Date.now()}`,
-      fullName: registrationData.fullName.trim(),
-      email: normalizedEmail,
-      password: registrationData.password,
-      phone: normalizedPhone,
-      role: 'client',
-      joinedAt: new Date().toISOString(),
-      orders: []
-    };
-
-    this.users.push(createdUser);
-    this.persistUsers();
-
-    return this.copyUser(createdUser);
-  }
-
-  // TODO(api): Replace this local order-history mutation with a backend user/profile or order-history update flow.
-  addOrderToUser(userId: string, order: OrderHistoryItem): User | null {
-    const userIndex = this.users.findIndex((user) => user.id === userId);
-
-    if (userIndex === -1) {
-      return null;
-    }
-
-    const updatedUser: User = {
-      ...this.users[userIndex],
-      orders: [this.copyOrder(order), ...this.users[userIndex].orders.map((existingOrder) => this.copyOrder(existingOrder))]
-    };
-
-    this.users[userIndex] = updatedUser;
-    this.persistUsers();
-
-    return this.copyUser(updatedUser);
-  }
-
-  private loadUsers(): User[] {
-    const storedUsers = this.readStoredUsers();
-
-    if (!storedUsers) {
-      return this.getSeedUsers();
-    }
-
-    return this.localizeUsers(storedUsers);
-  }
-
-  // TODO(api): Delete this localStorage reader after switching to backend-backed persistence.
-  private readStoredUsers(): User[] | null {
-    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
-
-    if (!storedUsers) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(storedUsers) as User[];
-    } catch {
-      return null;
-    }
-  }
-
-  // TODO(api): Delete this localStorage writer after switching to backend-backed persistence.
-  private persistUsers(): void {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(this.users));
-  }
-
-  // TODO(api): Replace seeded mock users with a backend "current user/users" data source where needed.
-  private getSeedUsers(): User[] {
-    return this.copyUsers(this.dataService.users);
-  }
-
-  private copyUsers(users: readonly User[]): User[] {
-    return users.map((user) => this.copyUser(user));
-  }
-
-  private copyUser(user: User): User {
+  mapUser(user: ApiUser): User {
     return {
-      ...user,
-      orders: user.orders.map((order) => this.copyOrder(order))
+      id: user.id,
+      fullName: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      joinedAt: user.created_at ?? new Date().toISOString(),
+      orders: [...(user.orders ?? [])]
+        .map((order) => this.mapOrder(order))
+        .sort((left, right) => Date.parse(right.placedAt) - Date.parse(left.placedAt))
     };
   }
 
-  private copyOrder(order: OrderHistoryItem): OrderHistoryItem {
+  private mapOrder(order: ApiOrder): OrderHistoryItem {
     return {
-      ...order,
-      items: order.items.map((item: OrderLineItem) => ({ ...item }))
+      id: order.order_number,
+      orderId: order.id,
+      placedAt: order.placed_at ?? order.created_at ?? new Date().toISOString(),
+      status: this.normalizeOrderStatus(order.status),
+      phone: order.customer_phone ?? 'Самовивіз',
+      totalPrice: order.total_amount,
+      currency: this.formatCurrency(order.currency),
+      items: (order.items ?? []).map((item) => this.mapOrderItem(item))
     };
   }
 
-  // TODO(api): Remove this migration/localization shim once stored user/order payloads
-  // already come from localized backend responses.
-  private localizeUsers(users: readonly User[]): User[] {
-    const defaultUsersById = new Map(this.dataService.users.map((user) => [user.id, user]));
-    const menuItemsById = new Map(this.dataService.menuItems.map((item) => [item.id, item]));
-
-    return this.copyUsers(users).map((user) => {
-      const localizedDefaultUser = defaultUsersById.get(user.id);
-      const localizedOrders = user.orders.map((order) => ({
-        ...order,
-        phone: order.phone === 'Pickup counter' ? 'Самовивіз' : order.phone,
-        items: order.items.map((item) => ({
-          ...item,
-          name: menuItemsById.get(item.id)?.name ?? item.name
-        }))
-      }));
-
-      if (!localizedDefaultUser) {
-        return {
-          ...user,
-          orders: localizedOrders
-        };
-      }
-
-      return {
-        ...user,
-        fullName: localizedDefaultUser.fullName,
-        orders: localizedOrders
-      };
-    });
+  private mapOrderItem(item: ApiOrderItem): OrderLineItem {
+    return {
+      id: item.id,
+      productId: item.product_id,
+      name: item.product_name,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      lineTotal: item.line_total,
+      notes: item.notes ?? undefined
+    };
   }
 
-  private hasUserWithEmail(email: string): boolean {
-    return this.users.some((user) => this.normalizeEmail(user.email) === email);
+  private normalizeOrderStatus(status: string): OrderStatus {
+    switch (status) {
+      case 'confirmed':
+      case 'preparing':
+      case 'ready':
+      case 'delivered':
+      case 'cancelled':
+        return status;
+      default:
+        return 'pending';
+    }
   }
 
-  private normalizeEmail(email: string): string {
-    return email.trim().toLowerCase();
+  private formatCurrency(currencyCode: string): string {
+    return currencyCode === 'UAH' ? 'грн' : currencyCode;
   }
 }

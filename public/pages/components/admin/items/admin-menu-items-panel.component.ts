@@ -1,16 +1,19 @@
-import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
 import { Category, MenuItem } from '../../../../models';
+import { TranslatePipe } from '../../../../pipes/translate.pipe';
+import { I18nService } from '../../../../services';
 
 @Component({
   selector: 'app-admin-menu-items-panel',
   standalone: true,
-  imports: [NgOptimizedImage],
+  imports: [TranslatePipe],
   templateUrl: './admin-menu-items-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminMenuItemsPanelComponent {
+  private readonly i18n = inject(I18nService);
+
   readonly menuItems = input.required<MenuItem[]>();
   readonly categories = input.required<Category[]>();
   readonly currency = input.required<string>();
@@ -19,6 +22,6 @@ export class AdminMenuItemsPanelComponent {
   );
 
   getCategoryName(categoryId: string): string {
-    return this.categoriesById().get(categoryId) ?? 'Невідомо';
+    return this.categoriesById().get(categoryId) ?? this.i18n.translate('ui.admin.unknownCategory');
   }
 }

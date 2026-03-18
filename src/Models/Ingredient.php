@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Builders\IngredientBuilder;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Concerns\HasTranslationConfig;
+use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,8 +41,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Ingredient extends Model
 {
     use HasFactory;
+    use HasTranslationConfig;
+    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
+
+    protected ?string $translationPrefix = 'catalog.ingredients';
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $translatableFields = ['name'];
 
     protected $fillable = [
         'name',

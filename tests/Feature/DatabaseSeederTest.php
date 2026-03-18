@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature;
+namespace Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +16,7 @@ class DatabaseSeederTest extends TestCase
         $this->seed();
 
         $this->assertDatabaseCount('users', 13);
-        $this->assertDatabaseCount('categories', 6);
+        $this->assertDatabaseCount('categories', 7);
         $this->assertDatabaseCount('ingredients', 24);
         $this->assertDatabaseCount('orders', 18);
 

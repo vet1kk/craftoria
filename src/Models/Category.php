@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Builders\CategoryBuilder;
+use App\Models\Concerns\HasTranslationConfig;
+use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +28,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $image_url
  * @property int $position
  * @property bool $is_active
+ * @property bool $is_system
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -34,8 +37,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Category extends Model
 {
     use HasFactory;
+    use HasTranslationConfig;
+    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
+
+    protected ?string $translationPrefix = 'catalog.categories';
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $translatableFields = ['name'];
 
     protected $fillable = [
         'name',
@@ -44,6 +56,7 @@ class Category extends Model
         'image_url',
         'position',
         'is_active',
+        'is_system',
     ];
 
     /**
@@ -56,6 +69,7 @@ class Category extends Model
         return [
             'position' => 'integer',
             'is_active' => 'boolean',
+            'is_system' => 'boolean',
         ];
     }
 

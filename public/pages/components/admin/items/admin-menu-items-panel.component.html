@@ -1,16 +1,17 @@
 <div class="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm">
   <div class="flex flex-col items-start gap-2 border-b border-stone-100 bg-stone-50 p-6 sm:flex-row sm:items-center sm:justify-between">
-    <h2 class="text-lg font-bold text-stone-700">Позиції меню</h2>
-    <span class="text-sm text-stone-500">Лише перегляд, доки не підключено backend API</span>
+    <h2 class="text-lg font-bold text-stone-700">{{ 'ui.admin.itemsTitle' | t }}</h2>
+    <span class="text-sm text-stone-500">{{ 'ui.admin.viewOnlyHint' | t }}</span>
   </div>
 
   <div>
     @for (item of menuItems(); track item.id) {
       <div class="flex flex-col gap-4 p-4 transition-colors hover:bg-stone-50 sm:flex-row sm:items-center">
-        <img [ngSrc]="item.imageUrl"
+        <img [src]="item.imageUrl"
              [alt]="item.name"
              width="120"
              height="120"
+             loading="lazy"
              class="h-12 w-12 rounded-lg bg-stone-200 object-cover">
         <div class="min-w-0 flex-1">
           <h3 class="truncate font-medium text-stone-800">{{ item.name }}</h3>
@@ -19,11 +20,11 @@
             <span>•</span>
             <span>{{ item.price }} {{ currency() }}</span>
             @if (!item.available) {
-              <span class="font-bold text-red-500">• Немає в наявності</span>
+              <span class="font-bold text-red-500">• {{ 'ui.admin.outOfStock' | t }}</span>
             }
           </div>
         </div>
-        <span class="text-xs font-medium uppercase tracking-wide text-stone-400 sm:text-right">Керується API</span>
+        <span class="text-xs font-medium uppercase tracking-wide text-stone-400 sm:text-right">{{ 'ui.admin.managedByApi' | t }}</span>
       </div>
     }
   </div>

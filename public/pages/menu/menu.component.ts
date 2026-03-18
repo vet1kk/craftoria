@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, DataService } from '../../services';
 import { MenuCategoryFilterComponent, MenuHeroComponent, MenuItemCardComponent } from '../components';
 
@@ -7,23 +8,34 @@ import { MenuCategoryFilterComponent, MenuHeroComponent, MenuItemCardComponent }
   standalone: true,
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
-  imports: [MenuHeroComponent, MenuCategoryFilterComponent, MenuItemCardComponent],
+  imports: [MenuHeroComponent, MenuCategoryFilterComponent, MenuItemCardComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MenuComponent {
   readonly dataService = inject(DataService);
   readonly cartService = inject(CartService);
-  readonly selectedCategory = signal<string | null>(null);
+  readonly selectedCategorySlug = signal('all');
 
   readonly filteredItems = computed(() => {
-    const selectedCategory = this.selectedCategory();
+    const selectedSlug = this.selectedCategorySlug();
+    const menuItems = this.dataService.menuItems();
 
-    if (!selectedCategory) {
-      return this.dataService.menuItems;
+    if (!selectedSlug || selectedSlug === 'all') {
+      return menuItems;
     }
 
-    return this.dataService
-      .menuItems
-      .filter((item) => item.categoryId === selectedCategory);
+    const selectedCategory = this.dataService.categories().find((cat) => cat.slug === selectedSlug);
+
+    if (!selectedCategory) {
+      return menuItems;
+    }
+
+    return menuItems.filter((item) => item.categoryId === selectedCategory.id);
   });
+
+  readonly showCategories = computed(() => this.dataService.menuItems().length > 0);
+
+  constructor() {
+    void this.dataService.ensureCatalogLoaded();
+  }
 }

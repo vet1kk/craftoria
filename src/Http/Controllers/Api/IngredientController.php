@@ -23,7 +23,10 @@ class IngredientController extends Controller
         $this->authorize('viewAny', Ingredient::class);
 
         return IngredientResource::collection(
-            Ingredient::query()->orderBy('name')->get()
+            Ingredient::query()
+                ->get()
+                ->sortBy(fn (Ingredient $ingredient): string => mb_strtolower($ingredient->name))
+                ->values()
         );
     }
 

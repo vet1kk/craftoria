@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Ingredient;
+use App\Traits\ResolvesTranslatedValue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin \App\Models\Product */
 class ProductResource extends JsonResource
 {
+    use ResolvesTranslatedValue;
+
     /**
      * Transform the resource into an array.
      *
@@ -19,26 +21,7 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $ingredientPayload = $this->whenLoaded('ingredients', function () {
-            return $this->ingredients->map(function (Ingredient $ingredient): array {
-                return [
-                    'id' => $ingredient->id,
-                    'name' => $ingredient->name,
-                    'slug' => $ingredient->slug,
-                    'unit' => $ingredient->unit,
-                    'quantity' => (float) $ingredient->pivot->quantity,
-                    'position' => (int) $ingredient->pivot->position,
-                    'nutrition_per_100' => [
-                        'calories' => $ingredient->calories,
-                        'proteins' => (float) $ingredient->proteins,
-                        'fats' => (float) $ingredient->fats,
-                        'carbs' => (float) $ingredient->carbs,
-                    ],
-                ];
-            })->values();
-        });
-
-        return [
+        return $this->translateResource([
             'id' => $this->id,
             'category_id' => $this->category_id,
             'slug' => $this->slug,
@@ -47,9 +30,38 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'price' => (float) $this->price,
             'featured_image_url' => $this->featured_image_url,
-            'gallery_image_urls' => $this->whenLoaded('images', fn () => $this->images->pluck('image_url')->values()),
-            'metadata' => $this->whenLoaded('metadata', fn () => $this->metadata->pluck('value', 'type')),
-            'ingredients' => $ingredientPayload,
+            'gallery_image_urls' => $this->whenLoaded('images', fn () => $this->images->pluck('image_url')->values()->all()),
+            'metadata' => $this->whenLoaded('metadata', function (): array {
+                return $this->metadata->mapWithKeys(function ($metadata): array {
+                    $metadata->setRelation('product', $this->resource);
+                    $translatedMetadata = $this->translatePayloadForModel([
+                        'type' => $metadata->type,
+                        'value' => $metadata->value,
+                    ], $metadata);
+
+                    return [
+                        $translatedMetadata['type'] => $translatedMetadata['value'],
+                    ];
+                })->all();
+            }),
+            'ingredients' => $this->whenLoaded('ingredients', function () {
+                return $this->ingredients->map(function ($ingredient): array {
+                    return $this->translatePayloadForModel([
+                        'id' => $ingredient->id,
+                        'name' => $ingredient->name,
+                        'slug' => $ingredient->slug,
+                        'unit' => $ingredient->unit,
+                        'quantity' => (float) $ingredient->pivot->quantity,
+                        'position' => (int) $ingredient->pivot->position,
+                        'nutrition_per_100' => [
+                            'calories' => $ingredient->calories,
+                            'proteins' => (float) $ingredient->proteins,
+                            'fats' => (float) $ingredient->fats,
+                            'carbs' => (float) $ingredient->carbs,
+                        ],
+                    ], $ingredient);
+                })->values()->all();
+            }),
             'shelf_life' => $this->shelf_life,
             'position' => $this->position,
             'stock_quantity' => $this->stock_quantity,
@@ -59,13 +71,13 @@ class ProductResource extends JsonResource
             'nutrition_totals' => $this->whenLoaded('ingredients', fn () => $this->calculateNutritionTotals()),
             'created_at' => $this->created_at?->toAtomString(),
             'updated_at' => $this->updated_at?->toAtomString(),
-        ];
+        ]);
     }
 
     /**
      * Calculate aggregate nutrition totals for the product.
      *
-     * @return array
+     * @return array{calories:int, proteins:float, fats:float, carbs:float}
      */
     private function calculateNutritionTotals(): array
     {

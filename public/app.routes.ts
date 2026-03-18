@@ -9,7 +9,7 @@ export const appRoutes: Routes = [
       import('./pages/menu/menu.component').then((module) => module.MenuComponent)
   },
   {
-    path: 'item/:id',
+    path: 'item/:slug',
     loadComponent: () =>
       import('./pages/item-detail/item-detail.component').then((module) => module.ItemDetailComponent)
   },

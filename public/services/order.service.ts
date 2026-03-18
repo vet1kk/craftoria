@@ -1,52 +1,44 @@
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
-import { OrderHistoryItem, OrderRequest } from '../models';
+import { environment } from '../environments/environment';
+import { OrderRequest } from '../models';
+import { extractApiErrorMessage } from './api-error';
 import { AuthService } from './auth.service';
-import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userService: UserService
-  ) {}
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
-  // TODO(api): Replace this mock order creation with a backend order submission endpoint.
-  submitOrder(orderRequest: OrderRequest): Promise<void> {
-    const orderHistoryItem: OrderHistoryItem = {
-      id: `ORD-${Date.now()}`,
-      placedAt: new Date().toISOString(),
-      status: 'preparing',
-      phone: orderRequest.phone,
-      totalPrice: orderRequest.totalPrice,
-      currency: orderRequest.currency,
-      items: orderRequest.items.map((item) => ({
-        id: item.menuItem.id,
-        name: item.menuItem.name,
-        quantity: item.quantity,
-        unitPrice: item.menuItem.price
-      }))
-    };
-
-    this.recordClientOrder(orderHistoryItem);
-    return Promise.resolve();
-  }
-
-  // TODO(api): Replace this local current-user sync with the backend order response
-  // or a follow-up order-history/profile fetch.
-  private recordClientOrder(order: OrderHistoryItem): void {
+  async submitOrder(orderRequest: OrderRequest): Promise<void> {
     const currentUser = this.authService.currentUser();
 
-    if (!currentUser || currentUser.role !== 'client') {
-      return;
-    }
+    try {
+      await firstValueFrom(
+        this.http.post(`${environment.apiBaseUrl}/orders`, {
+          customer_name: currentUser?.fullName ?? null,
+          customer_email: currentUser?.email ?? null,
+          customer_phone: orderRequest.phone,
+          fulfillment_type: 'pickup',
+          currency: 'UAH',
+          payment_method: 'cash',
+          items: orderRequest.items.map((item) => ({
+            product_id: item.menuItem.id,
+            quantity: item.quantity,
+            notes: item.notes?.trim() || null
+          }))
+        })
+      );
 
-    const updatedUser = this.userService.addOrderToUser(currentUser.id, order);
-
-    if (updatedUser) {
-      this.authService.updateCurrentUser(updatedUser);
+      if (currentUser) {
+        await this.authService.refreshProfile().catch(() => null);
+      }
+    } catch (error: unknown) {
+      throw new Error(extractApiErrorMessage(error, 'Failed to submit the order. Please try again later.'));
     }
   }
 }

@@ -13,12 +13,19 @@ use Illuminate\Database\Seeder;
 class OrderSeeder extends Seeder
 {
     /**
+     * Seed fake orders only if no orders exist.
+     *
      * @return void
      *
      * @throws \Random\RandomException
      */
     public function run(): void
     {
+        // Skip if orders already exist
+        if (Order::query()->exists()) {
+            return;
+        }
+
         /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $customers */
         $customers = User::query()->where('role', 'client')->get();
 

@@ -6,29 +6,29 @@
       </p>
       <h1 class="mt-1 text-2xl font-bold text-stone-800">{{ user().fullName }}</h1>
       <p class="mt-2 text-stone-500">
-        Ви увійшли через мок-акаунт, доки не буде підключено backend-сервіси автентифікації.
+        {{ 'ui.profile.syncHint' | t }}
       </p>
     </div>
   </div>
 
   <div class="mt-8">
     <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-      <p class="text-xs uppercase tracking-wide text-stone-500">Замовлення</p>
+      <p class="text-xs uppercase tracking-wide text-stone-500">{{ 'ui.profile.ordersLabel' | t }}</p>
       <p class="mt-2 text-2xl font-bold text-stone-900">{{ user().orders.length }}</p>
     </div>
   </div>
 
   <dl class="mt-8 space-y-4">
     <div>
-      <dt class="text-sm font-medium text-stone-500">Електронна пошта</dt>
+      <dt class="text-sm font-medium text-stone-500">{{ 'ui.profile.emailLabel' | t }}</dt>
       <dd class="mt-1 text-stone-800">{{ user().email }}</dd>
     </div>
     <div>
-      <dt class="text-sm font-medium text-stone-500">Телефон</dt>
+      <dt class="text-sm font-medium text-stone-500">{{ 'ui.profile.phoneLabel' | t }}</dt>
       <dd class="mt-1 text-stone-800">{{ user().phone }}</dd>
     </div>
     <div>
-      <dt class="text-sm font-medium text-stone-500">Дата реєстрації</dt>
+      <dt class="text-sm font-medium text-stone-500">{{ 'ui.profile.joinedAtLabel' | t }}</dt>
       <dd class="mt-1 text-stone-800">{{ user().joinedAt | date: 'mediumDate' }}</dd>
     </div>
   </dl>
@@ -36,7 +36,7 @@
   @if (isAdmin()) {
     <a routerLink="/admin"
        class="mt-8 inline-flex items-center rounded-xl bg-stone-900 px-4 py-3 font-semibold text-white transition-colors hover:bg-stone-800">
-      Відкрити адмін-панель
+      {{ 'ui.profile.openAdminPanel' | t }}
     </a>
   }
 </section>

@@ -18,6 +18,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string $email
  * @property string $phone
  * @property string $role
+ * @property bool $is_system
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
@@ -27,7 +28,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AuditLog> $auditLogs
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AnalyticsEvent> $analyticsEvents
  */
-#[Fillable(['name', 'email', 'phone', 'role', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'role', 'password', 'is_system'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -41,6 +42,7 @@ class User extends Authenticatable
         'phone',
         'role',
         'password',
+        'is_system',
     ];
 
     /**
@@ -53,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_system' => 'boolean',
         ];
     }
 

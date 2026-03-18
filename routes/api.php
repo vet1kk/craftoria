@@ -24,6 +24,7 @@ Route::post('/orders', [OrderController::class, 'store']);
 Route::post('/analytics/events', [AnalyticsEventController::class, 'store']);
 
 Route::middleware(StartSession::class)->group(function (): void {
+    Route::get('/session', [AuthController::class, 'session']);
     Route::post('/register', [AuthController::class, 'store']);
     Route::post('/login', [AuthController::class, 'login']);
 

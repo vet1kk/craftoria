@@ -6,7 +6,6 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
-  password?: string;
   phone: string;
   role: UserRole;
   joinedAt: string;
@@ -18,9 +17,4 @@ export interface ClientRegistrationData {
   email: string;
   phone: string;
   password: string;
-}
-
-export function toUser(user: User): User {
-  const { password: _password, ...userWithoutSecrets } = user;
-  return userWithoutSecrets;
 }

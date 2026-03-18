@@ -2,16 +2,29 @@
   <a routerLink="/"
      class="inline-flex w-fit items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600">
     <span aria-hidden="true">←</span>
-    <span>Назад до меню</span>
+    <span>{{ 'ui.itemDetail.backToMenu' | t }}</span>
   </a>
 
-  @if (!item()) {
+  @if (isLoading()) {
     <div class="rounded-3xl border border-stone-200 bg-white p-8 text-center shadow-sm sm:p-12">
-      <p class="text-lg font-semibold text-stone-800">Позицію не знайдено</p>
-      <p class="mt-2 text-sm text-stone-500">Можливо, товар був прибраний із меню або посилання застаріло.</p>
+      <p class="text-lg font-semibold text-stone-800">{{ 'ui.itemDetail.loading' | t }}</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="rounded-3xl border border-stone-200 bg-white p-8 text-center shadow-sm sm:p-12">
+      <p class="text-lg font-semibold text-stone-800">{{ 'ui.itemDetail.notFound' | t }}</p>
+      <p class="mt-2 text-sm text-stone-500">{{ loadError() }}</p>
       <a routerLink="/"
          class="mt-6 inline-flex rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-600">
-        Повернутися до каталогу
+        {{ 'ui.itemDetail.backToCatalog' | t }}
+      </a>
+    </div>
+  } @else if (!item()) {
+    <div class="rounded-3xl border border-stone-200 bg-white p-8 text-center shadow-sm sm:p-12">
+      <p class="text-lg font-semibold text-stone-800">{{ 'ui.itemDetail.notFound' | t }}</p>
+      <p class="mt-2 text-sm text-stone-500">{{ 'ui.itemDetail.notFoundHint' | t }}</p>
+      <a routerLink="/"
+         class="mt-6 inline-flex rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-600">
+        {{ 'ui.itemDetail.backToCatalog' | t }}
       </a>
     </div>
   } @else {
@@ -19,7 +32,7 @@
       <section class="flex h-full flex-col gap-6 rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
         <div>
           <span class="inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-            Menu item
+            {{ 'ui.itemDetail.menuItemBadge' | t }}
           </span>
 
           <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -34,7 +47,7 @@
                   [class.text-emerald-700]="item()!.available"
                   [class.bg-red-50]="!item()!.available"
                   [class.text-red-700]="!item()!.available">
-              {{ item()!.available ? 'В наявності' : 'Тимчасово недоступно' }}
+              {{ item()!.available ? ('ui.itemDetail.available' | t) : ('ui.itemDetail.unavailable' | t) }}
             </span>
           </div>
         </div>
@@ -46,7 +59,7 @@
 
         <div class="flex flex-wrap items-end justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 p-5">
           <div>
-            <p class="text-sm text-stone-500">Ціна</p>
+            <p class="text-sm text-stone-500">{{ 'ui.itemDetail.price' | t }}</p>
             <p class="text-3xl font-black text-stone-900">
               {{ item()!.price | number: '1.0-0' }} {{ dataService.appSettings.currency }}
             </p>
@@ -56,13 +69,13 @@
                   [disabled]="!item()!.available"
                   (click)="cartService.addToCart(item()!)"
                   class="rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-stone-300">
-            Додати до кошика
+            {{ 'ui.itemDetail.addToCart' | t }}
           </button>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-[auto_1fr] h-full">
           <div class="flex min-h-44 flex-col rounded-3xl border border-stone-200 bg-stone-50 p-5 sm:min-h-48">
-            <p class="text-sm font-medium text-stone-500">Порція</p>
+            <p class="text-sm font-medium text-stone-500">{{ 'ui.itemDetail.portion' | t }}</p>
             <p class="mt-2 text-xl font-bold text-stone-900">{{ portionLabel() }}</p>
             @if (item()!.servingDetails) {
               <p class="mt-1 text-sm text-stone-500">{{ item()!.servingDetails }}</p>
@@ -70,7 +83,7 @@
           </div>
 
           <div class="flex min-h-44 flex-col rounded-3xl border border-stone-200 bg-stone-50 p-5 sm:min-h-48">
-            <p class="text-sm font-medium text-stone-500">Упаковка</p>
+            <p class="text-sm font-medium text-stone-500">{{ 'ui.itemDetail.packaging' | t }}</p>
             <p class="mt-2 text-sm leading-6 text-stone-700">{{ item()!.packageDetails.packaging }}</p>
           </div>
         </div>
@@ -79,23 +92,23 @@
         <div class="mb-4 flex items-center justify-between gap-3 px-1">
           <div>
             <span class="inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-              Gallery
+              {{ 'ui.itemDetail.galleryBadge' | t }}
             </span>
           </div>
           @if (hasGalleryImages()) {
             <span class="text-sm text-stone-400">{{ selectedImagePosition() }}/{{ galleryImages().length }}</span>
           } @else {
-            <span class="text-sm text-stone-400">Фото скоро з’являться</span>
+            <span class="text-sm text-stone-400">{{ 'ui.itemDetail.photosSoon' | t }}</span>
           }
         </div>
         <div class="relative min-h-80 flex-1 overflow-hidden rounded-3xl bg-stone-100 sm:min-h-105">
           @if (hasGalleryImages()) {
-            <img [ngSrc]="selectedImageUrl()"
+            <img [src]="selectedImageUrl()"
                  (error)="handleImageError(galleryImages()[selectedImageIndex()])"
                  [alt]="item()!.name"
                  width="1200"
                  height="900"
-                 priority
+                 loading="eager"
                  class="absolute inset-0 h-full w-full object-cover">
 
             @if (hasMultipleGalleryImages()) {
@@ -103,13 +116,13 @@
                 <button type="button"
                         (click)="showPreviousImage()"
                         class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xl text-stone-700 shadow-md transition-colors hover:bg-white hover:text-orange-600"
-                        aria-label="Попереднє фото">
+                        [attr.aria-label]="'ui.itemDetail.prevPhoto' | t">
                   ‹
                 </button>
                 <button type="button"
                         (click)="showNextImage()"
                         class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xl text-stone-700 shadow-md transition-colors hover:bg-white hover:text-orange-600"
-                        aria-label="Наступне фото">
+                        [attr.aria-label]="'ui.itemDetail.nextPhoto' | t">
                   ›
                 </button>
               </div>
@@ -119,9 +132,9 @@
               <div class="flex h-18 w-18 items-center justify-center rounded-full bg-white text-3xl shadow-sm">
                 📷
               </div>
-              <p class="mt-5 text-lg font-semibold text-stone-800">Фото ще не додані</p>
+              <p class="mt-5 text-lg font-semibold text-stone-800">{{ 'ui.itemDetail.noPhotosTitle' | t }}</p>
               <p class="mt-2 max-w-sm text-sm leading-6 text-stone-500">
-                Ми оновимо галерею найближчим часом. Поки що можна переглянути склад, поживність і деталі пакування.
+                {{ 'ui.itemDetail.noPhotosHint' | t }}
               </p>
             </div>
           }
@@ -131,7 +144,7 @@
           @if (hasThumbnailOverflow()) {
             <div class="mb-3 px-1">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">
-                Прокрутіть мініатюри, щоб побачити всі фото
+                {{ 'ui.itemDetail.scrollThumbnails' | t }}
               </p>
             </div>
           }
@@ -146,19 +159,20 @@
                           [class.border-orange-500]="selectedImageIndex() === imageIndex"
                           [class.ring-2]="selectedImageIndex() === imageIndex"
                           [class.ring-orange-200]="selectedImageIndex() === imageIndex"
-                          [attr.aria-label]="'Показати фото ' + (imageIndex + 1)">
-                    <img [ngSrc]="resolveImageUrl(slot.imageUrl!)"
+                          [attr.aria-label]="('ui.itemDetail.showPhoto' | t) + ' ' + (imageIndex + 1)">
+                    <img [src]="resolveImageUrl(slot.imageUrl!)"
                          (error)="handleImageError(slot.imageUrl!)"
-                         [alt]="item()!.name + ' фото ' + (imageIndex + 1)"
+                         [alt]="item()!.name + ' ' + ('ui.itemDetail.photo' | t) + ' ' + (imageIndex + 1)"
                          width="280"
                          height="280"
+                         loading="lazy"
                          class="h-full w-full object-cover">
                   </button>
                 } @else {
                   <div class="flex aspect-square snap-start flex-col items-center justify-center rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 px-3 text-center">
                     <span class="text-lg">📷</span>
                     <span class="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400">
-                      Empty slot
+                      {{ 'ui.itemDetail.emptySlot' | t }}
                     </span>
                   </div>
                 }
@@ -175,10 +189,10 @@
           <div class="flex items-center justify-between gap-3">
             <div>
               <span class="inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                Nutrition facts
+                {{ 'ui.itemDetail.nutritionBadge' | t }}
               </span>
-              <h2 class="mt-4 text-2xl font-bold text-stone-900">Харчова цінність</h2>
-              <p class="mt-2 text-sm text-stone-500">Показники вказані на 1 порцію.</p>
+              <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.nutritionTitle' | t }}</h2>
+              <p class="mt-2 text-sm text-stone-500">{{ 'ui.itemDetail.nutritionHint' | t }}</p>
             </div>
             <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-500">
               {{ portionLabel() }}
@@ -187,23 +201,23 @@
 
           <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-2 xl:auto-rows-fr">
             <div class="rounded-3xl border border-orange-100 bg-orange-50/65 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-orange-600">Calories</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-orange-600">{{ 'ui.itemDetail.calories' | t }}</p>
               <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.calories }}</p>
-              <p class="mt-1 text-xs text-stone-500">ккал</p>
+              <p class="mt-1 text-xs text-stone-500">{{ 'ui.itemDetail.kcal' | t }}</p>
             </div>
 
             <div class="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Proteins</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ 'ui.itemDetail.proteins' | t }}</p>
               <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.proteins }}</p>
             </div>
 
             <div class="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Fats</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ 'ui.itemDetail.fats' | t }}</p>
               <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.fats }}</p>
             </div>
 
             <div class="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Carbs</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ 'ui.itemDetail.carbs' | t }}</p>
               <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.carbs }}</p>
             </div>
           </div>
@@ -212,11 +226,11 @@
         <div class="flex h-full flex-col rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
           <div>
             <span class="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-              Packing details
+              {{ 'ui.itemDetail.packingBadge' | t }}
             </span>
-            <h2 class="mt-4 text-2xl font-bold text-stone-900">Деталі пакування</h2>
+            <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.packingTitle' | t }}</h2>
             <p class="mt-2 max-w-xl text-sm leading-6 text-stone-500">
-              Усе, що входить у замовлення, та рекомендації щодо зберігання і подачі.
+              {{ 'ui.itemDetail.packingHint' | t }}
             </p>
           </div>
 
@@ -227,7 +241,7 @@
                   📦
                 </div>
                 <div>
-                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-sky-700/80">Що входить</p>
+                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-sky-700/80">{{ 'ui.itemDetail.contents' | t }}</p>
                   <p class="mt-2 text-sm leading-6 text-stone-600">{{ item()!.packageDetails.contents }}</p>
                 </div>
               </div>
@@ -239,7 +253,7 @@
                   ❄️
                 </div>
                 <div>
-                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700/80">Зберігання</p>
+                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700/80">{{ 'ui.itemDetail.storage' | t }}</p>
                   <p class="mt-2 text-sm leading-6 text-stone-600">{{ item()!.packageDetails.storage }}</p>
                 </div>
               </div>
@@ -251,7 +265,7 @@
                   ⏳
                 </div>
                 <div>
-                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-amber-700/80">Термін придатності</p>
+                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-amber-700/80">{{ 'ui.itemDetail.shelfLife' | t }}</p>
                   <p class="mt-2 text-sm leading-6 text-stone-600">{{ item()!.packageDetails.shelfLife }}</p>
                 </div>
               </div>
@@ -264,11 +278,11 @@
         <div class="flex h-full w-full flex-col rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
           <div>
             <span class="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-600">
-              Ingredient breakdown
+              {{ 'ui.itemDetail.ingredientsBadge' | t }}
             </span>
-            <h2 class="mt-4 text-2xl font-bold text-stone-900">Склад</h2>
+            <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.ingredientsTitle' | t }}</h2>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
-              Кожен інгредієнт має власну кількість і впливає на загальну поживність страви.
+              {{ 'ui.itemDetail.ingredientsHint' | t }}
             </p>
           </div>
 
@@ -284,23 +298,23 @@
                         {{ entry.quantityLabel }}
                       </span>
                     <span class="inline-flex rounded-full border border-orange-100 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 w-fit">
-                    {{ entry.nutrition.calories }} ккал
+                    {{ entry.nutrition.calories }} {{ 'ui.itemDetail.kcal' | t }}
                   </span>
                   </div>
                 </div>
 
                 <div class="mt-5 grid grid-cols-3 gap-2.5">
                   <div class="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600/80">Білки</p>
-                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.proteins }} г</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600/80">{{ 'ui.itemDetail.proteins' | t }}</p>
+                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.proteins }} {{ 'ui.itemDetail.grams' | t }}</p>
                   </div>
                   <div class="rounded-2xl border border-amber-100 bg-amber-50/70 px-3 py-2.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-600/80">Жири</p>
-                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.fats }} г</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-600/80">{{ 'ui.itemDetail.fats' | t }}</p>
+                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.fats }} {{ 'ui.itemDetail.grams' | t }}</p>
                   </div>
                   <div class="rounded-2xl border border-sky-100 bg-sky-50/70 px-3 py-2.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-sky-600/80">Вугл.</p>
-                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.carbs }} г</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-sky-600/80">{{ 'ui.itemDetail.carbs' | t }}</p>
+                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.carbs }} {{ 'ui.itemDetail.grams' | t }}</p>
                   </div>
                 </div>
               </div>

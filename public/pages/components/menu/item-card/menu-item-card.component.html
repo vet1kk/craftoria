@@ -1,23 +1,23 @@
-<article class="group flex cursor-pointer flex-col gap-4 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md sm:flex-row"
+<article class="group flex h-full cursor-pointer flex-col gap-4 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md sm:flex-row"
          (click)="openDetails()"
          (keydown.enter)="openDetails()"
          (keydown.space)="openDetails(); $event.preventDefault()"
          tabindex="0"
-         [attr.aria-label]="'Відкрити деталі для ' + item().name">
+         [attr.aria-label]="itemAriaLabel()">
   <div class="relative aspect-4/3 w-full shrink-0 overflow-hidden rounded-xl bg-stone-100 sm:h-32 sm:w-32 sm:aspect-square">
     <img loading="lazy"
-         [ngSrc]="item().imageUrl"
+         [src]="item().imageUrl"
          [alt]="item().name"
          width="320"
          height="240"
          class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110">
     @if (!item().available) {
       <div class="absolute inset-0 flex items-center justify-center bg-black/60">
-        <span class="rounded bg-red-500 px-2 py-1 text-xs font-bold text-white">Немає в наявності</span>
+        <span class="rounded bg-red-500 px-2 py-1 text-xs font-bold text-white">{{ 'ui.itemCard.outOfStock' | t }}</span>
       </div>
     }
     <div class="pointer-events-none absolute inset-x-3 bottom-3 flex translate-y-2 items-center justify-between rounded-full bg-white/90 px-3 py-2 text-xs font-semibold text-stone-700 opacity-0 shadow-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-      <span>Відкрити деталі</span>
+      <span>{{ 'ui.itemCard.openDetails' | t }}</span>
       <span aria-hidden="true">→</span>
     </div>
   </div>
@@ -36,14 +36,14 @@
     <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div class="flex flex-col gap-1">
         <span class="text-lg font-bold text-stone-900">{{ item().price }} {{ currency() }}</span>
-        <span class="text-xs text-stone-500">Порція: {{ portionLabel() }}</span>
+        <span class="text-xs text-stone-500">{{ 'ui.itemCard.portion' | t }} {{ portionLabel() }}</span>
       </div>
       <div class="flex w-full sm:w-auto">
         <button type="button"
                 [disabled]="!item().available"
                 (click)="addToCart.emit(item()); $event.stopPropagation()"
                 class="w-full rounded-lg bg-orange-100 px-3 py-2 text-sm font-semibold text-orange-700 transition-all hover:bg-orange-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 sm:w-auto sm:px-4">
-          <span>Додати +</span>
+          <span class="text-nowrap">{{ 'ui.itemCard.addToCart' | t }}</span>
         </button>
       </div>
     </div>

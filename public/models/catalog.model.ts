@@ -4,9 +4,12 @@ export interface AppSettings {
 
 export interface Category {
   id: string;
+  slug: string;
   name: string;
   icon: string;
   imageUrl: string;
+  position: number;
+  isActive: boolean;
 }
 
 export interface NutritionFacts {
@@ -20,14 +23,17 @@ export type IngredientUnit = 'g' | 'ml';
 
 export interface Ingredient {
   id: string;
+  slug: string;
   name: string;
   unit: IngredientUnit;
+  position: number;
   nutritionPer100: NutritionFacts;
 }
 
 export interface MenuItemIngredient {
   ingredientId: string;
   quantity: number;
+  position: number;
 }
 
 export interface ResolvedMenuItemIngredient {
@@ -46,6 +52,8 @@ export interface PackageDetails {
 
 export interface MenuItem {
   id: string;
+  slug: string;
+  sku: string;
   categoryId: string;
   name: string;
   description: string;
@@ -55,5 +63,10 @@ export interface MenuItem {
   ingredients: MenuItemIngredient[];
   servingDetails?: string;
   packageDetails: PackageDetails;
+  nutritionTotals?: NutritionFacts;
   available: boolean;
+  isActive: boolean;
+  stockQuantity: number;
+  reorderLevel: number;
+  shelfLife?: string;
 }
