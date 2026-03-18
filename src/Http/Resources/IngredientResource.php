@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/** @mixin \App\Models\Ingredient */
+class IngredientResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'unit' => $this->unit,
+            'nutrition_per_100' => [
+                'calories' => $this->calories,
+                'proteins' => (float) $this->proteins,
+                'fats' => (float) $this->fats,
+                'carbs' => (float) $this->carbs,
+            ],
+            'cost_amount' => (float) $this->cost_amount,
+            'is_active' => $this->is_active,
+            'created_at' => $this->created_at?->toAtomString(),
+            'updated_at' => $this->updated_at?->toAtomString(),
+        ];
+    }
+}
