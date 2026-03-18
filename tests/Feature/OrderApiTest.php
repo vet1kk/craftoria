@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature;
+namespace Feature;
 
 use App\Models\Category;
 use App\Models\Product;

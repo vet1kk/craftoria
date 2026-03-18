@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Unit;
 
 use App\Models\Category;
 use App\Models\Ingredient;
@@ -23,7 +23,7 @@ class PolicyTest extends TestCase
 
     public function test_category_policy_rules(): void
     {
-        $policy = new CategoryPolicy;
+        $policy = new CategoryPolicy();
         $admin = User::factory()->make(['role' => 'admin']);
         $client = User::factory()->make(['role' => 'client']);
         $activeCategory = Category::factory()->make(['is_active' => true]);
@@ -41,7 +41,7 @@ class PolicyTest extends TestCase
 
     public function test_ingredient_policy_rules(): void
     {
-        $policy = new IngredientPolicy;
+        $policy = new IngredientPolicy();
         $admin = User::factory()->make(['role' => 'admin']);
         $client = User::factory()->make(['role' => 'client']);
         $ingredient = Ingredient::factory()->make();
@@ -57,7 +57,7 @@ class PolicyTest extends TestCase
 
     public function test_product_policy_rules(): void
     {
-        $policy = new ProductPolicy;
+        $policy = new ProductPolicy();
         $admin = User::factory()->make(['role' => 'admin']);
         $client = User::factory()->make(['role' => 'client']);
         $publicProduct = Product::factory()->make(['is_active' => true, 'is_available' => true]);
@@ -75,7 +75,7 @@ class PolicyTest extends TestCase
 
     public function test_order_policy_rules(): void
     {
-        $policy = new OrderPolicy;
+        $policy = new OrderPolicy();
         $admin = User::factory()->make(['role' => 'admin']);
         $client = User::factory()->make(['role' => 'client', 'id' => '11111111-1111-1111-1111-111111111111']);
         $otherClient = User::factory()->make(['role' => 'client', 'id' => '22222222-2222-2222-2222-222222222222']);
@@ -94,7 +94,7 @@ class PolicyTest extends TestCase
 
     public function test_user_policy_rules(): void
     {
-        $policy = new UserPolicy;
+        $policy = new UserPolicy();
         $admin = User::factory()->make(['role' => 'admin']);
         $user = User::factory()->make(['id' => '11111111-1111-1111-1111-111111111111']);
         $sameUser = User::factory()->make(['id' => '11111111-1111-1111-1111-111111111111']);

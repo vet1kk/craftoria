@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature;
+namespace Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,6 +56,32 @@ class AuthApiTest extends TestCase
 
         $this->getJson('/api/profile')
              ->assertUnauthorized();
+    }
+
+    public function test_it_returns_session_state_without_unauthorized_response(): void
+    {
+        $this->getJson('/api/session')
+            ->assertOk()
+            ->assertJson([
+                'authenticated' => false,
+                'user' => null,
+            ]);
+
+        $user = User::factory()->create([
+            'email' => 'session@example.test',
+            'password' => 'secret123',
+        ]);
+
+        $this->postJson('/api/login', [
+            'email' => 'session@example.test',
+            'password' => 'secret123',
+        ])->assertOk();
+
+        $this->getJson('/api/session')
+            ->assertOk()
+            ->assertJsonPath('authenticated', true)
+            ->assertJsonPath('user.id', $user->getKey())
+            ->assertJsonPath('user.email', 'session@example.test');
     }
 
     public function test_it_rejects_invalid_credentials(): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Unit;
 
 use App\Models\Category;
 use App\Models\Ingredient;
@@ -43,6 +43,9 @@ class ProductServiceTest extends TestCase
         $this->assertTrue($result->first()->is($match));
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function test_it_creates_updates_and_deletes_products_with_relations(): void
     {
         $service = app(ProductService::class);

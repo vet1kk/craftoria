@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Unit;
 
 use App\Models\Category;
 use App\Models\Order;
@@ -17,6 +17,9 @@ class OrderServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * @throws \Throwable
+     */
     public function test_it_creates_and_lists_orders(): void
     {
         $service = app(OrderService::class);
@@ -54,6 +57,9 @@ class OrderServiceTest extends TestCase
         $this->assertTrue($service->loadDetails($order)->relationLoaded('items'));
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function test_it_rejects_unavailable_products(): void
     {
         $service = app(OrderService::class);
