@@ -18,7 +18,11 @@ class ProductUpsertRequest extends AdminRequest
         $productId = $this->route('product')?->getKey();
 
         return [
-            'category_id' => ['required', 'uuid', 'exists:categories,id'],
+            'category_id' => [
+                'required',
+                'uuid',
+                Rule::exists('categories', 'id')->whereNull('deleted_at'),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('products', 'slug')->ignore($productId)],
             'sku' => ['nullable', 'string', 'max:255', Rule::unique('products', 'sku')->ignore($productId)],
@@ -41,7 +45,7 @@ class ProductUpsertRequest extends AdminRequest
             'ingredients.*.ingredient_id' => [
                 'required_with:ingredients',
                 'uuid',
-                'exists:ingredients,id',
+                Rule::exists('ingredients', 'id')->whereNull('deleted_at'),
                 'distinct:strict',
             ],
             'ingredients.*.quantity' => ['required_with:ingredients', 'numeric', 'min:0'],

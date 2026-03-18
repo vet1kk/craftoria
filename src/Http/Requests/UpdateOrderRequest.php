@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+
 class UpdateOrderRequest extends AdminRequest
 {
     /**
@@ -14,15 +16,15 @@ class UpdateOrderRequest extends AdminRequest
     public function rules(): array
     {
         return [
-            'status' => ['sometimes', 'string', 'max:50'],
-            'fulfillment_type' => ['sometimes', 'string', 'max:50'],
+            'status' => ['sometimes', 'string', Rule::in(['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'])],
+            'fulfillment_type' => ['sometimes', 'string', Rule::in(['delivery', 'pickup'])],
             'customer_name' => ['sometimes', 'string', 'max:255'],
             'customer_email' => ['nullable', 'email', 'max:255'],
             'customer_phone' => ['sometimes', 'string', 'max:40'],
             'currency' => ['sometimes', 'string', 'size:3'],
             'customer_notes' => ['nullable', 'string'],
-            'payment_method' => ['nullable', 'string', 'max:50'],
-            'payment_status' => ['sometimes', 'string', 'max:50'],
+            'payment_method' => ['nullable', 'string', Rule::in(['cash', 'card'])],
+            'payment_status' => ['sometimes', 'string', Rule::in(['pending', 'paid', 'failed', 'refunded'])],
             'payment_reference' => ['nullable', 'string', 'max:255'],
             'delivery_address_line_1' => ['nullable', 'string', 'max:255'],
             'delivery_address_line_2' => ['nullable', 'string', 'max:255'],
