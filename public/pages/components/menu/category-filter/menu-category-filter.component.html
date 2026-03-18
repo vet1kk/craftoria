@@ -12,13 +12,15 @@
               <span class="flex h-7 w-7 items-center justify-center rounded-full bg-orange-100 text-sm">
                 {{ category.icon }}
               </span>
-            } @else {
+            } @else if (category.imageUrl) {
               <img [src]="category.imageUrl"
                    [alt]="category.name"
                    width="24"
                    height="24"
                    loading="lazy"
                    class="h-7 w-7 rounded-full border border-white/50 object-cover">
+            } @else {
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-sm">📷</span>
             }
             <span>{{ category.name }}</span>
           </button>

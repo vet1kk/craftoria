@@ -21,6 +21,10 @@ export class MenuItemCardComponent {
   readonly addToCart = output<MenuItem>();
   readonly portionLabel = computed(() => this.menuService.getMenuItemPortionLabel(this.item()));
   readonly itemAriaLabel = computed(() => `${this.i18n.translate('ui.itemCard.openDetailsFor')} ${this.item().name}`);
+  readonly hasImage = computed(() => {
+    const imageUrl = this.item().imageUrl;
+    return Boolean(imageUrl) && !imageUrl?.startsWith('data:image/svg+xml');
+  });
 
   openDetails(): void {
     void this.router.navigate(['/item', this.item().slug]);

@@ -176,8 +176,6 @@ export const enTranslations = {
       tabCategories: 'Categories',
       itemsTitle: 'Menu items',
       categoriesTitle: 'Categories',
-      viewOnlyHint: 'View only until backend API is connected',
-      managedByApi: 'Managed by API',
       categoryImage: 'category image',
       outOfStock: 'Out of stock',
       unknownCategory: 'Unknown'

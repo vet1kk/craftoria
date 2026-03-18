@@ -7,7 +7,7 @@ export interface Category {
   slug: string;
   name: string;
   icon: string;
-  imageUrl: string;
+  imageUrl: string | null;
   position: number;
   isActive: boolean;
 }
@@ -58,7 +58,7 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  imageUrl: string | null;
   galleryImageUrls: string[];
   ingredients: MenuItemIngredient[];
   servingDetails?: string;

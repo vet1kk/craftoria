@@ -102,8 +102,8 @@
           }
         </div>
         <div class="relative min-h-80 flex-1 overflow-hidden rounded-3xl bg-stone-100 sm:min-h-105">
-          @if (hasGalleryImages()) {
-            <img [src]="selectedImageUrl()"
+          @if (selectedImageUrl(); as imageUrl) {
+            <img [src]="imageUrl"
                  (error)="handleImageError(galleryImages()[selectedImageIndex()])"
                  [alt]="item()!.name"
                  width="1200"
@@ -128,19 +128,14 @@
               </div>
             }
           } @else {
-            <div class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-              <div class="flex h-18 w-18 items-center justify-center rounded-full bg-white text-3xl shadow-sm">
-                📷
-              </div>
-              <p class="mt-5 text-lg font-semibold text-stone-800">{{ 'ui.itemDetail.noPhotosTitle' | t }}</p>
-              <p class="mt-2 max-w-sm text-sm leading-6 text-stone-500">
-                {{ 'ui.itemDetail.noPhotosHint' | t }}
-              </p>
+            <div class="absolute inset-0 flex items-center justify-center flex-col">
+              <span class="relative text-6xl">📷</span>
+              <span class="mt-2 text-center text-2xl font-semibold uppercase tracking-[0.16em] text-stone-400">{{ 'ui.itemDetail.emptySlot' | t }}</span>
             </div>
           }
         </div>
 
-        <div class="mt-4">
+        <div class="mt-4 pt-2">
           @if (hasThumbnailOverflow()) {
             <div class="mb-3 px-1">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">
@@ -152,7 +147,7 @@
           @if (galleryPreviewImages().length) {
             <div class="grid grid-flow-col auto-cols-[calc((100%-2.25rem)/4)] gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory">
               @for (slot of galleryPreviewImages(); track $index; let imageIndex = $index) {
-                @if (!slot.isPlaceholder) {
+                @if (!slot.isPlaceholder && !isImageFailed(slot.imageUrl!)) {
                   <button type="button"
                           (click)="selectImage(imageIndex)"
                           class="aspect-square snap-start overflow-hidden rounded-2xl border bg-stone-50 transition-all hover:-translate-y-0.5 hover:border-orange-300"
@@ -160,7 +155,7 @@
                           [class.ring-2]="selectedImageIndex() === imageIndex"
                           [class.ring-orange-200]="selectedImageIndex() === imageIndex"
                           [attr.aria-label]="('ui.itemDetail.showPhoto' | t) + ' ' + (imageIndex + 1)">
-                    <img [src]="resolveImageUrl(slot.imageUrl!)"
+                    <img [src]="slot.imageUrl!"
                          (error)="handleImageError(slot.imageUrl!)"
                          [alt]="item()!.name + ' ' + ('ui.itemDetail.photo' | t) + ' ' + (imageIndex + 1)"
                          width="280"
@@ -169,11 +164,9 @@
                          class="h-full w-full object-cover">
                   </button>
                 } @else {
-                  <div class="flex aspect-square snap-start flex-col items-center justify-center rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 px-3 text-center">
-                    <span class="text-lg">📷</span>
-                    <span class="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400">
-                      {{ 'ui.itemDetail.emptySlot' | t }}
-                    </span>
+                  <div class="relative p-2 flex aspect-square snap-start flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-stone-200 bg-stone-50/70">
+                    <span class="relative text-2xl">📷</span>
+                    <span class="mt-2 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400">{{ 'ui.itemDetail.emptySlot' | t }}</span>
                   </div>
                 }
               }

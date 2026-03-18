@@ -59,14 +59,6 @@ interface ApiResourceResponse<T> {
   data: T;
 }
 
-const CATEGORY_IMAGE_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200"><rect width="320" height="200" fill="#f5f5f4"/><text x="160" y="105" text-anchor="middle" fill="#78716c" font-family="Arial, sans-serif" font-size="18">Craftoria</text></svg>'
-)}`;
-
-const PRODUCT_IMAGE_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><rect width="900" height="600" fill="#f5f5f4"/><text x="450" y="315" text-anchor="middle" fill="#78716c" font-family="Arial, sans-serif" font-size="44">Craftoria</text></svg>'
-)}`;
-
 const BLOCKED_IMAGE_HOSTS = new Set([
   'via.placeholder.com',
   'placehold.it',
@@ -208,7 +200,7 @@ export class DataService {
       slug: category.slug,
       name: category.name,
       icon: category.icon?.trim() || '🍽️',
-      imageUrl: this.sanitizeImageUrl(category.image_url, CATEGORY_IMAGE_PLACEHOLDER),
+      imageUrl: this.sanitizeImageUrl(category.image_url),
       position: category.position,
       isActive: category.is_active
     };
@@ -227,12 +219,13 @@ export class DataService {
 
   private mapProduct(product: ApiProduct): MenuItem {
     const metadata = this.normalizeMetadata(product.metadata);
-    const galleryImageUrls = [...new Set([
+    const galleryImageUrls = [
       product.featured_image_url,
       ...(product.gallery_image_urls ?? [])
     ]
-      .map((imageUrl) => this.sanitizeImageUrl(imageUrl, PRODUCT_IMAGE_PLACEHOLDER))
-      .filter((imageUrl, index, allImages) => Boolean(imageUrl) && allImages.indexOf(imageUrl) === index))];
+      .map((imageUrl) => this.sanitizeImageUrl(imageUrl))
+      .filter((imageUrl): imageUrl is string => imageUrl !== null)
+      .filter((imageUrl, index, allImages) => allImages.indexOf(imageUrl) === index);
     const mappedIngredients = [...(product.ingredients ?? [])]
       .sort((left, right) => left.position - right.position)
       .map((ingredient) => ({
@@ -251,8 +244,8 @@ export class DataService {
       name: product.name,
       description: product.description?.trim() || this.i18n.translate('ui.data.descriptionPlaceholder'),
       price: product.price,
-      imageUrl: this.sanitizeImageUrl(product.featured_image_url, galleryImageUrls[0] || PRODUCT_IMAGE_PLACEHOLDER),
-      galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : [PRODUCT_IMAGE_PLACEHOLDER],
+      imageUrl: this.sanitizeImageUrl(product.featured_image_url) ?? galleryImageUrls[0] ?? null,
+      galleryImageUrls,
       ingredients: mappedIngredients,
       servingDetails: metadata['serving_details']?.trim() || undefined,
       packageDetails: {
@@ -310,11 +303,11 @@ export class DataService {
     return metadata;
   }
 
-  private sanitizeImageUrl(imageUrl: string | null | undefined, fallbackUrl: string): string {
+  private sanitizeImageUrl(imageUrl: string | null | undefined): string | null {
     const trimmedImageUrl = imageUrl?.trim();
 
     if (!trimmedImageUrl) {
-      return fallbackUrl;
+      return null;
     }
 
     if (trimmedImageUrl.startsWith('data:image/')) {
@@ -325,16 +318,16 @@ export class DataService {
       const parsedUrl = new URL(trimmedImageUrl, 'http://localhost');
 
       if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-        return fallbackUrl;
+        return null;
       }
 
       if (BLOCKED_IMAGE_HOSTS.has(parsedUrl.hostname)) {
-        return fallbackUrl;
+        return null;
       }
 
       return trimmedImageUrl;
     } catch {
-      return fallbackUrl;
+      return null;
     }
   }
 }

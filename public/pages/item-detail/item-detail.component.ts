@@ -7,10 +7,6 @@ import { map } from 'rxjs';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, DataService, I18nService, MenuService } from '../../services';
 
-const ITEM_IMAGE_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#f5f5f4"/><text x="200" y="150" text-anchor="middle" dominant-baseline="middle" fill="#78716c" font-family="Arial, sans-serif" font-size="24">Craftoria</text></svg>'
-)}`;
-
 interface GallerySlot {
   imageUrl: string | null;
   isPlaceholder: boolean;
@@ -29,7 +25,7 @@ export class ItemDetailComponent {
   readonly cartService = inject(CartService);
   readonly i18n = inject(I18nService);
   readonly selectedImageIndex = signal(0);
-  readonly imageFallbacks = signal<Record<string, string>>({});
+  readonly failedImages = signal<Set<string>>(new Set());
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   private readonly route = inject(ActivatedRoute);
@@ -65,7 +61,7 @@ export class ItemDetailComponent {
       isPlaceholder: false
     }));
 
-    while (slots.length > 0 && slots.length < 4) {
+    while (slots.length < 4) {
       slots.push({
         imageUrl: null,
         isPlaceholder: true
@@ -105,9 +101,13 @@ export class ItemDetailComponent {
 
     return this.menuService.getMenuItemIngredientBreakdown(menuItem);
   });
-  readonly selectedImageUrl = computed(() =>
-    this.resolveImageUrl(this.galleryImages()[this.selectedImageIndex()] ?? ITEM_IMAGE_PLACEHOLDER)
-  );
+  readonly selectedImageUrl = computed(() => {
+    const imageUrl = this.galleryImages()[this.selectedImageIndex()];
+    if (!imageUrl || this.failedImages().has(imageUrl)) {
+      return null;
+    }
+    return imageUrl;
+  });
 
   constructor() {
     effect(() => {
@@ -175,24 +175,11 @@ export class ItemDetailComponent {
     this.selectedImageIndex.update((currentIndex) => (currentIndex + 1) % totalImages);
   }
 
-  resolveImageUrl(imageUrl: string): string {
-    return this.imageFallbacks()[imageUrl] ?? imageUrl;
+  handleImageError(imageUrl: string): void {
+    this.failedImages.update((current) => new Set(current).add(imageUrl));
   }
 
-  handleImageError(imageUrl: string): void {
-    const fallbackUrl = this.galleryImages()[0] && this.galleryImages()[0] !== imageUrl
-      ? this.galleryImages()[0]
-      : ITEM_IMAGE_PLACEHOLDER;
-
-    this.imageFallbacks.update((currentFallbacks) => {
-      if (currentFallbacks[imageUrl] === fallbackUrl) {
-        return currentFallbacks;
-      }
-
-      return {
-        ...currentFallbacks,
-        [imageUrl]: fallbackUrl
-      };
-    });
+  isImageFailed(imageUrl: string): boolean {
+    return this.failedImages().has(imageUrl);
   }
 }

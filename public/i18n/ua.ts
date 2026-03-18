@@ -176,8 +176,6 @@ export const uaTranslations = {
       tabCategories: 'Категорії',
       itemsTitle: 'Позиції меню',
       categoriesTitle: 'Категорії',
-      viewOnlyHint: 'Лише перегляд, доки не підключено backend API',
-      managedByApi: 'Керується API',
       categoryImage: 'зображення категорії',
       outOfStock: 'Немає в наявності',
       unknownCategory: 'Невідомо'
