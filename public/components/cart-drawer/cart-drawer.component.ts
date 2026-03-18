@@ -70,7 +70,7 @@ export class CartDrawerComponent {
       phone,
       items: this.cartService.items(),
       currency: this.dataService.appSettings.currency,
-      totalPrice: this.cartService.totalPrice()
+      total_price: this.cartService.totalPrice()
     };
   }
 

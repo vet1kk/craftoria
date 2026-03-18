@@ -70,7 +70,7 @@ export class AuthService {
     try {
       await firstValueFrom(
         this.http.post<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/register`, {
-          name: registrationData.fullName,
+          name: registrationData.name,
           email: registrationData.email,
           phone: registrationData.phone,
           password: registrationData.password,

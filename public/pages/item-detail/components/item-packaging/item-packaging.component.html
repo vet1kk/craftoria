@@ -1,0 +1,49 @@
+<div class="flex h-full flex-col rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
+  <div>
+    <span class="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+      {{ 'ui.itemDetail.packingBadge' | t }}
+    </span>
+    <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.packingTitle' | t }}</h2>
+    <p class="mt-2 max-w-xl text-sm leading-6 text-stone-500">
+      {{ 'ui.itemDetail.packingHint' | t }}
+    </p>
+  </div>
+
+  <div class="mt-6 grid flex-1 gap-4 content-start">
+    <div class="rounded-4xl border border-stone-200 bg-stone-50 p-5">
+      <div class="flex items-start gap-3">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-lg">
+          📦
+        </div>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.14em] text-sky-700/80">{{ 'ui.itemDetail.contents' | t }}</p>
+          <p class="mt-2 text-sm leading-6 text-stone-600">{{ packageDetails().contents }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-4xl border border-stone-200 bg-stone-50 p-5">
+      <div class="flex items-start gap-3">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-lg">
+          ❄️
+        </div>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700/80">{{ 'ui.itemDetail.storage' | t }}</p>
+          <p class="mt-2 text-sm leading-6 text-stone-600">{{ packageDetails().storage }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-4xl border border-stone-200 bg-stone-50 p-5">
+      <div class="flex items-start gap-3">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-lg">
+          ⏳
+        </div>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.14em] text-amber-700/80">{{ 'ui.itemDetail.shelfLife' | t }}</p>
+          <p class="mt-2 text-sm leading-6 text-stone-600">{{ packageDetails().shelf_life }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

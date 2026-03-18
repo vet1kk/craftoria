@@ -77,243 +77,34 @@
           <div class="flex min-h-44 flex-col rounded-3xl border border-stone-200 bg-stone-50 p-5 sm:min-h-48">
             <p class="text-sm font-medium text-stone-500">{{ 'ui.itemDetail.portion' | t }}</p>
             <p class="mt-2 text-xl font-bold text-stone-900">{{ portionLabel() }}</p>
-            @if (item()!.servingDetails) {
-              <p class="mt-1 text-sm text-stone-500">{{ item()!.servingDetails }}</p>
+            @if (item()!.serving_details) {
+              <p class="mt-1 text-sm text-stone-500">{{ item()!.serving_details }}</p>
             }
           </div>
 
           <div class="flex min-h-44 flex-col rounded-3xl border border-stone-200 bg-stone-50 p-5 sm:min-h-48">
             <p class="text-sm font-medium text-stone-500">{{ 'ui.itemDetail.packaging' | t }}</p>
-            <p class="mt-2 text-sm leading-6 text-stone-700">{{ item()!.packageDetails.packaging }}</p>
+            <p class="mt-2 text-sm leading-6 text-stone-700">{{ item()!.package_details.packaging }}</p>
           </div>
         </div>
       </section>
-      <section class="flex h-full flex-col rounded-4xl border border-stone-200 bg-white p-4 sm:p-5">
-        <div class="mb-4 flex items-center justify-between gap-3 px-1">
-          <div>
-            <span class="inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-              {{ 'ui.itemDetail.galleryBadge' | t }}
-            </span>
-          </div>
-          @if (hasGalleryImages()) {
-            <span class="text-sm text-stone-400">{{ selectedImagePosition() }}/{{ galleryImages().length }}</span>
-          } @else {
-            <span class="text-sm text-stone-400">{{ 'ui.itemDetail.photosSoon' | t }}</span>
-          }
-        </div>
-        <div class="relative min-h-80 flex-1 overflow-hidden rounded-3xl bg-stone-100 sm:min-h-105">
-          @if (selectedImageUrl(); as imageUrl) {
-            <img [src]="imageUrl"
-                 (error)="handleImageError(galleryImages()[selectedImageIndex()])"
-                 [alt]="item()!.name"
-                 width="1200"
-                 height="900"
-                 loading="eager"
-                 class="absolute inset-0 h-full w-full object-cover">
 
-            @if (hasMultipleGalleryImages()) {
-              <div class="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center justify-between px-3">
-                <button type="button"
-                        (click)="showPreviousImage()"
-                        class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xl text-stone-700 shadow-md transition-colors hover:bg-white hover:text-orange-600"
-                        [attr.aria-label]="'ui.itemDetail.prevPhoto' | t">
-                  ‹
-                </button>
-                <button type="button"
-                        (click)="showNextImage()"
-                        class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-xl text-stone-700 shadow-md transition-colors hover:bg-white hover:text-orange-600"
-                        [attr.aria-label]="'ui.itemDetail.nextPhoto' | t">
-                  ›
-                </button>
-              </div>
-            }
-          } @else {
-            <div class="absolute inset-0 flex items-center justify-center flex-col">
-              <span class="relative text-6xl">📷</span>
-              <span class="mt-2 text-center text-2xl font-semibold uppercase tracking-[0.16em] text-stone-400">{{ 'ui.itemDetail.emptySlot' | t }}</span>
-            </div>
-          }
-        </div>
-
-        <div class="mt-4 pt-2">
-          @if (hasThumbnailOverflow()) {
-            <div class="mb-3 px-1">
-              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">
-                {{ 'ui.itemDetail.scrollThumbnails' | t }}
-              </p>
-            </div>
-          }
-
-          @if (galleryPreviewImages().length) {
-            <div class="grid grid-flow-col auto-cols-[calc((100%-2.25rem)/4)] gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory">
-              @for (slot of galleryPreviewImages(); track $index; let imageIndex = $index) {
-                @if (!slot.isPlaceholder && !isImageFailed(slot.imageUrl!)) {
-                  <button type="button"
-                          (click)="selectImage(imageIndex)"
-                          class="aspect-square snap-start overflow-hidden rounded-2xl border bg-stone-50 transition-all hover:-translate-y-0.5 hover:border-orange-300"
-                          [class.border-orange-500]="selectedImageIndex() === imageIndex"
-                          [class.ring-2]="selectedImageIndex() === imageIndex"
-                          [class.ring-orange-200]="selectedImageIndex() === imageIndex"
-                          [attr.aria-label]="('ui.itemDetail.showPhoto' | t) + ' ' + (imageIndex + 1)">
-                    <img [src]="slot.imageUrl!"
-                         (error)="handleImageError(slot.imageUrl!)"
-                         [alt]="item()!.name + ' ' + ('ui.itemDetail.photo' | t) + ' ' + (imageIndex + 1)"
-                         width="280"
-                         height="280"
-                         loading="lazy"
-                         class="h-full w-full object-cover">
-                  </button>
-                } @else {
-                  <div class="relative p-2 flex aspect-square snap-start flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-stone-200 bg-stone-50/70">
-                    <span class="relative text-2xl">📷</span>
-                    <span class="mt-2 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-400">{{ 'ui.itemDetail.emptySlot' | t }}</span>
-                  </div>
-                }
-              }
-            </div>
-          }
-        </div>
-      </section>
+      <app-item-gallery [images]="galleryImages()"
+                        [itemName]="item()!.name">
+      </app-item-gallery>
     </div>
 
     <section class="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] xl:auto-rows-fr xl:items-stretch">
       <div class="grid h-full gap-6 xl:grid-rows-[auto_1fr]">
-        <div class="rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <span class="inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                {{ 'ui.itemDetail.nutritionBadge' | t }}
-              </span>
-              <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.nutritionTitle' | t }}</h2>
-              <p class="mt-2 text-sm text-stone-500">{{ 'ui.itemDetail.nutritionHint' | t }}</p>
-            </div>
-            <span class="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-500">
-              {{ portionLabel() }}
-            </span>
-          </div>
-
-          <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-2 xl:auto-rows-fr">
-            <div class="rounded-3xl border border-orange-100 bg-orange-50/65 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-orange-600">{{ 'ui.itemDetail.calories' | t }}</p>
-              <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.calories }}</p>
-              <p class="mt-1 text-xs text-stone-500">{{ 'ui.itemDetail.kcal' | t }}</p>
-            </div>
-
-            <div class="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ 'ui.itemDetail.proteins' | t }}</p>
-              <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.proteins }}</p>
-            </div>
-
-            <div class="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ 'ui.itemDetail.fats' | t }}</p>
-              <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.fats }}</p>
-            </div>
-
-            <div class="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">{{ 'ui.itemDetail.carbs' | t }}</p>
-              <p class="mt-3 text-3xl font-black text-stone-900">{{ nutrition()!.carbs }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex h-full flex-col rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
-          <div>
-            <span class="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-              {{ 'ui.itemDetail.packingBadge' | t }}
-            </span>
-            <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.packingTitle' | t }}</h2>
-            <p class="mt-2 max-w-xl text-sm leading-6 text-stone-500">
-              {{ 'ui.itemDetail.packingHint' | t }}
-            </p>
-          </div>
-
-          <div class="mt-6 grid flex-1 gap-4 content-start">
-            <div class="rounded-4xl border border-stone-200 bg-stone-50 p-5">
-              <div class="flex items-start gap-3">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-lg">
-                  📦
-                </div>
-                <div>
-                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-sky-700/80">{{ 'ui.itemDetail.contents' | t }}</p>
-                  <p class="mt-2 text-sm leading-6 text-stone-600">{{ item()!.packageDetails.contents }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="rounded-4xl border border-stone-200 bg-stone-50 p-5">
-              <div class="flex items-start gap-3">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-lg">
-                  ❄️
-                </div>
-                <div>
-                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700/80">{{ 'ui.itemDetail.storage' | t }}</p>
-                  <p class="mt-2 text-sm leading-6 text-stone-600">{{ item()!.packageDetails.storage }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="rounded-4xl border border-stone-200 bg-stone-50 p-5">
-              <div class="flex items-start gap-3">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-lg">
-                  ⏳
-                </div>
-                <div>
-                  <p class="text-sm font-semibold uppercase tracking-[0.14em] text-amber-700/80">{{ 'ui.itemDetail.shelfLife' | t }}</p>
-                  <p class="mt-2 text-sm leading-6 text-stone-600">{{ item()!.packageDetails.shelfLife }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        @if (nutrition()) {
+          <app-item-nutrition [nutrition]="nutrition()!"
+                              [portionLabel]="portionLabel()">
+          </app-item-nutrition>
+        }
+        <app-item-packaging [packageDetails]="item()!.package_details"></app-item-packaging>
       </div>
-
       <div class="h-full">
-        <div class="flex h-full w-full flex-col rounded-4xl border border-stone-200 bg-white p-6 sm:p-8">
-          <div>
-            <span class="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-600">
-              {{ 'ui.itemDetail.ingredientsBadge' | t }}
-            </span>
-            <h2 class="mt-4 text-2xl font-bold text-stone-900">{{ 'ui.itemDetail.ingredientsTitle' | t }}</h2>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
-              {{ 'ui.itemDetail.ingredientsHint' | t }}
-            </p>
-          </div>
-
-          <div class="mt-6 grid flex-1 gap-4 content-start md:auto-rows-fr lg:grid-cols-2">
-            @for (entry of ingredientBreakdown(); track entry.ingredient.id) {
-              <div class="group flex h-full flex-col rounded-4xl border border-stone-200 bg-stone-50 p-4 transition-colors duration-200 hover:border-orange-200 sm:p-5">
-                <div class="flex flex-col gap-3">
-                  <div class="flex items-center gap-2">
-                    <p class="text-lg font-semibold tracking-tight text-stone-900">{{ entry.ingredient.name }}</p>
-                  </div>
-                  <div class="mt-3 flex flex-col gap-2">
-                      <span class="inline-flex rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600 w-fit">
-                        {{ entry.quantityLabel }}
-                      </span>
-                    <span class="inline-flex rounded-full border border-orange-100 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 w-fit">
-                    {{ entry.nutrition.calories }} {{ 'ui.itemDetail.kcal' | t }}
-                  </span>
-                  </div>
-                </div>
-
-                <div class="mt-5 grid grid-cols-3 gap-2.5">
-                  <div class="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600/80">{{ 'ui.itemDetail.proteins' | t }}</p>
-                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.proteins }} {{ 'ui.itemDetail.grams' | t }}</p>
-                  </div>
-                  <div class="rounded-2xl border border-amber-100 bg-amber-50/70 px-3 py-2.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-600/80">{{ 'ui.itemDetail.fats' | t }}</p>
-                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.fats }} {{ 'ui.itemDetail.grams' | t }}</p>
-                  </div>
-                  <div class="rounded-2xl border border-sky-100 bg-sky-50/70 px-3 py-2.5">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-sky-600/80">{{ 'ui.itemDetail.carbs' | t }}</p>
-                    <p class="mt-1 text-base font-semibold text-stone-800">{{ entry.nutrition.carbs }} {{ 'ui.itemDetail.grams' | t }}</p>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
+        <app-item-ingredients [ingredients]="ingredientBreakdown()"></app-item-ingredients>
       </div>
     </section>
   }

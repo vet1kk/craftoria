@@ -22,14 +22,14 @@ export class OrderService {
     try {
       await firstValueFrom(
         this.http.post(`${environment.apiBaseUrl}/orders`, {
-          customer_name: currentUser?.fullName ?? null,
+          customer_name: currentUser?.name ?? null,
           customer_email: currentUser?.email ?? null,
           customer_phone: orderRequest.phone,
           fulfillment_type: 'pickup',
           currency: 'UAH',
           payment_method: 'cash',
           items: orderRequest.items.map((item) => ({
-            product_id: item.menuItem.id,
+            product_id: item.product.id,
             quantity: item.quantity,
             notes: item.notes?.trim() || null
           }))

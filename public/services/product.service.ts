@@ -1,20 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 
-import { Category, Ingredient, IngredientUnit, MenuItem, NutritionFacts, ResolvedMenuItemIngredient } from '../models';
+import { Category, Ingredient, IngredientUnit, NutritionFacts, Product, ResolvedProductIngredient } from '../models';
 import { DataService } from './data.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MenuService {
+export class ProductService {
   private readonly dataService = inject(DataService);
 
-  getMenuItemById(itemId: string): MenuItem | undefined {
-    return this.dataService.menuItems().find((item) => item.id === itemId);
+  getProductById(itemId: string): Product | undefined {
+    return this.dataService.products().find((item) => item.id === itemId);
   }
 
-  getMenuItemBySlug(slug: string): MenuItem | undefined {
-    return this.dataService.menuItems().find((item) => item.slug === slug);
+  getProductBySlug(slug: string): Product | undefined {
+    return this.dataService.products().find((item) => item.slug === slug);
   }
 
   getCategoryById(categoryId: string): Category | undefined {
@@ -25,30 +25,30 @@ export class MenuService {
     return this.dataService.ingredientsCatalog().find((ingredient) => ingredient.id === ingredientId);
   }
 
-  getMenuItemIngredientBreakdown(item: MenuItem): ResolvedMenuItemIngredient[] {
+  getProductIngredientBreakdown(item: Product): ResolvedProductIngredient[] {
     return [...item.ingredients]
       .sort((left, right) => left.position - right.position)
       .map((itemIngredient) => {
-        const ingredient = this.requireIngredient(itemIngredient.ingredientId);
+        const ingredient = this.requireIngredient(itemIngredient.ingredient_id);
 
         return {
           ingredient,
           quantity: itemIngredient.quantity,
-          quantityLabel: this.formatQuantity(itemIngredient.quantity, ingredient.unit),
-          nutrition: this.roundNutrition(this.scaleNutrition(ingredient.nutritionPer100, itemIngredient.quantity))
+          quantity_label: this.formatQuantity(itemIngredient.quantity, ingredient.unit),
+          nutrition: this.roundNutrition(this.scaleNutrition(ingredient.nutrition_per_100, itemIngredient.quantity))
         };
       });
   }
 
-  getMenuItemNutrition(item: MenuItem): NutritionFacts {
-    if (item.nutritionTotals) {
-      return this.roundNutrition(item.nutritionTotals);
+  getProductNutrition(item: Product): NutritionFacts {
+    if (item.nutrition_totals) {
+      return this.roundNutrition(item.nutrition_totals);
     }
 
     const totals = item.ingredients.reduce<NutritionFacts>(
       (accumulator, itemIngredient) => {
-        const ingredient = this.requireIngredient(itemIngredient.ingredientId);
-        const nutrition = this.scaleNutrition(ingredient.nutritionPer100, itemIngredient.quantity);
+        const ingredient = this.requireIngredient(itemIngredient.ingredient_id);
+        const nutrition = this.scaleNutrition(ingredient.nutrition_per_100, itemIngredient.quantity);
 
         return {
           calories: accumulator.calories + nutrition.calories,
@@ -63,10 +63,10 @@ export class MenuService {
     return this.roundNutrition(totals);
   }
 
-  getMenuItemPortionLabel(item: MenuItem): string {
+  getProductPortionLabel(item: Product): string {
     const totalsByUnit = item.ingredients.reduce<Record<IngredientUnit, number>>(
       (accumulator, itemIngredient) => {
-        const ingredient = this.requireIngredient(itemIngredient.ingredientId);
+        const ingredient = this.requireIngredient(itemIngredient.ingredient_id);
 
         accumulator[ingredient.unit] += itemIngredient.quantity;
 

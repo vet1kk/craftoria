@@ -7,8 +7,8 @@
     @for (category of categories(); track category.id) {
       <div class="flex flex-col gap-3 p-4 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex min-w-0 items-center gap-3">
-          @if (category.imageUrl) {
-            <img [src]="category.imageUrl"
+          @if (category.image_url) {
+            <img [src]="category.image_url"
                  [alt]="category.name"
                  width="48"
                  height="48"

@@ -1,7 +1,7 @@
-import { MenuItem } from './catalog.model';
+import { Product } from './catalog.model';
 
 export interface CartItem {
-  menuItem: MenuItem;
+  product: Product;
   quantity: number;
   notes?: string;
 }
@@ -10,21 +10,21 @@ export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'del
 
 export interface OrderLineItem {
   id: string;
-  productId: string;
+  product_id: string;
   name: string;
   quantity: number;
-  unitPrice: number;
-  lineTotal: number;
+  unit_price: number;
+  line_total: number;
   notes?: string;
 }
 
-export interface OrderHistoryItem {
+export interface Order {
   id: string;
-  orderId: string;
-  placedAt: string;
+  order_id: string;
+  placed_at: string;
   status: OrderStatus;
   phone: string;
-  totalPrice: number;
+  total_price: number;
   currency: string;
   items: OrderLineItem[];
 }
@@ -33,5 +33,5 @@ export interface OrderRequest {
   phone: string;
   items: CartItem[];
   currency: string;
-  totalPrice: number;
+  total_price: number;
 }

@@ -18,22 +18,22 @@ export class MenuComponent {
 
   readonly filteredItems = computed(() => {
     const selectedSlug = this.selectedCategorySlug();
-    const menuItems = this.dataService.menuItems();
+    const products = this.dataService.products();
 
     if (!selectedSlug || selectedSlug === 'all') {
-      return menuItems;
+      return products;
     }
 
     const selectedCategory = this.dataService.categories().find((cat) => cat.slug === selectedSlug);
 
     if (!selectedCategory) {
-      return menuItems;
+      return products;
     }
 
-    return menuItems.filter((item) => item.categoryId === selectedCategory.id);
+    return products.filter((item) => item.category_id === selectedCategory.id);
   });
 
-  readonly showCategories = computed(() => this.dataService.menuItems().length > 0);
+  readonly showCategories = computed(() => this.dataService.products().length > 0);
 
   constructor() {
     void this.dataService.ensureCatalogLoaded();

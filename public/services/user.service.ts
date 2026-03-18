@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { OrderHistoryItem, OrderLineItem, OrderStatus, User } from '../models';
+import { Order, OrderLineItem, OrderStatus, User } from '../models';
 
 export interface ApiOrderItem {
   id: string;
@@ -41,25 +41,25 @@ export class UserService {
   mapUser(user: ApiUser): User {
     return {
       id: user.id,
-      fullName: user.name,
+      name: user.name,
       email: user.email,
       phone: user.phone,
       role: user.role,
-      joinedAt: user.created_at ?? new Date().toISOString(),
+      created_at: user.created_at ?? new Date().toISOString(),
       orders: [...(user.orders ?? [])]
         .map((order) => this.mapOrder(order))
-        .sort((left, right) => Date.parse(right.placedAt) - Date.parse(left.placedAt))
+        .sort((left, right) => Date.parse(right.placed_at) - Date.parse(left.placed_at))
     };
   }
 
-  private mapOrder(order: ApiOrder): OrderHistoryItem {
+  private mapOrder(order: ApiOrder): Order {
     return {
       id: order.order_number,
-      orderId: order.id,
-      placedAt: order.placed_at ?? order.created_at ?? new Date().toISOString(),
+      order_id: order.id,
+      placed_at: order.placed_at ?? order.created_at ?? new Date().toISOString(),
       status: this.normalizeOrderStatus(order.status),
       phone: order.customer_phone ?? 'Самовивіз',
-      totalPrice: order.total_amount,
+      total_price: order.total_amount,
       currency: this.formatCurrency(order.currency),
       items: (order.items ?? []).map((item) => this.mapOrderItem(item))
     };
@@ -68,11 +68,11 @@ export class UserService {
   private mapOrderItem(item: ApiOrderItem): OrderLineItem {
     return {
       id: item.id,
-      productId: item.product_id,
+      product_id: item.product_id,
       name: item.product_name,
       quantity: item.quantity,
-      unitPrice: item.unit_price,
-      lineTotal: item.line_total,
+      unit_price: item.unit_price,
+      line_total: item.line_total,
       notes: item.notes ?? undefined
     };
   }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
-import { Category, MenuItem } from '../../../../models';
+import { Category, Product } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 import { I18nService } from '../../../../services';
 
@@ -14,7 +14,7 @@ import { I18nService } from '../../../../services';
 export class AdminMenuItemsPanelComponent {
   private readonly i18n = inject(I18nService);
 
-  readonly menuItems = input.required<MenuItem[]>();
+  readonly products = input.required<Product[]>();
   readonly categories = input.required<Category[]>();
   readonly currency = input.required<string>();
   readonly categoriesById = computed(

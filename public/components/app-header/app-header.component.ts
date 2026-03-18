@@ -27,7 +27,7 @@ export class AppHeaderComponent {
   }
 
   get avatarLabel(): string {
-    return this.authService.currentUser()?.fullName ?? '';
+    return this.authService.currentUser()?.name ?? '';
   }
 
   get avatarInitials(): string {
@@ -37,7 +37,7 @@ export class AppHeaderComponent {
       return '';
     }
 
-    return user.fullName
+    return user.name
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)

@@ -1,0 +1,14 @@
+<div class="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 p-2"
+     [class.rounded-lg]="size() === 'sm'"
+     [class.rounded-2xl]="size() === 'md' || size() === 'lg'">
+  <span class="relative"
+        [class.text-xl]="size() === 'sm'"
+        [class.text-2xl]="size() === 'md'"
+        [class.text-6xl]="size() === 'lg'">📷</span>
+  @if (showLabel()) {
+    <span class="mt-2 text-center font-semibold uppercase tracking-[0.16em] text-stone-400"
+          [ngClass]="{'text-[10px]': size() === 'sm','text-[11px]': size() === 'md','text-2xl': size() === 'lg'}">
+  {{ labelKey() | t }}
+</span>
+  }
+</div>

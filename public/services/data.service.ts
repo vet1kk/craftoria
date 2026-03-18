@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-import { AppSettings, Category, Ingredient, IngredientUnit, MenuItem, NutritionFacts } from '../models';
+import { AppSettings, Category, Ingredient, IngredientUnit, NutritionFacts, Product } from '../models';
 import { environment } from '../environments/environment';
 import { extractApiErrorMessage } from './api-error';
 import { I18nService } from './i18n.service';
@@ -78,7 +78,7 @@ export class DataService {
 
   readonly categories = signal<Category[]>([]);
   readonly ingredientsCatalog = signal<Ingredient[]>([]);
-  readonly menuItems = signal<MenuItem[]>([]);
+  readonly products = signal<Product[]>([]);
   readonly isCatalogLoading = signal(false);
   readonly catalogError = signal('');
   readonly appSettings: AppSettings = {
@@ -97,7 +97,7 @@ export class DataService {
   }
 
   async ensureCatalogLoaded(force = false): Promise<void> {
-    if (!force && this.categories().length > 0 && this.menuItems().length > 0) {
+    if (!force && this.categories().length > 0 && this.products().length > 0) {
       return;
     }
 
@@ -122,7 +122,7 @@ export class DataService {
         const mappedProducts = products.map((product) => this.mapProduct(product));
 
         this.categories.set(mappedCategories);
-        this.setMenuItems(mappedProducts);
+        this.setProducts(mappedProducts);
       })
       .catch((error: unknown) => {
         this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.menu.catalogLoadError'), this.i18n));
@@ -136,7 +136,7 @@ export class DataService {
     return this.catalogRequest;
   }
 
-  async loadMenuItem(slug: string): Promise<MenuItem | null> {
+  async loadProduct(slug: string): Promise<Product | null> {
     try {
       const response = await firstValueFrom(
         this.http.get<ApiResourceResponse<ApiProduct>>(`${environment.apiBaseUrl}/products/${slug}`)
@@ -144,12 +144,12 @@ export class DataService {
       const product = response.data;
       const mappedProduct = this.mapProduct(product);
 
-      this.upsertMenuItem(mappedProduct);
+      this.upsertProduct(mappedProduct);
       this.mergeIngredients(product.ingredients ?? []);
 
       return mappedProduct;
     } catch (error: unknown) {
-      if (this.menuItems().length === 0) {
+      if (this.products().length === 0) {
         this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.menu.itemLoadError'), this.i18n));
       }
 
@@ -157,14 +157,14 @@ export class DataService {
     }
   }
 
-  private setMenuItems(items: MenuItem[]): void {
+  private setProducts(items: Product[]): void {
     const currentLocale = this.localeService.apiLocale();
     const sortedItems = [...items].sort((left, right) => left.name.localeCompare(right.name, currentLocale));
-    this.menuItems.set(sortedItems);
+    this.products.set(sortedItems);
   }
 
-  private upsertMenuItem(item: MenuItem): void {
-    const nextItems = [...this.menuItems()];
+  private upsertProduct(item: Product): void {
+    const nextItems = [...this.products()];
     const existingIndex = nextItems.findIndex((currentItem) => currentItem.id === item.id);
 
     if (existingIndex === -1) {
@@ -173,7 +173,7 @@ export class DataService {
       nextItems[existingIndex] = item;
     }
 
-    this.setMenuItems(nextItems);
+    this.setProducts(nextItems);
   }
 
   private mergeIngredients(ingredients: ApiIngredient[]): void {
@@ -200,9 +200,9 @@ export class DataService {
       slug: category.slug,
       name: category.name,
       icon: category.icon?.trim() || '🍽️',
-      imageUrl: this.sanitizeImageUrl(category.image_url),
+      image_url: this.sanitizeImageUrl(category.image_url),
       position: category.position,
-      isActive: category.is_active
+      is_active: category.is_active
     };
   }
 
@@ -212,14 +212,15 @@ export class DataService {
       slug: ingredient.slug,
       name: ingredient.name,
       unit: this.normalizeIngredientUnit(ingredient.unit),
+      quantity: ingredient.quantity,
       position: ingredient.position,
-      nutritionPer100: ingredient.nutrition_per_100
+      nutrition_per_100: ingredient.nutrition_per_100
     };
   }
 
-  private mapProduct(product: ApiProduct): MenuItem {
+  private mapProduct(product: ApiProduct): Product {
     const metadata = this.normalizeMetadata(product.metadata);
-    const galleryImageUrls = [
+    const gallery_image_urls = [
       product.featured_image_url,
       ...(product.gallery_image_urls ?? [])
     ]
@@ -229,7 +230,7 @@ export class DataService {
     const mappedIngredients = [...(product.ingredients ?? [])]
       .sort((left, right) => left.position - right.position)
       .map((ingredient) => ({
-        ingredientId: ingredient.id,
+        ingredient_id: ingredient.id,
         quantity: ingredient.quantity,
         position: ingredient.position
       }));
@@ -240,26 +241,26 @@ export class DataService {
       id: product.id,
       slug: product.slug,
       sku: product.sku?.trim() || '',
-      categoryId: product.category_id,
+      category_id: product.category_id,
       name: product.name,
       description: product.description?.trim() || this.i18n.translate('ui.data.descriptionPlaceholder'),
       price: product.price,
-      imageUrl: this.sanitizeImageUrl(product.featured_image_url) ?? galleryImageUrls[0] ?? null,
-      galleryImageUrls,
+      image_url: this.sanitizeImageUrl(product.featured_image_url) ?? gallery_image_urls[0] ?? null,
+      gallery_image_urls,
       ingredients: mappedIngredients,
-      servingDetails: metadata['serving_details']?.trim() || undefined,
-      packageDetails: {
+      serving_details: metadata['serving_details']?.trim() || undefined,
+      package_details: {
         packaging: metadata['packaging']?.trim() || this.i18n.translate('ui.data.packagingPlaceholder'),
         contents: metadata['contents']?.trim() || this.buildContentsLabel(product.ingredients ?? []),
         storage: metadata['storage_instructions']?.trim() || this.i18n.translate('ui.data.storagePlaceholder'),
-        shelfLife: metadata['shelf_life']?.trim() || product.shelf_life?.trim() || this.i18n.translate('ui.data.shelfLifePlaceholder')
+        shelf_life: metadata['shelf_life']?.trim() || product.shelf_life?.trim() || this.i18n.translate('ui.data.shelfLifePlaceholder')
       },
-      nutritionTotals: product.nutrition_totals,
+      nutrition_totals: product.nutrition_totals,
       available: product.is_active && product.is_available,
-      isActive: product.is_active,
-      stockQuantity: product.stock_quantity,
-      reorderLevel: product.reorder_level,
-      shelfLife: product.shelf_life?.trim() || undefined
+      is_active: product.is_active,
+      stock_quantity: product.stock_quantity,
+      reorder_level: product.reorder_level,
+      shelf_life: product.shelf_life?.trim() || undefined
     };
   }
 

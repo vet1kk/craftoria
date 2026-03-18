@@ -7,9 +7,9 @@ export interface Category {
   slug: string;
   name: string;
   icon: string;
-  imageUrl: string | null;
+  image_url: string | null;
   position: number;
-  isActive: boolean;
+  is_active: boolean;
 }
 
 export interface NutritionFacts {
@@ -26,20 +26,21 @@ export interface Ingredient {
   slug: string;
   name: string;
   unit: IngredientUnit;
+  quantity: number;
   position: number;
-  nutritionPer100: NutritionFacts;
+  nutrition_per_100: NutritionFacts;
 }
 
-export interface MenuItemIngredient {
-  ingredientId: string;
+export interface ProductIngredient {
+  ingredient_id: string;
   quantity: number;
   position: number;
 }
 
-export interface ResolvedMenuItemIngredient {
+export interface ResolvedProductIngredient {
   ingredient: Ingredient;
   quantity: number;
-  quantityLabel: string;
+  quantity_label: string;
   nutrition: NutritionFacts;
 }
 
@@ -47,26 +48,26 @@ export interface PackageDetails {
   packaging: string;
   contents: string;
   storage: string;
-  shelfLife: string;
+  shelf_life: string;
 }
 
-export interface MenuItem {
+export interface Product {
   id: string;
   slug: string;
   sku: string;
-  categoryId: string;
+  category_id: string;
   name: string;
   description: string;
   price: number;
-  imageUrl: string | null;
-  galleryImageUrls: string[];
-  ingredients: MenuItemIngredient[];
-  servingDetails?: string;
-  packageDetails: PackageDetails;
-  nutritionTotals?: NutritionFacts;
+  image_url: string | null;
+  gallery_image_urls: string[];
+  ingredients: ProductIngredient[];
+  serving_details?: string;
+  package_details: PackageDetails;
+  nutrition_totals?: NutritionFacts;
   available: boolean;
-  isActive: boolean;
-  stockQuantity: number;
-  reorderLevel: number;
-  shelfLife?: string;
+  is_active: boolean;
+  stock_quantity: number;
+  reorder_level: number;
+  shelf_life?: string;
 }

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { CartItem, OrderHistoryItem } from '../../models';
+import { CartItem, Order } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService, CartDrawerService, CartService, DataService, I18nService } from '../../services';
 import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '../components';
@@ -127,7 +127,7 @@ export class AccountComponent {
     const { fullName, email, phone, password } = this.registrationForm.getRawValue();
     this.isSubmitting.set(true);
     const registrationResult = await this.authService.register({
-      fullName: fullName.trim(),
+      name: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
       password
@@ -291,16 +291,16 @@ export class AccountComponent {
     }
   }
 
-  repeatOrder(order: OrderHistoryItem): void {
+  repeatOrder(order: Order): void {
     const repeatedItems = order.items.reduce<CartItem[]>((items, orderItem) => {
-      const menuItem = this.dataService.menuItems().find((item) => item.id === orderItem.productId);
+      const product = this.dataService.products().find((item) => item.id === orderItem.product_id);
 
-      if (!menuItem) {
+      if (!product) {
         return items;
       }
 
       items.push({
-        menuItem,
+        product: product,
         quantity: orderItem.quantity,
         ...(orderItem.notes ? { notes: orderItem.notes } : {})
       });

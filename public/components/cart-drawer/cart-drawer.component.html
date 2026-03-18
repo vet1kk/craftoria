@@ -26,11 +26,11 @@
             <button (click)="close(); router.navigate(['/']);" class="text-orange-600 font-medium hover:underline">{{ 'ui.actions.goToMenu' | t }}</button>
           </div>
         } @else {
-          @for (item of cartService.items(); track item.menuItem.id) {
+          @for (item of cartService.items(); track item.product.id) {
             <div class="flex gap-3 sm:gap-4">
-              @if (item.menuItem.imageUrl) {
-                <img [src]="item.menuItem.imageUrl"
-                     [alt]="item.menuItem.name"
+              @if (item.product.image_url) {
+                <img [src]="item.product.image_url"
+                     [alt]="item.product.name"
                      class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-stone-100 shrink-0">
               } @else {
                 <div class="relative p-2 flex aspect-square snap-start flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-stone-200 bg-stone-50/70">
@@ -40,26 +40,26 @@
               }
               <div class="flex-1 min-w-0">
                 <div class="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-start">
-                  <h3 class="font-medium text-stone-800 wrap-break-word">{{ item.menuItem.name }}</h3>
+                  <h3 class="font-medium text-stone-800 wrap-break-word">{{ item.product.name }}</h3>
                   <p class="font-medium text-stone-800 sm:text-right">
-                    {{ item.menuItem.price * item.quantity | number: '1.2-2' }} {{ dataService.appSettings.currency }}
+                    {{ item.product.price * item.quantity | number: '1.2-2' }} {{ dataService.appSettings.currency }}
                   </p>
                 </div>
                 @if (item.notes) {
                   <p class="text-xs text-stone-500 italic mt-1">{{ 'ui.cart.notePrefix' | t }} {{ item.notes }}</p>
                 }
                 <div class="mt-2 flex flex-wrap items-center gap-3">
-                  <button (click)="cartService.decreaseQuantity(item.menuItem.id)"
+                  <button (click)="cartService.decreaseQuantity(item.product.id)"
                           class="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors">
                     <span class="text-lg">-</span>
                   </button>
                   <span class="text-sm font-medium w-4 text-center">{{ item.quantity }}</span>
-                  <button (click)="cartService.addToCart(item.menuItem)"
+                  <button (click)="cartService.addToCart(item.product)"
                           class="w-7 h-7 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors">
                     <span class="text-lg leading-none mb-0.5">+</span>
                   </button>
                    <div class="hidden sm:block flex-1"></div>
-                   <button (click)="cartService.removeItem(item.menuItem.id)"
+                   <button (click)="cartService.removeItem(item.product.id)"
                            class="ml-auto text-xs text-red-500 hover:text-red-700 font-medium">
                       <span>{{ 'ui.cart.remove' | t }}</span>
                     </button>

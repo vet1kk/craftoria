@@ -1,7 +1,7 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 
-import { OrderHistoryItem, OrderStatus } from '../../../../models';
+import { Order, OrderStatus } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 import { I18nService } from '../../../../services';
 
@@ -15,9 +15,9 @@ import { I18nService } from '../../../../services';
 export class AccountOrderHistoryComponent {
   private readonly i18n = inject(I18nService);
 
-  readonly orders = input.required<OrderHistoryItem[]>();
+  readonly orders = input.required<Order[]>();
   readonly repeatOrderError = input('');
-  readonly repeatOrder = output<OrderHistoryItem>();
+  readonly repeatOrder = output<Order>();
 
   getOrderStatusClasses(status: OrderStatus): string {
     switch (status) {

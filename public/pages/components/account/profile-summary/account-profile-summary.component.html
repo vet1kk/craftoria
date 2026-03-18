@@ -4,7 +4,7 @@
       <p class="text-sm font-semibold uppercase tracking-wide text-orange-600">
         {{ getRoleLabel(user().role) }}
       </p>
-      <h1 class="mt-1 text-2xl font-bold text-stone-800">{{ user().fullName }}</h1>
+      <h1 class="mt-1 text-2xl font-bold text-stone-800">{{ user().name }}</h1>
       <p class="mt-2 text-stone-500">
         {{ 'ui.profile.syncHint' | t }}
       </p>
@@ -29,7 +29,7 @@
     </div>
     <div>
       <dt class="text-sm font-medium text-stone-500">{{ 'ui.profile.joinedAtLabel' | t }}</dt>
-      <dd class="mt-1 text-stone-800">{{ user().joinedAt | date: 'mediumDate' }}</dd>
+      <dd class="mt-1 text-stone-800">{{ user().created_at | date: 'mediumDate' }}</dd>
     </div>
   </dl>
 

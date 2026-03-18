@@ -18,14 +18,14 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 class="font-semibold text-stone-800">{{ order.id }}</h3>
-            <p class="mt-1 text-sm text-stone-500">{{ order.placedAt | date: 'medium' }}</p>
+            <p class="mt-1 text-sm text-stone-500">{{ order.placed_at | date: 'medium' }}</p>
           </div>
           <div class="sm:text-right">
             <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                   [class]="getOrderStatusClasses(order.status)">
               {{ getOrderStatusLabel(order.status) }}
             </span>
-            <p class="mt-2 font-bold text-stone-900">{{ order.totalPrice | number: '1.2-2' }} {{ order.currency }}</p>
+            <p class="mt-2 font-bold text-stone-900">{{ order.total_price | number: '1.2-2' }} {{ order.currency }}</p>
           </div>
         </div>
 
@@ -33,7 +33,7 @@
           @for (item of order.items; track item.id + '-' + item.name) {
             <div class="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
               <span class="wrap-break-word text-stone-700">{{ item.quantity }} x {{ item.name }}</span>
-              <span class="text-stone-500">{{ item.unitPrice | number: '1.2-2' }} {{ order.currency }}</span>
+              <span class="text-stone-500">{{ item.unit_price | number: '1.2-2' }} {{ order.currency }}</span>
             </div>
           }
         </div>
