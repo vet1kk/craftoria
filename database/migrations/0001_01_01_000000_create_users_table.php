@@ -17,7 +17,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone');
+            $table->string('phone')->unique();
             $table->enum('role', ['admin', 'client'])->default('client')->index();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -32,7 +32,7 @@ return new class extends Migration
         });
 
         Schema::create('sessions', static function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->uuid('id')->primary();
             $table->foreignUuid('user_id')
                 ->nullable()
                 ->index()
