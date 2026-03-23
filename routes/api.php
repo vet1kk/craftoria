@@ -10,11 +10,13 @@ use App\Http\Controllers\Api\IngredientController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SettingsController;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HealthController::class);
 Route::get('/health', HealthController::class);
+Route::get('/settings', SettingsController::class);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [CategoryController::class, 'show']);

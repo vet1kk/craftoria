@@ -2,11 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-import { AppSettings, Category, Ingredient, IngredientUnit, NutritionFacts, Product } from '../models';
+import { Category, Ingredient, IngredientUnit, NutritionFacts, Product } from '../models';
 import { environment } from '../environments/environment';
 import { extractApiErrorMessage } from './api-error';
 import { I18nService } from './i18n.service';
 import { LocaleService } from './locale.service';
+import { AppSettingsService } from './settings.service';
 
 interface ApiCategory {
   id: string;
@@ -73,6 +74,7 @@ export class DataService {
   private readonly http = inject(HttpClient);
   private readonly i18n = inject(I18nService);
   private readonly localeService = inject(LocaleService);
+  private readonly settingsService = inject(AppSettingsService);
   private catalogRequest: Promise<void> | null = null;
   private lastLoadedLocale: string | null = null;
 
@@ -81,9 +83,7 @@ export class DataService {
   readonly products = signal<Product[]>([]);
   readonly isCatalogLoading = signal(false);
   readonly catalogError = signal('');
-  readonly appSettings: AppSettings = {
-    currency: 'грн'
-  };
+  readonly appSettings = signal({ currency: '' });
 
   constructor() {
     effect(() => {
@@ -93,6 +93,12 @@ export class DataService {
       this.lastLoadedLocale = locale;
 
       void this.ensureCatalogLoaded(shouldForceReload);
+    });
+
+    effect(() => {
+      this.settingsService.settings().then((settings) => {
+        this.appSettings.set(settings.data);
+      });
     });
   }
 

@@ -69,7 +69,7 @@ export class CartDrawerComponent {
     return {
       phone,
       items: this.cartService.items(),
-      currency: this.dataService.appSettings.currency,
+      currency: this.dataService.appSettings().currency,
       total_price: this.cartService.totalPrice()
     };
   }

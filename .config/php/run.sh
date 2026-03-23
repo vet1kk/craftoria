@@ -30,6 +30,8 @@ if [ "${1:-serve}" = "check" ]; then
     exit 0
 fi
 
+export NG_CLI_ANALYTICS="${NG_CLI_ANALYTICS:-false}"
+
 # 4. Process Orchestration
 echo "Starting development environment..."
 
@@ -46,9 +48,9 @@ echo "Starting development environment..."
 
     rm -f storage/framework/nginx/nginx.pid
     # Start Nginx (Attempt reload first, if fails, start)
-    if ! nginx -p . -c .config/nginx/nginx.conf -s reload 2>/dev/null; then
-        nginx -p . -c .config/nginx/nginx.conf
-    fi
+    if ! nginx -p . -c .config/nginx/nginx.conf -s reload >/dev/null 2>&1; then nginx -p . -c .config/nginx/nginx.conf & fi
+
+    sleep 2
 
     echo "Services are running."
     echo "PHP-FPM: 127.0.0.1:9000"

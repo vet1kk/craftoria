@@ -9,3 +9,4 @@ export * from './user.service';
 export * from './locale.service';
 export * from './i18n.service';
 export * from './toast.service';
+export * from './settings.service';

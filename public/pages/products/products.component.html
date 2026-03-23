@@ -31,7 +31,7 @@
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         @for (item of filteredItems(); track item.id) {
           <app-product-card [item]="item"
-                            [currency]="dataService.appSettings.currency"
+                            [currency]="dataService.appSettings().currency"
                             (addToCart)="cartService.addToCart($event)">
           </app-product-card>
         }

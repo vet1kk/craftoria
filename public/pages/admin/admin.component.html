@@ -17,7 +17,7 @@
     @if (activeTab() === 'items') {
       <app-admin-product-panel [products]="dataService.products()"
                                [categories]="dataService.categories()"
-                               [currency]="dataService.appSettings.currency">
+                               [currency]="dataService.appSettings().currency">
       </app-admin-product-panel>
     }
 
