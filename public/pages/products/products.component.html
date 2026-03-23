@@ -28,7 +28,7 @@
         <p class="text-lg">{{ 'ui.products.emptyCategory' | t }}</p>
       </div>
     } @else {
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="grid md:grid-cols-3 sm:grid-cols-2 gap-6">
         @for (item of filteredItems(); track item.id) {
           <app-product-card [item]="item"
                             [currency]="dataService.appSettings().currency"

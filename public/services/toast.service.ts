@@ -11,7 +11,7 @@ export interface Toast {
 })
 export class ToastService {
   private nextId = 0;
-  private readonly defaultDuration = 3000;
+  private readonly defaultDuration = 800;
 
   readonly toasts = signal<Toast[]>([]);
 

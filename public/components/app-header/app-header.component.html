@@ -1,42 +1,25 @@
 <nav #headerNav class="z-50 border-b border-stone-200 bg-stone-50/90 md:sticky md:top-0 md:backdrop-blur-md">
   <div class="mx-auto max-w-5xl px-3 py-2 sm:px-4 sm:py-3">
     <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-3 px-3 py-2 sm:px-4 sm:py-3 lg:flex-nowrap">
+
       <div class="flex min-w-0 items-center gap-5">
-        <div class="flex items-center gap-2">
-          <div class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 font-bold text-white">
-            V
-          </div>
+        <a routerLink="/" class="flex items-center gap-2">
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-500 font-bold text-white">V</div>
           <div class="min-w-0 leading-tight">
-            <div class="truncate text-base font-bold tracking-tight text-stone-800 sm:text-lg">
-              {{ 'ui.header.brandName' | t }}
-            </div>
+            <div class="truncate text-base font-bold tracking-tight text-stone-800 sm:text-lg">{{ 'ui.header.brandName' | t }}</div>
             <div class="truncate text-xs text-stone-500">{{ 'ui.header.brandSlogan' | t }}</div>
           </div>
-        </div>
+        </a>
 
         <div class="hidden items-center gap-2 min-[860px]:flex lg:flex-wrap lg:justify-center">
-          <a routerLink="/"
-             routerLinkActive="border-stone-800 bg-stone-800 shadow-md"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:px-4 sm:py-2 sm:text-base">
-            <span>{{ 'ui.nav.menu' | t }}</span>
-          </a>
-
-          @if (authService.isAdmin()) {
-            <a routerLink="/admin"
-               routerLinkActive="border-stone-800 bg-stone-800 shadow-md"
-                class="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:px-4 sm:py-2 sm:text-base">
-              <span>{{ 'ui.nav.admin' | t }}</span>
-            </a>
-          }
+          <ng-container [ngTemplateOutlet]="navLinks" [ngTemplateOutletContext]="{ isMobile: false }"></ng-container>
         </div>
       </div>
 
       <div class="flex items-center gap-2 min-[860px]:hidden">
         <button type="button"
                 (click)="openCart()"
-                [attr.aria-label]="'ui.header.openCart' | t"
-                class="relative flex h-10 min-w-10 items-center justify-center rounded-full border border-stone-200 bg-white px-3 text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600">
+                class="relative flex h-10 min-w-10 items-center justify-center rounded-full border border-stone-200 bg-white px-3 text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50">
           <span class="text-base leading-none">🛒</span>
           @if (cartService.totalCount() > 0) {
             <span class="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
@@ -45,24 +28,15 @@
           }
         </button>
 
-        <button type="button"
-                (click)="toggleMobileMenu()"
-                [attr.aria-expanded]="isMobileMenuOpen()"
-                [attr.aria-label]="'ui.header.openNavMenu' | t"
-                class="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600">
-          <span class="sr-only">{{ 'ui.header.menuLabel' | t }}</span>
-          @if (isMobileMenuOpen()) {
-            <span class="text-xl leading-none">×</span>
-          } @else {
-            <span class="text-lg leading-none">☰</span>
-          }
+        <button type="button" (click)="toggleMobileMenu()" class="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700">
+          <span class="text-xl leading-none">{{ isMobileMenuOpen() ? '×' : '☰' }}</span>
         </button>
       </div>
 
       <div class="hidden items-center justify-end gap-2 min-[860px]:ml-auto min-[860px]:flex lg:flex-wrap">
         <button type="button"
                 (click)="cartDrawerService.open()"
-                class="flex min-w-0 items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:px-4 sm:py-2 sm:text-base">
+                class="flex min-w-0 items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 sm:px-4 sm:py-2 sm:text-base">
           <span>{{ 'ui.nav.cart' | t }}</span>
           @if (cartService.totalCount() > 0) {
             <span class="inline-flex min-w-6 h-6 items-center justify-center rounded-full bg-orange-500 px-2 text-xs font-semibold text-white">
@@ -76,14 +50,11 @@
 
         <a routerLink="/account"
            routerLinkActive="border-stone-800 bg-stone-800 shadow-md"
-           #accountLinkActive="routerLinkActive"
-           class="flex min-w-0 items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:px-4 sm:py-2 sm:text-base">
+           #accActive="routerLinkActive"
+           class="flex min-w-0 items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 sm:px-4 sm:py-2 sm:text-base">
           @if (authService.isAuthenticated()) {
-            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white ring-1 ring-white/10 transition-colors"
-                  [class.text-stone-900]="accountLinkActive.isActive"
-                  [class.ring-stone-300]="accountLinkActive.isActive"
-                  [attr.aria-label]="avatarLabel"
-                  [attr.title]="avatarLabel">
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white ring-1 ring-white/10"
+                  [class.text-stone-900]="accActive.isActive">
               {{ avatarInitials }}
             </span>
           }
@@ -94,7 +65,7 @@
           <button type="button"
                   (click)="logout()"
                   class="rounded-full px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors hover:bg-red-50 hover:text-red-600 sm:px-4 sm:py-2 sm:text-base">
-            <span>{{ 'ui.nav.logout' | t }}</span>
+            {{ 'ui.nav.logout' | t }}
           </button>
         }
       </div>
@@ -104,62 +75,58 @@
 
 @if (isMobileMenuOpen()) {
   <div class="fixed inset-0 z-100 min-[860px]:hidden">
-    <button type="button"
-            (click)="closeMobileMenu()"
-            [attr.aria-label]="'ui.header.closeMenu' | t"
-            class="absolute inset-0 bg-stone-950/35 backdrop-blur-[1px]">
-    </button>
-    <div class="relative mx-3 mt-20">
-      <div class="ml-auto w-full max-w-xs overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl">
-        <div class="flex flex-col p-2">
-          <a routerLink="/"
-             routerLinkActive="bg-stone-800 text-white"
-             [routerLinkActiveOptions]="{ exact: true }"
-             (click)="closeMobileMenu()"
-             class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600">
-            <span>{{ 'ui.nav.menu' | t }}</span>
-            <span aria-hidden="true" class="text-stone-400">›</span>
-          </a>
-
-          @if (authService.isAdmin()) {
-            <a routerLink="/admin"
-               routerLinkActive="bg-stone-800 text-white"
-               (click)="closeMobileMenu()"
-               class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600">
-              <span>{{ 'ui.nav.admin' | t }}</span>
-              <span aria-hidden="true" class="text-stone-400">›</span>
-            </a>
-          }
-
-          <a routerLink="/account"
-             routerLinkActive="bg-stone-800 text-white"
-             #mobileAccountLinkActive="routerLinkActive"
-             (click)="closeMobileMenu()"
-             class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600">
-              <span>{{ authService.isAuthenticated() ? ('ui.nav.profile' | t) : ('ui.nav.login' | t) }}</span>
-            <span class="flex items-center gap-2">
-              @if (authService.isAuthenticated()) {
-                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-700 ring-1 ring-stone-200 transition-colors"
-                      [class.text-stone-900]="mobileAccountLinkActive.isActive"
-                      [class.ring-stone-300]="mobileAccountLinkActive.isActive">
-                  {{ avatarInitials }}
-                </span>
-              }
-              <span aria-hidden="true" class="text-stone-400">›</span>
-            </span>
-          </a>
-        </div>
-
-        @if (authService.isAuthenticated()) {
-          <div class="border-t border-stone-100 p-2">
-            <button type="button"
-                    (click)="logout()"
-                    class="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-stone-600 transition-colors hover:bg-red-50 hover:text-red-600">
-               <span>{{ 'ui.nav.logout' | t }}</span>
-             </button>
-          </div>
-        }
+    <div (click)="closeMobileMenu()" class="absolute inset-0 bg-stone-950/35 backdrop-blur-[1px]"></div>
+    <div class="relative mx-3 mt-20 ml-auto w-full max-w-xs overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl">
+      <div class="flex flex-col p-2">
+        <ng-container [ngTemplateOutlet]="navLinks" [ngTemplateOutletContext]="{ isMobile: true }"></ng-container>
       </div>
+      @if (authService.isAuthenticated()) {
+        <div class="border-t border-stone-100 p-2">
+          <button type="button" (click)="logout()" class="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-stone-600 transition-colors hover:bg-red-50 hover:text-red-600">
+            {{ 'ui.nav.logout' | t }}
+          </button>
+        </div>
+      }
     </div>
   </div>
 }
+
+<ng-template #navLinks let-isMobile="isMobile">
+  <a routerLink="/products"
+     [routerLinkActive]="isMobile ? 'border-stone-800 bg-stone-800 shadow-md text-white' : 'border-stone-800'"
+     [routerLinkActiveOptions]="{ exact: true }"
+     (click)="isMobile ? closeMobileMenu() : null"
+     [class]="isMobile
+      ? 'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600'
+      : 'flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:px-4 sm:py-2 sm:text-base'">
+    <span>{{ 'ui.nav.menu' | t }}</span>
+    @if (isMobile) {
+      <span class="text-stone-400">›</span>
+    }
+  </a>
+
+  @if (authService.isAdmin()) {
+    <a routerLink="/admin" [routerLinkActive]="isMobile ? 'border-stone-800 bg-stone-800 shadow-md text-white' : 'border-stone-800'" (click)="isMobile ? closeMobileMenu() : null"
+       [class]="isMobile
+        ? 'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600'
+        : 'flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:px-4 sm:py-2 sm:text-base'">
+      <span>{{ 'ui.nav.admin' | t }}</span>
+      @if (isMobile) {
+        <span class="text-stone-400">›</span>
+      }
+    </a>
+  }
+
+  @if (isMobile) {
+    <a routerLink="/account" routerLinkActive="bg-stone-800 text-white" (click)="closeMobileMenu()"
+       class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600">
+      <span>{{ authService.isAuthenticated() ? ('ui.nav.profile' | t) : ('ui.nav.login' | t) }}</span>
+      <span class="flex items-center gap-2">
+        @if (authService.isAuthenticated()) {
+          <span class="flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 text-xs font-semibold text-stone-700 ring-1 ring-stone-200">{{ avatarInitials }}</span>
+        }
+        <span class="text-stone-400">›</span>
+      </span>
+    </a>
+  }
+</ng-template>

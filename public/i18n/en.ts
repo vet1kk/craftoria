@@ -39,7 +39,8 @@ export const enTranslations = {
       errorTitle: 'Unable to load the catalog',
       emptyCategory: 'There are no items in this category yet.',
       catalogLoadError: 'Failed to load the catalog.',
-      itemLoadError: 'Failed to load the item.'
+      itemLoadError: 'Failed to load the item.',
+      selectedCategory: 'Selected category:',
     },
     data: {
       descriptionPlaceholder: 'Description will be added soon.',
@@ -91,6 +92,8 @@ export const enTranslations = {
       carbs: 'Carbs',
       kcal: 'kcal',
       grams: 'g',
+      g: 'g',
+      ml: 'ml',
       packingBadge: 'Packing details',
       packingTitle: 'Packaging details',
       packingHint: 'Everything included in the order and recommendations for storage and serving.',
@@ -185,7 +188,9 @@ export const enTranslations = {
       developedBy: 'Developed by Vitaly Lyskov'
     },
     toast: {
-      addedToCart: '{{name}} added to cart'
+      addedToCart: '{{name}} added to cart',
+      removedFromCart: '{{name}} removed from cart',
+      cartReplaced: 'Cart loaded with new items',
     }
   }
 } as const;

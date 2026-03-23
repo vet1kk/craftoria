@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { CartItem, Order } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -19,7 +19,7 @@ type RegistrationControlName =
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ReactiveFormsModule, AccountProfileSummaryComponent, AccountOrderHistoryComponent, TranslatePipe],
+  imports: [ReactiveFormsModule, AccountProfileSummaryComponent, AccountOrderHistoryComponent, TranslatePipe, RouterLink],
   templateUrl: './account.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

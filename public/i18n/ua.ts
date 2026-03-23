@@ -39,7 +39,8 @@ export const uaTranslations = {
       errorTitle: 'Не вдалося отримати каталог',
       emptyCategory: 'У цій категорії поки немає позицій.',
       catalogLoadError: 'Не вдалося завантажити каталог.',
-      itemLoadError: 'Не вдалося завантажити товар.'
+      itemLoadError: 'Не вдалося завантажити товар.',
+      selectedCategory: 'Вибрана категорія:',
     },
     data: {
       descriptionPlaceholder: 'Опис буде додано найближчим часом.',
@@ -91,6 +92,8 @@ export const uaTranslations = {
       carbs: 'Вуглеводи',
       kcal: 'ккал',
       grams: 'г',
+      g: 'г',
+      ml: 'мл',
       packingBadge: 'Деталі пакування',
       packingTitle: 'Деталі пакування',
       packingHint: 'Усе, що входить у замовлення, та рекомендації щодо зберігання і подачі.',
@@ -185,7 +188,9 @@ export const uaTranslations = {
       developedBy: 'Розроблено Vitaly Lyskov'
     },
     toast: {
-      addedToCart: '{{name}} додано до кошика'
+      addedToCart: '{{name}} додано до кошика',
+      removedFromCart: '{{name}} прибрано з кошика',
+      cartReplaced: 'Кошик оновлено',
     }
   }
 } as const;

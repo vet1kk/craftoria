@@ -2,16 +2,14 @@ import { inject, Injectable } from '@angular/core';
 
 import { Category, Ingredient, IngredientUnit, NutritionFacts, Product, ResolvedProductIngredient } from '../models';
 import { DataService } from './data.service';
+import { I18nService } from './i18n.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private readonly dataService = inject(DataService);
-
-  getProductById(itemId: string): Product | undefined {
-    return this.dataService.products().find((item) => item.id === itemId);
-  }
+  private readonly i18n = inject(I18nService);
 
   getProductBySlug(slug: string): Product | undefined {
     return this.dataService.products().find((item) => item.slug === slug);
@@ -116,6 +114,6 @@ export class ProductService {
   private formatQuantity(quantity: number, unit: IngredientUnit): string {
     const formattedQuantity = Number.isInteger(quantity) ? quantity.toString() : quantity.toFixed(1);
 
-    return `${formattedQuantity} ${unit}`;
+    return `${formattedQuantity} ${this.i18n.translate('ui.itemDetail.' + unit)}`;
   }
 }

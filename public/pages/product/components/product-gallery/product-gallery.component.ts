@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { EmptyImagePlaceholderComponent } from '../../../../ui';
 
 export interface GallerySlot {
   image_url: string | null;
@@ -11,7 +10,7 @@ export interface GallerySlot {
 @Component({
   selector: 'app-product-gallery',
   standalone: true,
-  imports: [TranslatePipe, EmptyImagePlaceholderComponent],
+  imports: [TranslatePipe],
   templateUrl: './product-gallery.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

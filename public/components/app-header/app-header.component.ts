@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -8,7 +8,7 @@ import { AuthService, CartDrawerService, CartService, DataService } from '../../
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, DecimalPipe, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, DecimalPipe, TranslatePipe, NgTemplateOutlet],
   templateUrl: './app-header.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -20,15 +20,7 @@ export class AppHeaderComponent {
   readonly cartDrawerService = inject(CartDrawerService);
   readonly authService = inject(AuthService);
   readonly isMobileMenuOpen = signal(false);
-  private readonly router = inject(Router);
-
-  get accountLabel(): string {
-    return this.authService.isAuthenticated() ? 'Профіль' : 'Увійти';
-  }
-
-  get avatarLabel(): string {
-    return this.authService.currentUser()?.name ?? '';
-  }
+  protected readonly router = inject(Router);
 
   get avatarInitials(): string {
     const user = this.authService.currentUser();
@@ -61,6 +53,6 @@ export class AppHeaderComponent {
   async logout(): Promise<void> {
     this.closeMobileMenu();
     await this.authService.logout();
-    await this.router.navigate(['/account']);
+    await this.router.navigate(['/products']);
   }
 }
