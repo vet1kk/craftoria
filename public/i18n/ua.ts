@@ -34,7 +34,7 @@ export const uaTranslations = {
       phoneError: 'Будь ласка, введіть коректний номер телефону.',
       orderError: 'Зараз не вдалося оформити замовлення.'
     },
-    menu: {
+    products: {
       loading: 'Завантажуємо актуальне меню...',
       errorTitle: 'Не вдалося отримати каталог',
       emptyCategory: 'У цій категорії поки немає позицій.',

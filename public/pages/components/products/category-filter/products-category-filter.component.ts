@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-
 import { Category } from '../../../../models';
 
 @Component({
@@ -10,6 +9,10 @@ import { Category } from '../../../../models';
 })
 export class ProductsCategoryFilterComponent {
   readonly categories = input.required<Category[]>();
-  readonly selectedCategorySlug = input('all');
+  readonly selectedSlugs = input<string[]>(['all']);
   readonly categoryChange = output<string>();
+
+  isSelected(slug: string): boolean {
+    return this.selectedSlugs().includes(slug);
+  }
 }

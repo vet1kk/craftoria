@@ -11,6 +11,9 @@ cd "$ROOT_DIR"
 # Ensure runtime directories exist
 mkdir -p "$STORAGE_DIR"/{nginx,php-fpm/conf.d} "$LOG_DIR"
 
+# Clear frontend logs before starting services
+rm -f "$LOG_DIR/frontend.log"
+
 # 2. Xdebug Logic
 export PHP_FPM_CONF_D="$STORAGE_DIR/php-fpm/conf.d"
 rm -rf "${PHP_FPM_CONF_D:?}"/*
@@ -32,29 +35,38 @@ fi
 
 export NG_CLI_ANALYTICS="${NG_CLI_ANALYTICS:-false}"
 
-# 4. Process Orchestration
 echo "Starting development environment..."
 
-(
-    # The 'kill 0' trap ensures that if this script dies,
-    # all background children (php-fpm, npm, tail) die with it.
-    trap 'kill 0' EXIT
+# Define cleanup
+cleanup() {
+    trap - SIGINT SIGTERM EXIT
+    echo -e "\nShutting down services..."
 
-    # Start PHP-FPM
-    php-fpm -F -p "$PWD" -y ".config/php/php-fpm.conf" -c ".config/php/php.ini" > "$LOG_DIR/php-fpm.log" 2>&1 &
+    kill -9 -$$ 2>/dev/null || true
+}
 
-    # Start Frontend Watcher
-    npm -C public start > "$LOG_DIR/frontend.log" 2>&1 &
+: cleanup
 
-    rm -f storage/framework/nginx/nginx.pid
-    # Start Nginx (Attempt reload first, if fails, start)
-    if ! nginx -p . -c .config/nginx/nginx.conf -s reload >/dev/null 2>&1; then nginx -p . -c .config/nginx/nginx.conf & fi
+# Set the trap at the script level
+trap cleanup SIGINT SIGTERM EXIT
 
-    sleep 2
+# Start PHP-FPM
+php-fpm -F -p "$PWD" -y ".config/php/php-fpm.conf" -c ".config/php/php.ini" > "$LOG_DIR/php-fpm.log" 2>&1 &
 
-    echo "Services are running."
-    echo "PHP-FPM: 127.0.0.1:9000"
-    echo "Logs: storage/logs/"
+# Start Frontend Watcher
+npm -C public start > "$LOG_DIR/frontend.log" 2>&1 &
 
-    tail -f "$LOG_DIR/frontend.log"
-)
+rm -f storage/framework/nginx/nginx.pid
+
+if ! nginx -p . -c .config/nginx/nginx.conf -s reload >/dev/null 2>&1; then
+    nginx -p . -c .config/nginx/nginx.conf &
+fi
+
+sleep 2
+
+echo "Services are running."
+echo "PHP-FPM: 127.0.0.1:9000"
+echo "Nginx: 127.0.0.1:8080"
+echo "Frontend: 127.0.0.1:3000"
+
+tail -f "$LOG_DIR/frontend.log"

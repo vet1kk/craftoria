@@ -34,7 +34,7 @@ export const enTranslations = {
       phoneError: 'Please enter a valid phone number.',
       orderError: 'Unable to place the order right now.'
     },
-    menu: {
+    products: {
       loading: 'Loading the latest menu...',
       errorTitle: 'Unable to load the catalog',
       emptyCategory: 'There are no items in this category yet.',

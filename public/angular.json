@@ -22,7 +22,11 @@
             "styles": [
               "styles.css"
             ],
-            "tsConfig": "tsconfig.json"
+            "tsConfig": "tsconfig.json",
+            "assets": [
+              "favicon.ico",
+              "assets"
+            ]
           },
           "configurations": {
             "production": {

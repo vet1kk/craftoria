@@ -3,7 +3,7 @@
 
   @if (showCategories()) {
     <app-products-category-filter [categories]="dataService.categories()"
-                                  [selectedCategorySlug]="selectedCategorySlug()"
+                                  [selectedSlugs]="[selectedCategorySlug()]"
                                   (categoryChange)="selectedCategorySlug.set($event)">
     </app-products-category-filter>
   }
