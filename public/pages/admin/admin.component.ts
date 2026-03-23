@@ -3,13 +3,13 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { AdminTab } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { DataService } from '../../services';
-import { AdminCategoriesPanelComponent, AdminMenuItemsPanelComponent, AdminTabsComponent } from '../components';
+import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsComponent } from '../components';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   templateUrl: './admin.component.html',
-  imports: [AdminTabsComponent, AdminMenuItemsPanelComponent, AdminCategoriesPanelComponent, TranslatePipe],
+  imports: [AdminTabsComponent, AdminProductPanelComponent, AdminCategoriesPanelComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminComponent {

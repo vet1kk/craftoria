@@ -15,10 +15,10 @@
     </div>
   } @else {
     @if (activeTab() === 'items') {
-      <app-admin-menu-items-panel [products]="dataService.products()"
-                                  [categories]="dataService.categories()"
-                                  [currency]="dataService.appSettings.currency">
-      </app-admin-menu-items-panel>
+      <app-admin-product-panel [products]="dataService.products()"
+                               [categories]="dataService.categories()"
+                               [currency]="dataService.appSettings.currency">
+      </app-admin-product-panel>
     }
 
     @if (activeTab() === 'categories') {

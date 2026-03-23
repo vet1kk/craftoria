@@ -1,3 +1,3 @@
 export * from './tabs';
-export * from './items';
+export * from './panel';
 export * from './categories';

@@ -125,7 +125,7 @@ export class DataService {
         this.setProducts(mappedProducts);
       })
       .catch((error: unknown) => {
-        this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.menu.catalogLoadError'), this.i18n));
+        this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.catalogLoadError'), this.i18n));
         throw error;
       })
       .finally(() => {
@@ -150,7 +150,7 @@ export class DataService {
       return mappedProduct;
     } catch (error: unknown) {
       if (this.products().length === 0) {
-        this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.menu.itemLoadError'), this.i18n));
+        this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.itemLoadError'), this.i18n));
       }
 
       return null;

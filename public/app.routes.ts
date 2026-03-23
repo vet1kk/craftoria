@@ -4,14 +4,14 @@ import { adminGuard } from './guards/admin.guard';
 
 export const appRoutes: Routes = [
   {
-    path: '',
+    path: 'products',
     loadComponent: () =>
-      import('./pages/menu/menu.component').then((module) => module.MenuComponent)
+      import('./pages/products/products.component').then((module) => module.ProductsComponent)
   },
   {
-    path: 'item/:slug',
+    path: 'product/:slug',
     loadComponent: () =>
-      import('./pages/item-detail/item-detail.component').then((module) => module.ItemDetailComponent)
+      import('./pages/product/product.component').then((module) => module.ProductComponent)
   },
   {
     path: 'account',
@@ -24,5 +24,5 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./pages/admin/admin.component').then((module) => module.AdminComponent)
   },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'products' }
 ];

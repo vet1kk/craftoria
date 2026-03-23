@@ -1,3 +1,3 @@
 export * from './account';
 export * from './admin';
-export * from './menu';
+export * from './products';

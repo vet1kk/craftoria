@@ -50,7 +50,7 @@ export const enTranslations = {
     },
     hero: {
       title: 'Delicious food delivered',
-      subtitle: 'Choose your favorite items from our menu and order in minutes.'
+      subtitle: 'Choose your favorite products from our menu and order in minutes.'
     },
     itemCard: {
       outOfStock: 'Out of stock',
@@ -63,7 +63,7 @@ export const enTranslations = {
       backToMenu: 'Back to menu',
       loading: 'Loading item...',
       notFound: 'Item not found',
-      notFoundHint: 'The item may have been removed from the menu or the link is outdated.',
+      notFoundHint: 'The product may have been removed from the menu or the link is outdated.',
       backToCatalog: 'Back to catalog',
       menuItemBadge: 'Menu item',
       available: 'In stock',
