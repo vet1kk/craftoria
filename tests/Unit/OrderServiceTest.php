@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unit;
+namespace Tests\Unit;
 
 use App\Models\Category;
 use App\Models\Order;

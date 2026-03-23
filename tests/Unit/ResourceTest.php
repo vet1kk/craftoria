@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unit;
+namespace Tests\Unit;
 
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\IngredientResource;
@@ -38,8 +38,8 @@ class ResourceTest extends TestCase
             'cost_amount' => 14.2,
         ]);
 
-        $categoryPayload = (new CategoryResource($category))->toArray(new Request);
-        $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request);
+        $categoryPayload = (new CategoryResource($category))->toArray(new Request());
+        $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request());
 
         $this->assertSame('cake', $categoryPayload['icon']);
         $this->assertSame('https://example.com/cat.jpg', $categoryPayload['image_url']);
@@ -76,9 +76,9 @@ class ResourceTest extends TestCase
             'position' => 0,
         ]);
 
-        $categoryPayload = (new CategoryResource($category))->toArray(new Request);
-        $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request);
-        $productPayload = (new ProductResource($product->fresh()->load(['metadata', 'ingredients'])))->toArray(new Request);
+        $categoryPayload = (new CategoryResource($category))->toArray(new Request());
+        $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request());
+        $productPayload = (new ProductResource($product->fresh()->load(['metadata', 'ingredients'])))->toArray(new Request());
 
         $this->assertSame('Бургери', $categoryPayload['name']);
         $this->assertSame('Яловичина', $ingredientPayload['name']);
@@ -108,7 +108,7 @@ class ResourceTest extends TestCase
         ]);
 
         $product = $product->fresh()->load(['images', 'metadata', 'ingredients']);
-        $payload = (new ProductResource($product))->toArray(new Request);
+        $payload = (new ProductResource($product))->toArray(new Request());
 
         $this->assertSame('https://example.com/p1.jpg', $payload['gallery_image_urls'][0]);
         $this->assertSame(
@@ -138,9 +138,9 @@ class ResourceTest extends TestCase
 
         $order = $order->fresh()->load(['items', 'user']);
 
-        $itemPayload = (new OrderItemResource($item))->toArray(new Request);
-        $orderPayload = (new OrderResource($order))->toArray(new Request);
-        $userPayload = (new UserResource($user->load('orders')))->toArray(new Request);
+        $itemPayload = (new OrderItemResource($item))->toArray(new Request());
+        $orderPayload = (new OrderResource($order))->toArray(new Request());
+        $userPayload = (new UserResource($user->load('orders')))->toArray(new Request());
 
         $this->assertSame('Cake', $itemPayload['product_name']);
         $this->assertSame('Main St', $orderPayload['delivery_address']['line_1']);

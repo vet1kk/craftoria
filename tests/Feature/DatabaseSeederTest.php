@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Feature;
+namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
