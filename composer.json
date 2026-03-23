@@ -39,48 +39,32 @@
   },
   "scripts": {
     "setup": [
-      "composer install",
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-      "composer setup:postgres",
+      "@composer install",
+      "npm -C public install",
       "@php artisan key:generate --ansi",
-      "@php artisan config:clear --ansi",
-      "cd public && npm install",
-      "cd public && npm run build"
+      "@setup:postgres",
+      "@php artisan migrate",
+      "#@php artisan db:seed --ansi"
     ],
     "check": [
       "@composer validate --strict",
       "@composer check-platform-reqs",
-      "@php artisan config:clear --ansi",
       "@php artisan route:list --except-vendor --ansi"
     ],
     "test": [
-      "@php artisan config:clear --ansi",
-      "@php artisan test"
+      "php vendor/bin/phpunit"
     ],
-    "check:php-fpm": [
-      ".config/php/run.sh check"
-    ],
-    "setup:postgres": [
-      "bash .config/postgres/run.sh setup"
-    ],
-    "check:postgres": [
-      "bash .config/postgres/run.sh check"
-    ],
-    "serve:nginx": [
-      ".config/php/run.sh"
-    ],
+    "setup:postgres": "bash .config/postgres/run.sh setup",
+    "check:postgres": "bash .config/postgres/run.sh check",
+    "check:php-fpm": ".config/php/run.sh check",
+    "serve": ".config/php/run.sh",
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi"
     ],
     "post-update-cmd": [
       "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
-    ],
-    "post-root-package-install": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-    ],
-    "pre-package-uninstall": [
-      "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
     ]
   },
   "extra": {

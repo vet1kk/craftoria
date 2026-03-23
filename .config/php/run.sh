@@ -1,27 +1,58 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-mkdir -p storage/framework/{nginx,php-fpm/conf.d} storage/logs
-find storage/framework/php-fpm/conf.d -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-scan="$(php --ini | awk -F': ' '/Scan for additional \.ini files in:/ {print $2}')"
-[ -n "${scan:-}" ] && [ "$scan" != "(none)" ] && for f in "$scan"/*.ini; do [ -e "$f" ] || continue; [[ "$(basename "$f")" == *xdebug* ]] && continue; ln -sf "$f" storage/framework/php-fpm/conf.d/; done
-xdebug="$(php-config --extension-dir)/xdebug.so"; [ -f "$xdebug" ] && printf 'zend_extension="%s"\n' "$xdebug" > storage/framework/php-fpm/conf.d/00-xdebug.ini
-ln -sf "$PWD/.config/php/conf.d/99-xdebug.ini" storage/framework/php-fpm/conf.d/99-xdebug.ini
-export PHP_INI_SCAN_DIR="$PWD/storage/framework/php-fpm/conf.d"
-[ "${1:-serve}" = check ] && exec php-fpm -p "$PWD" -y "$PWD/.config/php/php-fpm.conf" -c "$PWD/.config/php/php.ini" -t
-nginx_pid_file="$PWD/storage/framework/nginx/nginx.pid"
-if [ -f "$nginx_pid_file" ]; then
-    nginx_pid="$(cat "$nginx_pid_file")"
-    if [ -n "${nginx_pid:-}" ] && kill -0 "$nginx_pid" 2>/dev/null; then
-        nginx -p . -c .config/nginx/nginx.conf -s reload >/dev/null 2>&1 || true
-        echo "Project nginx is already running on port 80 (pid $nginx_pid)." >&2
-        echo "Reused the running server instead of starting a second instance." >&2
-        exit 0
-    fi
+
+# 1. Environment & Path Setup
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+readonly STORAGE_DIR="$ROOT_DIR/storage/framework"
+readonly LOG_DIR="$ROOT_DIR/storage/logs"
+
+cd "$ROOT_DIR"
+
+# Ensure runtime directories exist
+mkdir -p "$STORAGE_DIR"/{nginx,php-fpm/conf.d} "$LOG_DIR"
+
+# 2. Xdebug Logic
+export PHP_FPM_CONF_D="$STORAGE_DIR/php-fpm/conf.d"
+rm -rf "${PHP_FPM_CONF_D:?}"/*
+
+if [ -f ".config/php/conf.d/99-xdebug.ini" ]; then
+    ln -sf "$ROOT_DIR/.config/php/conf.d/99-xdebug.ini" "$PHP_FPM_CONF_D/99-xdebug.ini"
 fi
-php-fpm -p "$PWD" -y "$PWD/.config/php/php-fpm.conf" -c "$PWD/.config/php/php.ini" -F -O > storage/logs/php-fpm.stdout.log 2>&1 & p=$!
-trap 'kill ${n:-} $p 2>/dev/null || true; wait ${n:-} $p 2>/dev/null || true' EXIT INT TERM
-for _ in {1..20}; do if lsof -nP -iTCP:9000 -sTCP:LISTEN >/dev/null 2>&1; then break; fi; sleep 1; done
-lsof -nP -iTCP:9000 -sTCP:LISTEN >/dev/null 2>&1 || { echo 'php-fpm did not start on 127.0.0.1:9000.' >&2; exit 1; }
-nginx -p . -c .config/nginx/nginx.conf & n=$!
-wait "$n"
+
+export PHP_INI_SCAN_DIR=":$PHP_FPM_CONF_D"
+
+# 3. Check Mode
+if [ "${1:-serve}" = "check" ]; then
+    echo "--- Checking PHP-FPM Configuration ---"
+    php-fpm -t -p "$PWD" -y ".config/php/php-fpm.conf"
+    echo "--- Checking Nginx Configuration ---"
+    nginx -t -p . -c .config/nginx/nginx.conf
+    exit 0
+fi
+
+# 4. Process Orchestration
+echo "Starting development environment..."
+
+(
+    # The 'kill 0' trap ensures that if this script dies,
+    # all background children (php-fpm, npm, tail) die with it.
+    trap 'kill 0' EXIT
+
+    # Start PHP-FPM
+    php-fpm -F -p "$PWD" -y ".config/php/php-fpm.conf" -c ".config/php/php.ini" > "$LOG_DIR/php-fpm.log" 2>&1 &
+
+    # Start Frontend Watcher
+    npm -C public start > "$LOG_DIR/frontend.log" 2>&1 &
+
+    rm -f storage/framework/nginx/nginx.pid
+    # Start Nginx (Attempt reload first, if fails, start)
+    if ! nginx -p . -c .config/nginx/nginx.conf -s reload 2>/dev/null; then
+        nginx -p . -c .config/nginx/nginx.conf
+    fi
+
+    echo "Services are running."
+    echo "PHP-FPM: 127.0.0.1:9000"
+    echo "Logs: storage/logs/"
+
+    tail -f "$LOG_DIR/frontend.log"
+)
