@@ -57,6 +57,14 @@ class FileUpload
      */
     public static function publicUrl(?string $path): ?string
     {
-        return $path === null ? null : Storage::disk('public')->url($path);
+        if ($path === null) {
+            return null;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        return Storage::disk('public')->url($path);
     }
 }
