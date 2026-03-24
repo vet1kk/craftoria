@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
@@ -28,7 +28,7 @@ class ProfileController extends Controller
     /**
      * Update the authenticated profile.
      *
-     * @param  \App\Http\Requests\UpdateProfileRequest  $request
+     * @param \App\Http\Requests\Auth\UpdateProfileRequest $request
      * @return \App\Http\Resources\UserResource
      */
     public function update(UpdateProfileRequest $request): UserResource

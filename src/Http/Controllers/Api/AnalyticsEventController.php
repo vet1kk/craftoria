@@ -19,7 +19,7 @@ class AnalyticsEventController extends Controller
      */
     public function store(StoreAnalyticsEventRequest $request): JsonResponse
     {
-        AnalyticsEvent::query()->create([
+        AnalyticsEvent::create([
             'user_id' => $request->user()?->getKey(),
             'session_id' => $request->validated('session_id'),
             'name' => $request->validated('name'),

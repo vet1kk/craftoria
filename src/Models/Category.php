@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Helpers\FileUpload;
 use App\Models\Builders\CategoryBuilder;
 use App\Models\Concerns\HasTranslationConfig;
 use App\Models\Concerns\HasTranslationKey;
@@ -86,7 +87,7 @@ class Category extends Model
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param \Illuminate\Database\Query\Builder $query
      * @return \App\Models\Builders\CategoryBuilder
      */
     public function newEloquentBuilder($query): CategoryBuilder
@@ -97,11 +98,29 @@ class Category extends Model
     /**
      * Scope the query to active records.
      *
-     * @param  \App\Models\Builders\CategoryBuilder  $query
+     * @param \App\Models\Builders\CategoryBuilder $query
      * @return void
      */
     public function scopeActive(CategoryBuilder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (self $category): void {
+            if (!$category->wasChanged('image_url')) {
+                return;
+            }
+
+            FileUpload::deletePublicFile($category->getOriginal('image_url'));
+        });
+
+        static::deleting(static function (self $category): void {
+            FileUpload::deletePublicFile($category->image_url);
+        });
     }
 }

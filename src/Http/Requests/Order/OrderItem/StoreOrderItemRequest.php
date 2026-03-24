@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Order\OrderItem;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class LoginRequest extends FormRequest
+class StoreOrderItemRequest extends FormRequest
 {
     /**
      * Determine whether the request is authorized.
@@ -26,9 +27,13 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'max:255'],
-            'remember' => ['sometimes', 'boolean'],
+            'product_id' => [
+                'required',
+                'uuid',
+                Rule::exists('products', 'id')->whereNull('deleted_at')
+            ],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

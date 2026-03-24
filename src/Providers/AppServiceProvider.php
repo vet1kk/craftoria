@@ -7,8 +7,11 @@ namespace App\Providers;
 use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
+use App\Observers\OrderItemObserver;
+use App\Observers\OrderObserver;
 use App\Policies\CategoryPolicy;
 use App\Policies\IngredientPolicy;
 use App\Policies\OrderPolicy;
@@ -41,5 +44,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+        Order::observe(OrderObserver::class);
+        OrderItem::observe(OrderItemObserver::class);
     }
 }

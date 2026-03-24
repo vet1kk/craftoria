@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Helpers\FileUpload;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $ingredient_id
  * @property string $quantity
  * @property int $position
+ * @property string|null $image_url
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Product $product
@@ -30,6 +32,7 @@ class ProductIngredient extends Model
         'ingredient_id',
         'quantity',
         'position',
+        'image_url',
     ];
 
     /**
@@ -63,5 +66,23 @@ class ProductIngredient extends Model
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (self $productIngredient): void {
+            if (!$productIngredient->wasChanged('image_url')) {
+                return;
+            }
+
+            FileUpload::deletePublicFile($productIngredient->getOriginal('image_url'));
+        });
+
+        static::deleting(static function (self $productIngredient): void {
+            FileUpload::deletePublicFile($productIngredient->image_url);
+        });
     }
 }

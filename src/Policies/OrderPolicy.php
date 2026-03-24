@@ -56,7 +56,7 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        return $user->isAdmin();
+        return $order->status === 'pending';
     }
 
     /**
@@ -68,6 +68,6 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
-        return $user->isAdmin();
+        return $order->status === 'pending';
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Helpers\FileUpload;
 use App\Models\Builders\ProductBuilder;
 use App\Models\Concerns\HasTranslationConfig;
 use App\Models\Concerns\HasTranslationKey;
@@ -143,7 +144,7 @@ class Product extends Model
     public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class, 'product_ingredients')
-            ->withPivot(['id', 'quantity', 'position'])
+            ->withPivot(['id', 'quantity', 'position', 'image_url'])
             ->withTimestamps()
             ->orderBy('product_ingredients.position');
     }
@@ -161,7 +162,7 @@ class Product extends Model
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param \Illuminate\Database\Query\Builder $query
      * @return \App\Models\Builders\ProductBuilder
      */
     public function newEloquentBuilder($query): ProductBuilder
@@ -172,11 +173,37 @@ class Product extends Model
     /**
      * Scope the query to publicly visible records.
      *
-     * @param  \App\Models\Builders\ProductBuilder  $query
+     * @param \App\Models\Builders\ProductBuilder $query
      * @return void
      */
     public function scopePubliclyVisible(ProductBuilder $query): void
     {
         $query->where('is_active', true)->where('is_available', true);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (self $product): void {
+            if (!$product->wasChanged('featured_image_url')) {
+                return;
+            }
+
+            FileUpload::deletePublicFile($product->getOriginal('featured_image_url'));
+        });
+
+        static::deleting(static function (self $product): void {
+            FileUpload::deletePublicFile($product->featured_image_url);
+        });
+    }
+
+    /**
+     * @return \App\Models\Product
+     */
+    public function loadDetails(): self
+    {
+        return $this->load(['category', 'images', 'metadata', 'ingredients']);
     }
 }

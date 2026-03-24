@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Category;
 
+use App\Http\Requests\AdminRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class CategoryUpsertRequest extends AdminRequest
 {
@@ -21,7 +23,10 @@ class CategoryUpsertRequest extends AdminRequest
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('categories', 'slug')->ignore($categoryId)],
             'icon' => ['nullable', 'string', 'max:255'],
-            'image_url' => ['nullable', 'url', 'max:2048'],
+            'image' => [
+                'nullable',
+                File::image()->max(10 * 1024),
+            ],
             'position' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
         ];

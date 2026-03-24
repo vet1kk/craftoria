@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterUserRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -19,12 +19,12 @@ class AuthController extends Controller
     /**
      * Register a new client user account.
      *
-     * @param \App\Http\Requests\RegisterUserRequest $request
+     * @param \App\Http\Requests\Auth\RegisterUserRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(RegisterUserRequest $request): JsonResponse
     {
-        $user = User::query()->create([
+        $user = User::create([
             'name' => $request->validated('name'),
             'email' => strtolower($request->validated('email')),
             'phone' => $request->validated('phone'),
@@ -40,7 +40,7 @@ class AuthController extends Controller
     /**
      * Authenticate a user with email and password.
      *
-     * @param \App\Http\Requests\LoginRequest $request
+     * @param \App\Http\Requests\Auth\LoginRequest $request
      * @return \App\Http\Resources\UserResource
      */
     public function login(LoginRequest $request): UserResource
@@ -91,15 +91,15 @@ class AuthController extends Controller
      * Log out the authenticated user.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\Response
      */
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request): \Illuminate\Http\Response
     {
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->json(status: 204);
+        return response()->noContent();
     }
 }

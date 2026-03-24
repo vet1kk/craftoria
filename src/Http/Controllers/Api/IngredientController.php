@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\IngredientUpsertRequest;
+use App\Http\Requests\Ingredient\IngredientUpsertRequest;
 use App\Http\Resources\IngredientResource;
 use App\Models\Ingredient;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,34 +20,31 @@ class IngredientController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $this->authorize('viewAny', Ingredient::class);
+        $this->authorize('view', Ingredient::class);
 
-        return IngredientResource::collection(
-            Ingredient::query()
-                ->get()
-                ->sortBy(fn (Ingredient $ingredient): string => mb_strtolower($ingredient->name))
-                ->values()
-        );
+        $ingredients = Ingredient::query()
+                                 ->orderBy('name')
+                                 ->get();
+
+        return IngredientResource::collection($ingredients);
     }
 
     /**
      * Create an ingredient from the validated admin payload.
      *
-     * @param  \App\Http\Requests\IngredientUpsertRequest  $request
+     * @param \App\Http\Requests\Ingredient\IngredientUpsertRequest $request
      * @return \App\Http\Resources\IngredientResource
      */
     public function store(IngredientUpsertRequest $request): IngredientResource
     {
         $this->authorize('create', Ingredient::class);
 
-        $ingredient = Ingredient::query()->create($request->validated());
+        $ingredient = Ingredient::create($request->validated());
 
         return new IngredientResource($ingredient);
     }
 
     /**
-     * Return a single ingredient for the admin area.
-     *
      * @param  \App\Models\Ingredient  $ingredient
      * @return \App\Http\Resources\IngredientResource
      */
@@ -59,9 +56,7 @@ class IngredientController extends Controller
     }
 
     /**
-     * Update an ingredient from the validated admin payload.
-     *
-     * @param  \App\Http\Requests\IngredientUpsertRequest  $request
+     * @param \App\Http\Requests\Ingredient\IngredientUpsertRequest $request
      * @param  \App\Models\Ingredient  $ingredient
      * @return \App\Http\Resources\IngredientResource
      */

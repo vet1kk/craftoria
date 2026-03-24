@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\FileUpload;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryUpsertRequest;
+use App\Http\Requests\Category\CategoryUpsertRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,6 +21,8 @@ class CategoryController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
+        $this->authorize('view', Category::class);
+
         $categories = Category::query()
             ->active()
             ->orderBy('position')
@@ -32,7 +35,7 @@ class CategoryController extends Controller
     /**
      * Return a single public category by slug.
      *
-     * @param  string  $slug
+     * @param string $slug
      * @return \App\Http\Resources\CategoryResource
      */
     public function show(string $slug): CategoryResource
@@ -48,14 +51,22 @@ class CategoryController extends Controller
     /**
      * Create a category from the validated payload.
      *
-     * @param  \App\Http\Requests\CategoryUpsertRequest  $request
+     * @param \App\Http\Requests\Category\CategoryUpsertRequest $request
      * @return \App\Http\Resources\CategoryResource
      */
     public function store(CategoryUpsertRequest $request): CategoryResource
     {
         $this->authorize('create', Category::class);
 
-        $category = Category::query()->create($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('image')) {
+            $data['image_url'] = FileUpload::storePublicImage(
+                $request->file('image'),
+                'uploads/categories'
+            );
+        }
+
+        $category = Category::query()->create($data);
 
         return new CategoryResource($category);
     }
@@ -63,15 +74,24 @@ class CategoryController extends Controller
     /**
      * Update a category from the validated payload.
      *
-     * @param  \App\Http\Requests\CategoryUpsertRequest  $request
-     * @param  \App\Models\Category  $category
+     * @param \App\Http\Requests\Category\CategoryUpsertRequest $request
+     * @param \App\Models\Category $category
      * @return \App\Http\Resources\CategoryResource
      */
     public function update(CategoryUpsertRequest $request, Category $category): CategoryResource
     {
         $this->authorize('update', $category);
 
-        $category->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $data['image_url'] = FileUpload::storePublicImage(
+                $request->file('image'),
+                'uploads/categories'
+            );
+        }
+
+        $category->update($data);
 
         return new CategoryResource($category->refresh());
     }
@@ -79,7 +99,7 @@ class CategoryController extends Controller
     /**
      * Soft-delete a category.
      *
-     * @param  \App\Models\Category  $category
+     * @param \App\Models\Category $category
      * @return \Illuminate\Http\Response
      */
     public function destroy(Category $category): Response
