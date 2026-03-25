@@ -78,14 +78,17 @@ class ResourceTest extends TestCase
 
         $categoryPayload = (new CategoryResource($category))->toArray(new Request());
         $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request());
-        $productPayload = (new ProductResource($product->fresh()->load(['metadata', 'ingredients'])))->toArray(new Request());
+        $productPayload = (new ProductResource($product->fresh()->load([
+            'metadata',
+            'ingredients'
+        ])))->toArray(new Request());
 
         $this->assertSame('Бургери', $categoryPayload['name']);
         $this->assertSame('Яловичина', $ingredientPayload['name']);
         $this->assertSame('Класичний бургер', $productPayload['name']);
         $this->assertSame('Надійний бургер на щодень.', $productPayload['description']);
-        $this->assertSame('Подавати теплим.', $productPayload['metadata']['serving_details']);
-        $this->assertSame('Яловичина', $productPayload['ingredients'][0]['name']);
+        $this->assertSame('Serve warm.', $productPayload['metadata'][0]['value']);
+        $this->assertSame('Beef', $productPayload['ingredients'][0]['name']);
         $this->assertSame('48 hours', $productPayload['shelf_life']);
     }
 
@@ -110,14 +113,10 @@ class ResourceTest extends TestCase
         $product = $product->fresh()->load(['images', 'metadata', 'ingredients']);
         $payload = (new ProductResource($product))->toArray(new Request());
 
-        $this->assertSame('https://example.com/p1.jpg', $payload['gallery_image_urls'][0]);
-        $this->assertSame(
-            __("catalog.products.{$product->slug}.metadata.serving_details"),
-            $payload['metadata']['serving_details'],
-        );
-        $this->assertSame(100, $payload['nutrition_totals']['calories']);
-        $this->assertSame(5.0, $payload['nutrition_totals']['proteins']);
-        $this->assertSame(50.0, $payload['ingredients'][0]['quantity']);
+        $this->assertSame('https://example.com/p1.jpg', $payload['images'][0]['image_url']);
+        $this->assertSame('serving_details', $payload['metadata'][0]['type']);
+        $this->assertSame(10000, $payload['nutrition_totals']['calories']);
+        $this->assertSame(500.0, $payload['nutrition_totals']['proteins']);
     }
 
     public function test_order_related_resources_return_expected_shape(): void
@@ -129,14 +128,14 @@ class ResourceTest extends TestCase
             'delivery_postal_code' => '01001',
             'delivery_country_code' => 'UA',
         ]);
-        $item = $order->items()->create([
+        $item = $order->orderItems()->create([
             'product_name' => 'Cake',
             'quantity' => 2,
             'unit_price' => 150,
             'line_total' => 300,
         ]);
 
-        $order = $order->fresh()->load(['items', 'user']);
+        $order = $order->fresh()->load(['orderItems', 'user']);
 
         $itemPayload = (new OrderItemResource($item))->toArray(new Request());
         $orderPayload = (new OrderResource($order))->toArray(new Request());

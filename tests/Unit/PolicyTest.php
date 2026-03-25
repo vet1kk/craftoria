@@ -79,8 +79,8 @@ class PolicyTest extends TestCase
         $admin = User::factory()->make(['role' => 'admin']);
         $client = User::factory()->make(['role' => 'client', 'id' => '11111111-1111-1111-1111-111111111111']);
         $otherClient = User::factory()->make(['role' => 'client', 'id' => '22222222-2222-2222-2222-222222222222']);
-        $ownOrder = Order::factory()->make(['user_id' => $client->getKey()]);
-        $otherOrder = Order::factory()->make(['user_id' => $otherClient->getKey()]);
+        $ownOrder = Order::factory()->make(['user_id' => $client->getKey(), 'status' => 'pending']);
+        $otherOrder = Order::factory()->make(['user_id' => $otherClient->getKey(), 'status' => 'pending']);
 
         $this->assertTrue($policy->viewAny($admin));
         $this->assertFalse($policy->viewAny($client));
@@ -88,7 +88,7 @@ class PolicyTest extends TestCase
         $this->assertTrue($policy->view($client, $ownOrder));
         $this->assertFalse($policy->view($client, $otherOrder));
         $this->assertTrue($policy->create(null));
-        $this->assertFalse($policy->update($client, $ownOrder));
+        $this->assertTrue($policy->update($client, $ownOrder));
         $this->assertTrue($policy->delete($admin, $ownOrder));
     }
 

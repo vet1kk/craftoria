@@ -22,7 +22,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $this->authorize('view', $user);
 
-        return new UserResource($user->load(['orders.items']));
+        return new UserResource($user->load(['orders.orderItems']));
     }
 
     /**
@@ -38,6 +38,6 @@ class ProfileController extends Controller
 
         $user->update($request->validated());
 
-        return new UserResource($user->refresh()->load(['orders.items']));
+        return new UserResource($user->refresh()->load(['orders.orderItems']));
     }
 }

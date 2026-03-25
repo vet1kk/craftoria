@@ -40,10 +40,10 @@ class OrderController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $this->authorize('view', Order::class);
+        $this->authorize('viewAny', Order::class);
 
         $orders = Order::query()
-                       ->with(['items', 'user'])
+            ->with(['orderItems', 'user'])
                        ->latest('placed_at')
                        ->latest('created_at')
                        ->get();

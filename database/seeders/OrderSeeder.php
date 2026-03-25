@@ -81,7 +81,7 @@ class OrderSeeder extends Seeder
                 $lineTotal = $quantity * $unitPrice;
                 $subtotal += $lineTotal;
 
-                $order->items()->create([
+                $order->orderItems()->create([
                     'product_id' => $product->getKey(),
                     'product_name' => $product->name,
                     'product_sku' => $product->sku,

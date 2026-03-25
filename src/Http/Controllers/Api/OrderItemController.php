@@ -27,7 +27,7 @@ class OrderItemController extends Controller
 
         return DB::transaction(static function () use ($request, $order) {
             $product = Product::findOrFail($request->validated('product_id'));
-            $orderItem = $order->items()->create([
+            $orderItem = $order->orderItems()->create([
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'product_sku' => $product->sku,

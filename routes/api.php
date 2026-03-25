@@ -68,11 +68,11 @@ Route::middleware(StartSession::class)->group(function (): void {
 
         Route::scopeBindings()->group(function (): void {
             Route::post('/orders/{order}/items', [OrderItemController::class, 'store'])->name('orders.items.store');
-            Route::put('/orders/{order}/items/{orderItem}', [
+            Route::put('/orders/{order}/items/{order_item}', [
                 OrderItemController::class,
                 'update'
             ])->name('orders.items.update');
-            Route::delete('/orders/{order}/items/{orderItem}', [
+            Route::delete('/orders/{order}/items/{order_item}', [
                 OrderItemController::class,
                 'destroy'
             ])->name('orders.items.destroy');
@@ -81,11 +81,11 @@ Route::middleware(StartSession::class)->group(function (): void {
                 ProductIngredientController::class,
                 'store'
             ])->name('products.ingredients.store');
-            Route::put('/products/{product}/ingredients/{productIngredient}', [
+            Route::put('/products/{product}/ingredients/{product_ingredient}', [
                 ProductIngredientController::class,
                 'update'
             ])->name('products.ingredients.update');
-            Route::delete('/products/{product}/ingredients/{productIngredient}', [
+            Route::delete('/products/{product}/ingredients/{product_ingredient}', [
                 ProductIngredientController::class,
                 'destroy'
             ])->name('products.ingredients.destroy');
@@ -94,11 +94,11 @@ Route::middleware(StartSession::class)->group(function (): void {
                 ProductMetadataController::class,
                 'store'
             ])->name('products.metadata.store');
-            Route::put('/products/{product}/metadata/{productMetadata}', [
+            Route::put('/products/{product}/metadata/{metadata}', [
                 ProductMetadataController::class,
                 'update'
             ])->name('products.metadata.update');
-            Route::delete('/products/{product}/metadata/{productMetadata}', [
+            Route::delete('/products/{product}/metadata/{metadata}', [
                 ProductMetadataController::class,
                 'destroy'
             ])->name('products.metadata.destroy');

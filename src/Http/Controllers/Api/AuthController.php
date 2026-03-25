@@ -61,7 +61,7 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        return new UserResource($user->load(['orders.items']));
+        return new UserResource($user->load(['orders.orderItems']));
     }
 
     /**
@@ -83,7 +83,7 @@ class AuthController extends Controller
 
         return response()->json([
             'authenticated' => true,
-            'user' => (new UserResource($user->load(['orders.items'])))->resolve($request),
+            'user' => (new UserResource($user->load(['orders.orderItems'])))->resolve($request),
         ]);
     }
 

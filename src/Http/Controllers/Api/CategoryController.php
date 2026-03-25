@@ -21,8 +21,6 @@ class CategoryController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $this->authorize('view', Category::class);
-
         $categories = Category::query()
             ->active()
             ->orderBy('position')

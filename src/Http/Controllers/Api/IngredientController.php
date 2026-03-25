@@ -20,7 +20,7 @@ class IngredientController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $this->authorize('view', Ingredient::class);
+        $this->authorize('viewAny', Ingredient::class);
 
         $ingredients = Ingredient::query()
                                  ->orderBy('name')

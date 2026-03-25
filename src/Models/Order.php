@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\User|null $user
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $items
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $order_items
  */
 class Order extends Model
 {
@@ -122,11 +122,11 @@ class Order extends Model
     }
 
     /**
-     * Get the related order items.
+     * Get the related order item records.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\OrderItem>
      */
-    public function items(): HasMany
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -136,6 +136,6 @@ class Order extends Model
      */
     public function loadDetails(): self
     {
-        return $this->load(['items', 'user']);
+        return $this->load(['orderItems', 'user']);
     }
 }

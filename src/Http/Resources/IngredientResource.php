@@ -16,7 +16,7 @@ class IngredientResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function toArray(Request $request): array
@@ -28,11 +28,11 @@ class IngredientResource extends JsonResource
             'unit' => $this->unit,
             'nutrition_per_100' => [
                 'calories' => $this->calories,
-                'proteins' => (float) $this->proteins,
-                'fats' => (float) $this->fats,
-                'carbs' => (float) $this->carbs,
+                'proteins' => (float)$this->proteins,
+                'fats' => (float)$this->fats,
+                'carbs' => (float)$this->carbs,
             ],
-            'cost_amount' => (float) $this->cost_amount,
+            'cost_amount' => (float)$this->cost_amount,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->toAtomString(),
             'updated_at' => $this->updated_at?->toAtomString(),

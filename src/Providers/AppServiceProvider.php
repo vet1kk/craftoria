@@ -9,12 +9,17 @@ use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\ProductIngredient;
+use App\Models\ProductMetadata;
 use App\Models\User;
 use App\Observers\OrderItemObserver;
 use App\Observers\OrderObserver;
 use App\Policies\CategoryPolicy;
 use App\Policies\IngredientPolicy;
+use App\Policies\OrderItemPolicy;
 use App\Policies\OrderPolicy;
+use App\Policies\ProductIngredientPolicy;
+use App\Policies\ProductMetadataPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -44,6 +49,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(OrderItem::class, OrderItemPolicy::class);
+        Gate::policy(ProductIngredient::class, ProductIngredientPolicy::class);
+        Gate::policy(ProductMetadata::class, ProductMetadataPolicy::class);
+
         Order::observe(OrderObserver::class);
         OrderItem::observe(OrderItemObserver::class);
     }

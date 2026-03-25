@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Traits\ResolvesTranslatedValue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin \App\Models\Order */
 class OrderResource extends JsonResource
 {
+    use ResolvesTranslatedValue;
+
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function toArray(Request $request): array
     {
-        return [
+        return $this->translateResource([
             'id' => $this->id,
             'order_number' => $this->order_number,
             'user_id' => $this->user_id,
@@ -28,10 +31,10 @@ class OrderResource extends JsonResource
             'customer_email' => $this->customer_email,
             'customer_phone' => $this->customer_phone,
             'currency' => $this->currency,
-            'subtotal_amount' => (float) $this->subtotal_amount,
-            'discount_amount' => (float) $this->discount_amount,
-            'delivery_fee_amount' => (float) $this->delivery_fee_amount,
-            'total_amount' => (float) $this->total_amount,
+            'subtotal_amount' => (float)$this->subtotal_amount,
+            'discount_amount' => (float)$this->discount_amount,
+            'delivery_fee_amount' => (float)$this->delivery_fee_amount,
+            'total_amount' => (float)$this->total_amount,
             'customer_notes' => $this->customer_notes,
             'payment_method' => $this->payment_method,
             'payment_status' => $this->payment_status,
@@ -52,9 +55,9 @@ class OrderResource extends JsonResource
             'delivered_at' => $this->delivered_at?->toAtomString(),
             'cancelled_at' => $this->cancelled_at?->toAtomString(),
             'cancelled_reason' => $this->cancelled_reason,
-            'items' => OrderItemResource::collection($this->whenLoaded('items')),
+            'items' => OrderItemResource::collection($this->whenLoaded('orderItems')),
             'created_at' => $this->created_at?->toAtomString(),
             'updated_at' => $this->updated_at?->toAtomString(),
-        ];
+        ]);
     }
 }

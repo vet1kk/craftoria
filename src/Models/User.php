@@ -25,8 +25,8 @@ use Illuminate\Notifications\Notifiable;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AuditLog> $auditLogs
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AnalyticsEvent> $analyticsEvents
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AuditLog> $audit_logs
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AnalyticsEvent> $analytics_events
  */
 #[Fillable(['name', 'email', 'phone', 'role', 'password', 'is_system'])]
 #[Hidden(['password', 'remember_token'])]

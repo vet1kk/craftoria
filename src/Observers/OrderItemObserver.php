@@ -33,12 +33,12 @@ class OrderItemObserver
      */
     protected function recalculateOrderAmount(OrderItem $orderItem): void
     {
-        $order = $orderItem->order()->withSum('items', 'line_total')->first();
+        $order = $orderItem->order()->withSum('orderItems', 'line_total')->first();
 
         if (!$order instanceof Order) {
             return;
         }
-        $subtotal = (int)$order->items_sum_line_total;
+        $subtotal = (int)$order->order_items_sum_line_total;
 
         $order->forceFill([
             'subtotal_amount' => $subtotal,

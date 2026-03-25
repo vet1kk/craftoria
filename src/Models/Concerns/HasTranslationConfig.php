@@ -15,6 +15,16 @@ trait HasTranslationConfig
     }
 
     /**
+     * Set the translation prefix used for lang-file lookups.
+     */
+    public function setTranslationPrefix(string $prefix): self
+    {
+        $this->translationPrefix = $prefix;
+
+        return $this;
+    }
+
+    /**
      * Resolve the attribute used to derive the translation lookup key.
      */
     public function translationKeyField(): string

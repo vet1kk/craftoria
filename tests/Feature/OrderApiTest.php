@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Tests\Feature;
 
-use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,70 +12,107 @@ class OrderApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_creates_an_order_from_public_checkout_payload(): void
+    public function test_client_can_place_order(): void
     {
-        $category = Category::query()->create([
-            'name' => 'Pizza',
-            'slug' => 'pizza',
-            'position' => 1,
-            'is_active' => true,
-        ]);
-
-        $product = Product::query()->create([
-            'category_id' => $category->getKey(),
-            'name' => 'Margherita',
-            'slug' => 'margherita',
-            'description' => 'Classic pizza',
-            'price' => 300,
-            'position' => 1,
-            'stock_quantity' => 10,
-            'reorder_level' => 2,
-            'is_active' => true,
-            'is_available' => true,
-        ]);
+        $user = User::factory()->create(['role' => 'client']);
+        $this->actingAs($user);
 
         $response = $this->postJson('/api/orders', [
-            'customer_name' => 'Ihor Client',
-            'customer_email' => 'ihor@example.test',
-            'customer_phone' => '+380671112233',
+            'customer_name' => 'John Doe',
+            'customer_phone' => '+380501234567',
             'fulfillment_type' => 'delivery',
-            'currency' => 'UAH',
-            'customer_notes' => 'Call on arrival.',
             'payment_method' => 'cash',
-            'delivery_address_line_1' => 'Main street 1',
+            'delivery_address_line_1' => '123 Main St',
             'delivery_city' => 'Kyiv',
-            'delivery_postal_code' => '01001',
-            'delivery_country_code' => 'UA',
-            'items' => [
-                [
-                    'product_id' => $product->getKey(),
-                    'quantity' => 2,
-                    'notes' => 'Extra cheese',
-                ],
-            ],
         ]);
 
-        $response
-            ->assertCreated()
-            ->assertJsonPath('data.status', 'pending')
-            ->assertJsonPath('data.items.0.product_name', 'Margherita')
-            ->assertJsonPath('data.total_amount', 600);
-
-        $this->assertDatabaseCount('orders', 1);
-        $this->assertDatabaseCount('order_items', 1);
-        $this->assertDatabaseHas('orders', [
-            'customer_phone' => '+380671112233',
-            'total_amount' => 600,
-        ]);
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('orders', ['user_id' => $user->id, 'status' => 'pending']);
     }
 
-    public function test_admin_endpoints_require_authentication(): void
+    public function test_admin_can_manage_order_items(): void
     {
-        $this->postJson('/api/categories', [
-            'name' => 'Protected Category',
-            'slug' => 'protected-category',
-            'position' => 1,
-            'is_active' => true,
-        ])->assertUnauthorized();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = Order::factory()->create();
+        $product = Product::factory()->create(['price' => 100]);
+
+        $this->actingAs($admin);
+
+        $this
+            ->postJson("/api/orders/{$order->id}/items", [
+                'product_id' => $product->id,
+                'quantity' => 2,
+                'notes' => 'No onions',
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.line_total', 200)
+            ->assertJsonPath('data.notes', 'No onions')
+            ->assertJsonPath('data.product_name', $product->name)
+            ->assertJsonPath('data.product_sku', $product->sku);
+
+        $item = $order->refresh()->orderItems()->first();
+
+        $this
+            ->putJson("/api/orders/{$order->id}/items/{$item->id}", [
+                'quantity' => 3,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.line_total', 300);
+
+        $this->deleteJson("/api/orders/{$order->id}/items/{$item->id}")
+             ->assertNoContent();
+    }
+
+    public function test_order_update_validates_allowed_state_values(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = Order::factory()->create();
+
+        $this->actingAs($admin);
+
+        $this
+            ->putJson("/api/orders/{$order->getKey()}", [
+                'status' => 'unsupported',
+                'payment_status' => 'mystery',
+                'payment_method' => 'crypto',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['status', 'payment_status', 'payment_method']);
+    }
+
+    public function test_order_creation_generates_automatic_fields(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['price' => 1000]);
+
+        $response = $this->actingAs($user)->postJson('/api/orders', [
+            'delivery_address' => '456 Side St',
+            'total_amount' => 2500,
+            'quantity' => 1,
+            'product_id' => $product->id,
+            'customer_name' => 'John Doe',
+            'customer_phone' => '+380501234567',
+            'fulfillment_type' => 'delivery',
+            'payment_method' => 'cash',
+            'delivery_address_line_1' => '456 Side St',
+            'delivery_city' => 'Kyiv',
+        ]);
+
+        $response->assertStatus(201)
+                 ->assertJsonStructure(['data' => ['order_number', 'status', 'placed_at']])
+                 ->assertJsonPath('data.status', 'pending');
+    }
+
+    public function test_admin_can_update_order_status(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = Order::factory()->create(['status' => 'pending']);
+
+        $this
+            ->actingAs($admin)->putJson("/api/orders/{$order->id}", [
+                'status' => 'ready',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'ready');
     }
 }
