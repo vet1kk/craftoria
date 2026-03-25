@@ -292,7 +292,7 @@ export class AccountComponent {
   }
 
   repeatOrder(order: Order): void {
-    const repeatedItems = (order.items ?? []).reduce<CartItem[]>((items, orderItem) => {
+    const repeatedItems = (order?.items ?? []).reduce<CartItem[]>((items, orderItem) => {
       const product = this.dataService.products().find((item) => item.id === orderItem.product_id);
 
       if (!product) {
