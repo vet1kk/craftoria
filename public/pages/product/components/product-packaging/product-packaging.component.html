@@ -10,46 +10,52 @@
 
   <div class="my-6 h-px w-full bg-stone-100"></div>
   <div class="grid grid-cols-1 gap-4">
-    <div class="group flex items-center gap-4 rounded-3xl border border-stone-100 bg-stone-50/50 p-4 transition-colors hover:bg-sky-50/30 hover:border-sky-100">
-      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100/80 text-xl shadow-sm">
-        📦
-      </div>
-      <div class="flex flex-col">
+    @if (packageDetails().contents) {
+      <div class="group flex items-center gap-4 rounded-3xl border border-stone-100 bg-stone-50/50 p-4 transition-colors hover:bg-sky-50/30 hover:border-sky-100">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100/80 text-xl shadow-sm">
+          📦
+        </div>
+        <div class="flex flex-col">
         <span class="text-[10px] font-black uppercase tracking-widest text-sky-700/70">
           {{ 'ui.itemDetail.contents' | t }}
         </span>
-        <p class="mt-0.5 text-[15px] font-semibold text-stone-700 leading-snug">
-          {{ packageDetails().contents }}
-        </p>
+          <p class="mt-0.5 text-[15px] font-semibold text-stone-700 leading-snug">
+            {{ packageDetails().contents }}
+          </p>
+        </div>
       </div>
-    </div>
+    }
 
-    <div class="group flex items-center gap-4 rounded-3xl border border-stone-100 bg-stone-50/50 p-4 transition-colors hover:bg-emerald-50/30 hover:border-emerald-100">
-      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100/80 text-xl shadow-sm">
-        ❄️
-      </div>
-      <div class="flex flex-col">
+    @if (packageDetails().storage) {
+      <div class="group flex items-center gap-4 rounded-3xl border border-stone-100 bg-stone-50/50 p-4 transition-colors hover:bg-emerald-50/30 hover:border-emerald-100">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100/80 text-xl shadow-sm">
+          ❄️
+        </div>
+        <div class="flex flex-col">
         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-700/70">
           {{ 'ui.itemDetail.storage' | t }}
         </span>
-        <p class="mt-0.5 text-[15px] font-semibold text-stone-700 leading-snug">
-          {{ packageDetails().storage }}
-        </p>
+          <p class="mt-0.5 text-[15px] font-semibold text-stone-700 leading-snug">
+            {{ packageDetails().storage }}
+          </p>
+        </div>
       </div>
-    </div>
+    }
 
-    <div class="group flex items-center gap-4 rounded-3xl border border-stone-100 bg-stone-50/50 p-4 transition-colors hover:bg-amber-50/30 hover:border-amber-100">
-      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100/80 text-xl shadow-sm">
-        ⏳
-      </div>
-      <div class="flex flex-col">
+    @if (packageDetails().shelf_life) {
+      <div class="group flex items-center gap-4 rounded-3xl border border-stone-100 bg-stone-50/50 p-4 transition-colors hover:bg-amber-50/30 hover:border-amber-100">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100/80 text-xl shadow-sm">
+          ⏳
+        </div>
+        <div class="flex flex-col">
         <span class="text-[10px] font-black uppercase tracking-widest text-amber-700/70">
           {{ 'ui.itemDetail.shelfLife' | t }}
         </span>
-        <p class="mt-0.5 text-[15px] font-semibold text-stone-700 leading-snug">
-          {{ packageDetails().shelf_life }}
-        </p>
+          <p class="mt-0.5 text-[15px] font-semibold text-stone-700 leading-snug">
+            {{ packageDetails().shelf_life }}
+          </p>
+        </div>
       </div>
-    </div>
+    }
   </div>
 </div>

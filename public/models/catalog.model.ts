@@ -1,13 +1,9 @@
-export interface AppSettings {
-  currency: string;
-}
-
 export interface Category {
   id: string;
   slug: string;
   name: string;
-  icon: string;
-  image_url: string | null;
+  icon?: string | null;
+  image_url?: string | null;
   position: number;
   is_active: boolean;
 }
@@ -23,12 +19,12 @@ export type IngredientUnit = 'g' | 'ml';
 
 export interface Ingredient {
   id: string;
-  slug: string;
   name: string;
+  slug: string;
   unit: IngredientUnit;
   quantity: number;
   position: number;
-  nutrition_per_100: NutritionFacts;
+  nutrition_totals: NutritionFacts;
 }
 
 export interface ProductIngredient {
@@ -45,10 +41,12 @@ export interface ResolvedProductIngredient {
 }
 
 export interface PackageDetails {
-  packaging: string;
-  contents: string;
-  storage: string;
-  shelf_life: string;
+  [key: string]: string | undefined;
+
+  packaging?: string;
+  contents?: string;
+  storage?: string;
+  shelf_life?: string;
 }
 
 export interface Product {
@@ -59,15 +57,35 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  image_url: string | null;
-  gallery_image_urls: string[];
-  ingredients: ProductIngredient[];
-  serving_details?: string;
-  package_details: PackageDetails;
-  nutrition_totals?: NutritionFacts;
-  available: boolean;
-  is_active: boolean;
+  featured_image_url?: string | null;
+  images: ProductImage[];
+  metadata: Metadata[];
+  ingredients: Ingredient[];
+  shelf_life?: string | undefined;
+  position: number;
   stock_quantity: number;
   reorder_level: number;
-  shelf_life?: string;
+  is_active: boolean;
+  is_available: boolean;
+  nutrition_totals: NutritionFacts;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface Metadata {
+  id: string;
+  product_id: string;
+  type: string;
+  value: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  position: number;
+  created_at?: string | null;
+  updated_at?: string | null;
 }

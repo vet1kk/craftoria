@@ -14,7 +14,7 @@
   <div class="mt-8">
     <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
       <p class="text-xs uppercase tracking-wide text-stone-500">{{ 'ui.profile.ordersLabel' | t }}</p>
-      <p class="mt-2 text-2xl font-bold text-stone-900">{{ user().orders.length }}</p>
+      <p class="mt-2 text-2xl font-bold text-stone-900">{{ user().orders?.length ?? 0 }}</p>
     </div>
   </div>
 

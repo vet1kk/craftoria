@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, DataService } from '../../services';
-import { ProductsHeroComponent, ProductComponent, ProductsCategoryFilterComponent } from '../components';
+import { ProductComponent, ProductsCategoryFilterComponent, ProductsHeroComponent } from '../components';
 
 @Component({
   selector: 'app-products',
@@ -16,7 +16,7 @@ export class ProductsComponent {
   readonly cartService = inject(CartService);
   readonly selectedCategorySlug = signal('all');
 
-  readonly filteredItems = computed(() => {
+  readonly filteredProducts = computed(() => {
     const selectedSlug = this.selectedCategorySlug();
     const products = this.dataService.products();
 

@@ -25,14 +25,14 @@
                   [class]="getOrderStatusClasses(order.status)">
               {{ getOrderStatusLabel(order.status) }}
             </span>
-            <p class="mt-2 font-bold text-stone-900">{{ order.total_price | number: '1.2-2' }} {{ order.currency }}</p>
+            <p class="mt-2 font-bold text-stone-900">{{ order.total_amount | number: '1.2-2' }} {{ order.currency }}</p>
           </div>
         </div>
 
         <div class="mt-4 space-y-2">
-          @for (item of order.items; track item.id + '-' + item.name) {
+          @for (item of order.items; track item.id + '-' + item.product_name) {
             <div class="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
-              <span class="wrap-break-word text-stone-700">{{ item.quantity }} x {{ item.name }}</span>
+              <span class="wrap-break-word text-stone-700">{{ item.quantity }} x {{ item.product_name }}</span>
               <span class="text-stone-500">{{ item.unit_price | number: '1.2-2' }} {{ order.currency }}</span>
             </div>
           }

@@ -16,7 +16,7 @@ export interface GallerySlot {
 })
 export class ProductGalleryComponent {
   readonly images = input.required<string[]>();
-  readonly itemName = input.required<string>();
+  readonly productName = input.required<string>();
 
   readonly imageSelect = output<number>();
 

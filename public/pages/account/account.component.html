@@ -265,7 +265,7 @@
       <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <app-account-profile-summary [user]="user" [isAdmin]="isAdmin()"></app-account-profile-summary>
 
-        <app-account-order-history [orders]="user.orders"
+        <app-account-order-history [orders]="user.orders ?? []"
                                    [repeatOrderError]="repeatOrderError()"
                                    (repeatOrder)="repeatOrder($event)">
         </app-account-order-history>

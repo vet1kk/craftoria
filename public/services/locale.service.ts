@@ -37,7 +37,7 @@ export class LocaleService {
       }
     }
 
-    return 'en';
+    return 'ua';
   }
 
   private persistLocale(locale: UiLocale): void {

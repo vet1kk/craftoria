@@ -5,7 +5,6 @@ export * from './product.service';
 export * from './cart.service';
 export * from './cart-drawer.service';
 export * from './order.service';
-export * from './user.service';
 export * from './locale.service';
 export * from './i18n.service';
 export * from './toast.service';

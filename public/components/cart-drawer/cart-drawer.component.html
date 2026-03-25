@@ -28,8 +28,8 @@
         } @else {
           @for (item of cartService.items(); track item.product.id) {
             <div class="flex gap-3 sm:gap-4">
-              @if (item.product.image_url) {
-                <img [src]="item.product.image_url"
+              @if (item?.product?.featured_image_url) {
+                <img [src]="item.product.featured_image_url"
                      [alt]="item.product.name"
                      class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-stone-100 shrink-0">
               } @else {
@@ -60,7 +60,7 @@
                     <span class="text-lg leading-none mb-0.5">+</span>
                   </button>
                    <div class="hidden sm:block flex-1"></div>
-                   <button (click)="cartService.removeItem(item.product.id)"
+                  <button (click)="cartService.removeProduct(item.product.id)"
                            class="ml-auto text-xs text-red-500 hover:text-red-700 font-medium">
                       <span>{{ 'ui.cart.remove' | t }}</span>
                     </button>

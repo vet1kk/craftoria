@@ -3,7 +3,7 @@
     @if (selectedImageUrl(); as imageUrl) {
       <img [src]="imageUrl"
            (error)="handleImageError(images()[selectedIndex()])"
-           [alt]="itemName()"
+           [alt]="productName()"
            width="1200"
            height="900"
            loading="eager"
@@ -56,7 +56,7 @@
                     [attr.aria-label]="('ui.itemDetail.showPhoto' | t) + ' ' + (imageIndex + 1)">
               <img [src]="slot.image_url!"
                    (error)="handleImageError(slot.image_url!)"
-                   [alt]="itemName() + ' ' + ('ui.itemDetail.photo' | t) + ' ' + (imageIndex + 1)"
+                   [alt]="productName() + ' ' + ('ui.itemDetail.photo' | t) + ' ' + (imageIndex + 1)"
                    width="280"
                    height="280"
                    loading="lazy"

@@ -23,20 +23,20 @@ export class CartService {
     )
   );
 
-  addToCart(item: Product, notes = ''): void {
+  addToCart(product: Product, notes = ''): void {
     this.items.update((currentItems) => {
       const existingItem = currentItems.find(
-        (cartItem) => cartItem.product.id === item.id
+        (cartItem) => cartItem.product.id === product.id
       );
 
       if (!existingItem) {
-        this.toastsService.success(this.i18n.translate('ui.toast.addedToCart', { name: item.name }));
-        return [...currentItems, { product: item, quantity: 1, notes }];
+        this.toastsService.success(this.i18n.translate('ui.toast.addedToCart', { name: product.name }));
+        return [...currentItems, { product: product, quantity: 1, notes }];
       }
 
-      this.toastsService.success(this.i18n.translate('ui.toast.addedToCart', { name: item.name }));
+      this.toastsService.success(this.i18n.translate('ui.toast.addedToCart', { name: product.name }));
       return currentItems.map((cartItem) =>
-        cartItem.product.id === item.id
+        cartItem.product.id === product.id
           ? {
             ...cartItem,
             quantity: cartItem.quantity + 1,
@@ -47,16 +47,16 @@ export class CartService {
     });
   }
 
-  decreaseQuantity(itemId: string): void {
+  decreaseQuantity(productId: string): void {
     this.items.update((currentItems) => {
       const existingItem = currentItems.find(
-        (cartItem) => cartItem.product.id === itemId
+        (cartItem) => cartItem.product.id === productId
       );
 
       if (existingItem && existingItem.quantity > 1) {
         this.toastsService.success(this.i18n.translate('ui.toast.removedFromCart', { name: existingItem.product.name }));
         return currentItems.map((cartItem) =>
-          cartItem.product.id === itemId
+          cartItem.product.id === productId
             ? { ...cartItem, quantity: cartItem.quantity - 1 }
             : cartItem
         );
@@ -64,20 +64,20 @@ export class CartService {
         this.toastsService.success(this.i18n.translate('ui.toast.removedFromCart', { name: existingItem.product.name }));
       }
 
-      return currentItems.filter((cartItem) => cartItem.product.id !== itemId);
+      return currentItems.filter((cartItem) => cartItem.product.id !== productId);
     });
   }
 
-  removeItem(itemId: string): void {
+  removeProduct(productId: string): void {
     this.items.update((currentItems) => {
-      const item = currentItems.find(i => i.product.id === itemId);
+      const item = currentItems.find(i => i.product.id === productId);
       if (item) {
         this.toastsService.success(
           this.i18n.translate('ui.toast.removedFromCart', {
             name: item.product.name
           })
         );
-        return currentItems.filter(i => i.product.id !== itemId);
+        return currentItems.filter(i => i.product.id !== productId);
       }
       return currentItems;
     });

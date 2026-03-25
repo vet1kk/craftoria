@@ -3,19 +3,9 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../environments/environment';
-import { ClientRegistrationData, User } from '../models';
+import { ApiResourceResponse, ClientRegistrationData, SessionResponse, User } from '../models';
 import { extractApiErrorMessage } from './api-error';
 import { I18nService } from './i18n.service';
-import { ApiUser, UserService } from './user.service';
-
-interface ApiResourceResponse<T> {
-  data: T;
-}
-
-interface ApiSessionResponse {
-  authenticated: boolean;
-  user: ApiUser | null;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +13,6 @@ interface ApiSessionResponse {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly i18n = inject(I18nService);
-  private readonly userService = inject(UserService);
 
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
@@ -32,7 +21,7 @@ export class AuthService {
   async initialize(): Promise<void> {
     try {
       const session = await firstValueFrom(
-        this.http.get<ApiSessionResponse>(`${environment.apiBaseUrl}/session`)
+        this.http.get<SessionResponse>(`${environment.apiBaseUrl}/session`)
       );
 
       if (!session.authenticated || !session.user) {
@@ -40,7 +29,7 @@ export class AuthService {
         return;
       }
 
-      this.currentUser.set(this.userService.mapUser(session.user));
+      this.currentUser.set(session.user);
     } catch {
       this.currentUser.set(null);
     }
@@ -49,13 +38,13 @@ export class AuthService {
   async login(email: string, password: string): Promise<{ success: boolean; message?: string }> {
     try {
       const response = await firstValueFrom(
-        this.http.post<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/login`, {
+        this.http.post<ApiResourceResponse<User>>(`${environment.apiBaseUrl}/login`, {
           email,
           password
         })
       );
 
-      this.currentUser.set(this.userService.mapUser(response.data));
+      this.currentUser.set(response.data);
 
       return { success: true };
     } catch (error: unknown) {
@@ -69,7 +58,7 @@ export class AuthService {
   async register(registrationData: ClientRegistrationData): Promise<{ success: boolean; message?: string }> {
     try {
       await firstValueFrom(
-        this.http.post<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/register`, {
+        this.http.post<ApiResourceResponse<User>>(`${environment.apiBaseUrl}/register`, {
           name: registrationData.name,
           email: registrationData.email,
           phone: registrationData.phone,
@@ -97,9 +86,9 @@ export class AuthService {
 
   async refreshProfile(): Promise<User | null> {
     const response = await firstValueFrom(
-      this.http.get<ApiResourceResponse<ApiUser>>(`${environment.apiBaseUrl}/profile`)
+      this.http.get<ApiResourceResponse<User>>(`${environment.apiBaseUrl}/profile`)
     );
-    const mappedUser = this.userService.mapUser(response.data);
+    const mappedUser = response.data;
 
     this.currentUser.set(mappedUser);
 

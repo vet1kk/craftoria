@@ -23,14 +23,14 @@
           {{ 'ui.actions.retry' | t }}
         </button>
       </div>
-    } @else if (filteredItems().length === 0) {
+    } @else if (filteredProducts().length === 0) {
       <div class="text-center py-20 text-stone-400">
         <p class="text-lg">{{ 'ui.products.emptyCategory' | t }}</p>
       </div>
     } @else {
       <div class="grid md:grid-cols-3 sm:grid-cols-2 gap-6">
-        @for (item of filteredItems(); track item.id) {
-          <app-product-card [item]="item"
+        @for (product of filteredProducts(); track product.id) {
+          <app-product-card [product]="product"
                             [currency]="dataService.appSettings().currency"
                             (addToCart)="cartService.addToCart($event)">
           </app-product-card>

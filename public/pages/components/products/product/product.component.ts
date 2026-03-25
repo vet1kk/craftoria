@@ -16,17 +16,16 @@ export class ProductComponent {
   readonly productService = inject(ProductService);
   readonly i18n = inject(I18nService);
   private readonly router = inject(Router);
-  readonly item = input.required<Product>();
+  readonly product = input.required<Product>();
   readonly currency = input.required<string>();
   readonly addToCart = output<Product>();
-  readonly portionLabel = computed(() => this.productService.getProductPortionLabel(this.item()));
-  readonly itemAriaLabel = computed(() => `${this.i18n.translate('ui.itemCard.openDetailsFor')} ${this.item().name}`);
+  readonly portionLabel = computed(() => this.productService.getProductPortionLabel(this.product()));
+  readonly itemAriaLabel = computed(() => `${this.i18n.translate('ui.itemCard.openDetailsFor')} ${this.product().name}`);
   readonly hasImage = computed(() => {
-    const imageUrl = this.item().image_url;
-    return Boolean(imageUrl) && !imageUrl?.startsWith('data:image/svg+xml');
+    return Boolean(this.product().featured_image_url);
   });
 
   openDetails(): void {
-    void this.router.navigate(['/product', this.item().slug]);
+    void this.router.navigate(['/product', this.product().slug]);
   }
 }

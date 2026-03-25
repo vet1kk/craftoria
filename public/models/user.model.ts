@@ -8,8 +8,8 @@ export interface User {
   email: string;
   phone: string;
   role: UserRole;
-  created_at: string;
-  orders: Order[];
+  created_at?: string | null;
+  orders?: Order[];
 }
 
 export interface ClientRegistrationData {
