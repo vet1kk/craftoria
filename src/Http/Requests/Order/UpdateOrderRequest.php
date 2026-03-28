@@ -22,7 +22,7 @@ class UpdateOrderRequest extends AdminRequest
         return [
             'status' => [
                 'sometimes',
-                Rule::in(['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'])
+                Rule::in(['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']),
             ],
             'payment_status' => ['sometimes', Rule::in(['pending', 'paid', 'failed', 'refunded'])],
             'delivery_fee_amount' => ['sometimes', 'numeric', 'min:0'],

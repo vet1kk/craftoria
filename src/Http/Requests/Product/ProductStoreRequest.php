@@ -28,13 +28,13 @@ class ProductStoreRequest extends AdminRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('products', 'slug')->whereNull('deleted_at')
+                Rule::unique('products', 'slug')->whereNull('deleted_at'),
             ],
             'sku' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('products', 'sku')->whereNull('deleted_at')
+                Rule::unique('products', 'sku')->whereNull('deleted_at'),
             ],
             'description' => ['required', 'string'],
             'price' => ['required', 'numeric', 'min:0'],

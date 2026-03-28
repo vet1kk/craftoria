@@ -42,9 +42,9 @@ return new class extends Migration {
         Schema::create('products', static function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('category_id')
-                  ->constrained('categories')
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
+                ->constrained('categories')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('sku')->nullable()->unique();
@@ -64,9 +64,9 @@ return new class extends Migration {
         Schema::create('product_metadata', static function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('product_id')
-                  ->constrained('products')
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
+                ->constrained('products')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             // 'type' stores the kind of info (e.g., 'serving_details', 'storage_instructions')
             $table->string('type')->index();
             $table->text('value');
@@ -78,9 +78,9 @@ return new class extends Migration {
         Schema::create('product_images', static function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('product_id')
-                  ->constrained('products')
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
+                ->constrained('products')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->string('image_url');
             $table->unsignedSmallInteger('position')->default(0);
             $table->timestamps();
@@ -91,13 +91,13 @@ return new class extends Migration {
         Schema::create('product_ingredients', static function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('product_id')
-                  ->constrained('products')
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
+                ->constrained('products')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->foreignUuid('ingredient_id')
-                  ->constrained('ingredients')
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
+                ->constrained('ingredients')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->decimal('quantity', 10);
             $table->unsignedSmallInteger('position')->default(0);
             $table->timestamps();

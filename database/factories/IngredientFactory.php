@@ -24,7 +24,7 @@ class IngredientFactory extends Factory
             'proteins' => 26.0,
             'fats' => 18.0,
             'carbs' => 0.0,
-            'cost_amount' => 55.0
+            'cost_amount' => 55.0,
         ],
         [
             'name' => 'Chicken Fillet',
@@ -34,7 +34,7 @@ class IngredientFactory extends Factory
             'proteins' => 31.0,
             'fats' => 3.6,
             'carbs' => 0.0,
-            'cost_amount' => 44.0
+            'cost_amount' => 44.0,
         ],
         [
             'name' => 'Brioche Bun',
@@ -44,7 +44,7 @@ class IngredientFactory extends Factory
             'proteins' => 9.0,
             'fats' => 6.0,
             'carbs' => 49.0,
-            'cost_amount' => 12.0
+            'cost_amount' => 12.0,
         ],
         [
             'name' => 'Cheddar',
@@ -54,7 +54,7 @@ class IngredientFactory extends Factory
             'proteins' => 25.0,
             'fats' => 33.0,
             'carbs' => 1.3,
-            'cost_amount' => 18.0
+            'cost_amount' => 18.0,
         ],
         [
             'name' => 'Mozzarella',
@@ -64,7 +64,7 @@ class IngredientFactory extends Factory
             'proteins' => 28.0,
             'fats' => 17.0,
             'carbs' => 3.1,
-            'cost_amount' => 19.0
+            'cost_amount' => 19.0,
         ],
         [
             'name' => 'Romaine Lettuce',
@@ -74,7 +74,7 @@ class IngredientFactory extends Factory
             'proteins' => 1.2,
             'fats' => 0.3,
             'carbs' => 3.3,
-            'cost_amount' => 8.0
+            'cost_amount' => 8.0,
         ],
         [
             'name' => 'Tomato',
@@ -84,7 +84,7 @@ class IngredientFactory extends Factory
             'proteins' => 0.9,
             'fats' => 0.2,
             'carbs' => 3.9,
-            'cost_amount' => 7.0
+            'cost_amount' => 7.0,
         ],
         [
             'name' => 'Cucumber',
@@ -94,7 +94,7 @@ class IngredientFactory extends Factory
             'proteins' => 0.7,
             'fats' => 0.1,
             'carbs' => 3.6,
-            'cost_amount' => 6.0
+            'cost_amount' => 6.0,
         ],
         [
             'name' => 'Bacon',
@@ -104,7 +104,7 @@ class IngredientFactory extends Factory
             'proteins' => 37.0,
             'fats' => 42.0,
             'carbs' => 1.4,
-            'cost_amount' => 22.0
+            'cost_amount' => 22.0,
         ],
         [
             'name' => 'Egg',
@@ -114,7 +114,7 @@ class IngredientFactory extends Factory
             'proteins' => 13.0,
             'fats' => 11.0,
             'carbs' => 1.1,
-            'cost_amount' => 9.0
+            'cost_amount' => 9.0,
         ],
         [
             'name' => 'Avocado',
@@ -124,7 +124,7 @@ class IngredientFactory extends Factory
             'proteins' => 2.0,
             'fats' => 14.7,
             'carbs' => 8.5,
-            'cost_amount' => 24.0
+            'cost_amount' => 24.0,
         ],
         [
             'name' => 'Mushroom',
@@ -134,7 +134,7 @@ class IngredientFactory extends Factory
             'proteins' => 3.1,
             'fats' => 0.3,
             'carbs' => 3.3,
-            'cost_amount' => 11.0
+            'cost_amount' => 11.0,
         ],
         [
             'name' => 'Caramelized Onion',
@@ -144,7 +144,7 @@ class IngredientFactory extends Factory
             'proteins' => 1.2,
             'fats' => 3.0,
             'carbs' => 16.0,
-            'cost_amount' => 10.0
+            'cost_amount' => 10.0,
         ],
         [
             'name' => 'Pickled Cucumber',
@@ -154,7 +154,7 @@ class IngredientFactory extends Factory
             'proteins' => 0.3,
             'fats' => 0.2,
             'carbs' => 2.3,
-            'cost_amount' => 7.0
+            'cost_amount' => 7.0,
         ],
         [
             'name' => 'Fries',
@@ -164,7 +164,7 @@ class IngredientFactory extends Factory
             'proteins' => 3.4,
             'fats' => 15.0,
             'carbs' => 41.0,
-            'cost_amount' => 13.0
+            'cost_amount' => 13.0,
         ],
         [
             'name' => 'Garlic Sauce',
@@ -174,7 +174,7 @@ class IngredientFactory extends Factory
             'proteins' => 1.0,
             'fats' => 33.0,
             'carbs' => 5.0,
-            'cost_amount' => 8.0
+            'cost_amount' => 8.0,
         ],
         [
             'name' => 'Caesar Dressing',
@@ -184,7 +184,7 @@ class IngredientFactory extends Factory
             'proteins' => 2.0,
             'fats' => 28.0,
             'carbs' => 4.0,
-            'cost_amount' => 9.0
+            'cost_amount' => 9.0,
         ],
         [
             'name' => 'Brownie Crumb',
@@ -194,7 +194,7 @@ class IngredientFactory extends Factory
             'proteins' => 5.0,
             'fats' => 18.0,
             'carbs' => 58.0,
-            'cost_amount' => 16.0
+            'cost_amount' => 16.0,
         ],
         [
             'name' => 'Vanilla Cream',
@@ -204,7 +204,7 @@ class IngredientFactory extends Factory
             'proteins' => 3.0,
             'fats' => 21.0,
             'carbs' => 22.0,
-            'cost_amount' => 14.0
+            'cost_amount' => 14.0,
         ],
         [
             'name' => 'Espresso Shot',
@@ -214,7 +214,7 @@ class IngredientFactory extends Factory
             'proteins' => 0.1,
             'fats' => 0.2,
             'carbs' => 1.7,
-            'cost_amount' => 6.0
+            'cost_amount' => 6.0,
         ],
         [
             'name' => 'Oat Milk',
@@ -224,7 +224,7 @@ class IngredientFactory extends Factory
             'proteins' => 1.0,
             'fats' => 1.5,
             'carbs' => 7.0,
-            'cost_amount' => 7.0
+            'cost_amount' => 7.0,
         ],
         [
             'name' => 'Orange Juice',
@@ -234,7 +234,7 @@ class IngredientFactory extends Factory
             'proteins' => 0.7,
             'fats' => 0.2,
             'carbs' => 10.4,
-            'cost_amount' => 8.0
+            'cost_amount' => 8.0,
         ],
         [
             'name' => 'Spinach',
@@ -244,7 +244,7 @@ class IngredientFactory extends Factory
             'proteins' => 2.9,
             'fats' => 0.4,
             'carbs' => 3.6,
-            'cost_amount' => 8.0
+            'cost_amount' => 8.0,
         ],
         [
             'name' => 'Smoked Salmon',
@@ -254,7 +254,7 @@ class IngredientFactory extends Factory
             'proteins' => 18.3,
             'fats' => 4.3,
             'carbs' => 0.0,
-            'cost_amount' => 38.0
+            'cost_amount' => 38.0,
         ],
     ];
 

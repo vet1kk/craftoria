@@ -25,210 +25,210 @@ class ProductFactory extends Factory
             'slug' => 'classic-burger',
             'description' => 'Juicy beef, cheddar, pickles, and house sauce on a brioche bun.',
             'price' => 249.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Double Cheese Burger',
             'slug' => 'double-cheese-burger',
             'description' => 'Two beef patties with double cheddar and caramelized onions.',
             'price' => 319.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'BBQ Bacon Burger',
             'slug' => 'bbq-bacon-burger',
             'description' => 'Smoky barbecue glaze, crispy bacon, and cheddar in every bite.',
             'price' => 329.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Mushroom Swiss Burger',
             'slug' => 'mushroom-swiss-burger',
             'description' => 'Sauteed mushrooms, creamy cheese, and garlic aioli.',
             'price' => 309.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Crispy Chicken Burger',
             'slug' => 'crispy-chicken-burger',
             'description' => 'Crunchy chicken fillet with lettuce, tomato, and garlic sauce.',
             'price' => 279.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Margherita Pizza',
             'slug' => 'margherita-pizza',
             'description' => 'Classic pizza with tomato sauce, mozzarella, and basil notes.',
             'price' => 289.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Pepperoni Pizza',
             'slug' => 'pepperoni-pizza',
             'description' => 'Thin crust pizza loaded with pepperoni and mozzarella.',
             'price' => 329.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'BBQ Chicken Pizza',
             'slug' => 'bbq-chicken-pizza',
             'description' => 'Grilled chicken, barbecue sauce, red onion, and mozzarella.',
             'price' => 339.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Quattro Formaggi Pizza',
             'slug' => 'quattro-formaggi-pizza',
             'description' => 'A rich blend of four cheeses on a crisp golden crust.',
             'price' => 349.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Veggie Pizza',
             'slug' => 'veggie-pizza',
             'description' => 'Colorful vegetables, mushrooms, and mozzarella on tomato sauce.',
             'price' => 299.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Caesar Salad',
             'slug' => 'caesar-salad',
             'description' => 'Romaine, chicken, parmesan, and creamy Caesar dressing.',
             'price' => 229.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Greek Salad',
             'slug' => 'greek-salad',
             'description' => 'Tomato, cucumber, olives, and feta with olive oil.',
             'price' => 219.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Avocado Chicken Salad',
             'slug' => 'avocado-chicken-salad',
             'description' => 'Grilled chicken, avocado, greens, and citrus dressing.',
             'price' => 259.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Quinoa Bowl',
             'slug' => 'quinoa-bowl',
             'description' => 'Warm quinoa, spinach, vegetables, and a bright herb dressing.',
             'price' => 239.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Salmon Spinach Salad',
             'slug' => 'salmon-spinach-salad',
             'description' => 'Smoked salmon, spinach, cucumber, and lemon yogurt sauce.',
             'price' => 289.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Chocolate Brownie',
             'slug' => 'chocolate-brownie',
             'description' => 'Dense chocolate brownie with a glossy cocoa finish.',
             'price' => 159.00,
-            'shelf_life' => '72 hours'
+            'shelf_life' => '72 hours',
         ],
         [
             'name' => 'New York Cheesecake',
             'slug' => 'new-york-cheesecake',
             'description' => 'Creamy baked cheesecake with a buttery biscuit base.',
             'price' => 179.00,
-            'shelf_life' => '72 hours'
+            'shelf_life' => '72 hours',
         ],
         [
             'name' => 'Tiramisu Cup',
             'slug' => 'tiramisu-cup',
             'description' => 'Espresso-soaked layers with mascarpone cream and cocoa.',
             'price' => 169.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Berry Panna Cotta',
             'slug' => 'berry-panna-cotta',
             'description' => 'Silky vanilla panna cotta with a bright berry topping.',
             'price' => 165.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Cinnamon Roll',
             'slug' => 'cinnamon-roll',
             'description' => 'Soft sweet roll with cinnamon sugar and cream glaze.',
             'price' => 149.00,
-            'shelf_life' => '48 hours'
+            'shelf_life' => '48 hours',
         ],
         [
             'name' => 'Flat White',
             'slug' => 'flat-white',
             'description' => 'Velvety espresso drink with finely textured milk.',
             'price' => 119.00,
-            'shelf_life' => null
+            'shelf_life' => null,
         ],
         [
             'name' => 'Cappuccino',
             'slug' => 'cappuccino',
             'description' => 'Balanced espresso, steamed milk, and airy foam.',
             'price' => 119.00,
-            'shelf_life' => null
+            'shelf_life' => null,
         ],
         [
             'name' => 'Iced Latte',
             'slug' => 'iced-latte',
             'description' => 'Chilled espresso and milk served over ice.',
             'price' => 129.00,
-            'shelf_life' => null
+            'shelf_life' => null,
         ],
         [
             'name' => 'Fresh Orange Juice',
             'slug' => 'fresh-orange-juice',
             'description' => 'Freshly squeezed orange juice with natural sweetness.',
             'price' => 139.00,
-            'shelf_life' => null
+            'shelf_life' => null,
         ],
         [
             'name' => 'Berry Lemonade',
             'slug' => 'berry-lemonade',
             'description' => 'Refreshing lemonade infused with mixed berry puree.',
             'price' => 135.00,
-            'shelf_life' => null
+            'shelf_life' => null,
         ],
         [
             'name' => 'Avocado Toast',
             'slug' => 'avocado-toast',
             'description' => 'Toasted sourdough with avocado, herbs, and lemon zest.',
             'price' => 199.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Shakshuka',
             'slug' => 'shakshuka',
             'description' => 'Eggs baked in a fragrant tomato and pepper sauce.',
             'price' => 229.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Salmon Bagel',
             'slug' => 'salmon-bagel',
             'description' => 'Toasted bagel with smoked salmon, cream cheese, and cucumber.',
             'price' => 259.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Granola Yogurt Bowl',
             'slug' => 'granola-yogurt-bowl',
             'description' => 'Greek yogurt, berry compote, and crunchy granola.',
             'price' => 189.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
         [
             'name' => 'Cheese Omelette',
             'slug' => 'cheese-omelette',
             'description' => 'Fluffy omelette folded with melted cheese and herbs.',
             'price' => 179.00,
-            'shelf_life' => '24 hours'
+            'shelf_life' => '24 hours',
         ],
     ];
 

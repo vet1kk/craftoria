@@ -39,7 +39,7 @@ class StoreOrderRequest extends FormRequest
             'delivery_address_line_1' => [
                 Rule::requiredIf($this->fulfillment_type === 'delivery'),
                 'string',
-                'max:255'
+                'max:255',
             ],
             'delivery_city' => [Rule::requiredIf($this->fulfillment_type === 'delivery'), 'string', 'max:255'],
             'delivery_address_line_2' => ['nullable', 'string', 'max:255'],

@@ -22,19 +22,19 @@ class ProductSubResourceTest extends TestCase
 
         $res = $this->postJson("/api/products/{$product->id}/metadata", [
             'type' => 'color',
-            'value' => 'red'
+            'value' => 'red',
         ])->assertStatus(201);
 
         $this->assertDatabaseHas('product_metadata', [
             'product_id' => $product->id,
             'type' => 'color',
-            'value' => 'red'
+            'value' => 'red',
         ]);
 
         $metaId = $res->json('data.id');
 
         $this->putJson("/api/products/{$product->id}/metadata/{$metaId}", [
-            'value' => 'blue'
+            'value' => 'blue',
         ])->assertOk();
 
         $this->deleteJson("/api/products/{$product->id}/metadata/{$metaId}")
@@ -49,7 +49,7 @@ class ProductSubResourceTest extends TestCase
 
         $this->postJson("/api/products/{$product->id}/metadata", [
             'type' => 'color',
-            'value' => 'red'
+            'value' => 'red',
         ])->assertStatus(403);
     }
 
@@ -68,7 +68,7 @@ class ProductSubResourceTest extends TestCase
         $this->assertDatabaseHas('product_ingredients', [
             'product_id' => $product->id,
             'ingredient_id' => $ingredient->id,
-            'quantity' => 50
+            'quantity' => 50,
         ]);
     }
 }

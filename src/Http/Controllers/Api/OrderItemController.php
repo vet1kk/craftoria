@@ -19,6 +19,7 @@ class OrderItemController extends Controller
      * @param \App\Http\Requests\Order\OrderItem\StoreOrderItemRequest $request
      * @param \App\Models\Order $order
      * @return \App\Http\Resources\OrderItemResource
+     *
      * @throws \Throwable
      */
     public function store(StoreOrderItemRequest $request, Order $order): OrderItemResource

@@ -2,11 +2,9 @@
   "$schema": "https://getcomposer.org/schema.json",
   "name": "craftoria/backend",
   "type": "project",
-  "description": "Craftoria backend based on a fresh Laravel installation.",
+  "description": "Craftoria backend.",
   "keywords": [
-    "craftoria",
-    "laravel",
-    "framework"
+    "craftoria"
   ],
   "license": "proprietary",
   "require": {
@@ -39,32 +37,21 @@
   },
   "scripts": {
     "setup": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-      "@composer install",
-      "npm -C public install",
-      "@php artisan key:generate --ansi",
-      "@setup:postgres",
-      "@php artisan migrate",
-      "#@php artisan db:seed --ansi"
-    ],
-    "check": [
-      "@composer validate --strict",
-      "@composer check-platform-reqs",
-      "@php artisan route:list --except-vendor --ansi"
+      "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+      "composer install",
+      "php artisan key:generate --ansi",
+      "php artisan migrate",
+      "php artisan db:seed --ansi"
     ],
     "test": [
       "php vendor/bin/phpunit"
     ],
-    "setup:postgres": "bash .config/postgres/run.sh setup",
-    "check:postgres": "bash .config/postgres/run.sh check",
-    "check:php-fpm": ".config/php/run.sh check",
-    "serve": ".config/php/run.sh",
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@php artisan package:discover --ansi"
+      "php artisan package:discover --ansi"
     ],
     "post-update-cmd": [
-      "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+      "php artisan vendor:publish --tag=laravel-assets --ansi --force"
     ]
   },
   "extra": {

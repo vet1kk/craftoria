@@ -45,7 +45,7 @@ class IngredientController extends Controller
     }
 
     /**
-     * @param  \App\Models\Ingredient  $ingredient
+     * @param \App\Models\Ingredient $ingredient
      * @return \App\Http\Resources\IngredientResource
      */
     public function show(Ingredient $ingredient): IngredientResource
@@ -57,7 +57,7 @@ class IngredientController extends Controller
 
     /**
      * @param \App\Http\Requests\Ingredient\IngredientUpsertRequest $request
-     * @param  \App\Models\Ingredient  $ingredient
+     * @param \App\Models\Ingredient $ingredient
      * @return \App\Http\Resources\IngredientResource
      */
     public function update(IngredientUpsertRequest $request, Ingredient $ingredient): IngredientResource
@@ -72,7 +72,7 @@ class IngredientController extends Controller
     /**
      * Soft-delete an ingredient from the admin area.
      *
-     * @param  \App\Models\Ingredient  $ingredient
+     * @param \App\Models\Ingredient $ingredient
      * @return \Illuminate\Http\Response
      */
     public function destroy(Ingredient $ingredient): Response

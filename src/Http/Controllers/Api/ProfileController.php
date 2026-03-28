@@ -14,7 +14,7 @@ class ProfileController extends Controller
     /**
      * Return the authenticated profile payload.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \App\Http\Resources\UserResource
      */
     public function show(Request $request): UserResource

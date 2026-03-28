@@ -1,8 +1,7 @@
 # Variables
-PHP_BIN := php
 COMPOSER := composer
-NPM_DIR := public
-RUN_SCRIPT := .config/php/run.sh
+dc := docker compose
+de := docker compose exec
 
 .DEFAULT_GOAL := help
 
@@ -14,26 +13,14 @@ help: ## Display this help message
 setup: ## Initial project setup (install deps, keys, assets)
 	$(COMPOSER) run setup
 
-.PHONY: serve
-serve: ## Start the full stack (Nginx, PHP-FPM, Angular)
-	$(COMPOSER) run serve
-
-.PHONY: check
-check: ## Validate configuration files syntax
-	@$(RUN_SCRIPT) check
-
-.PHONY: build
-build: ## Create production frontend build
-	npm -C $(NPM_DIR) run build:prod
-
 ## --- Utility ---
 
 .PHONY: clean
 clean: ## Clear all logs and Laravel caches
-	@rm -rf storage/logs/*.log
-	@$(PHP_BIN) artisan config:clear
-	@$(PHP_BIN) artisan cache:clear
-	@echo "Project cleaned."
+	rm -rf storage/logs/*.log
+	php artisan config:clear
+	php artisan cache:clear
+	echo "Project cleaned."
 
 .PHONY: test
 test: ## Run backend tests
@@ -43,6 +30,30 @@ test: ## Run backend tests
 dm: ## Drop merged git branches
 	git checkout master && git branch --merged | grep -v \* | xargs git branch -D
 
-.PHONY: logs
-logs: ## Tail the frontend logs
-	tail -f storage/logs/frontend.log
+.PHONY: build
+build: ## Build & Start application
+	$(dc) up --build -d
+
+.PHONY: up
+up: ## Start application
+	$(dc) up -d
+
+.PHONY: down
+down: ## Stop application
+	$(dc) down
+
+.PHONY: restart
+restart: ## Restart application
+	$(dc) down && $(dc) up -d
+
+.PHONY: php
+php: ## Go into php console
+	$(de) php /bin/bash
+
+.PHONY: web
+web: ## Go into web console
+	$(de) web /bin/bash
+
+.PHONY: db
+db: ## Go into db console
+	$(de) db /bin/bash

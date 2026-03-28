@@ -30,7 +30,7 @@ class ProductIngredientResource extends JsonResource
             'position' => $this->position,
             'created_at' => $this->created_at?->toAtomString(),
             'updated_at' => $this->updated_at?->toAtomString(),
-            'image_url' => FileUpload::publicUrl($this->image_url)
+            'image_url' => FileUpload::publicUrl($this->image_url),
         ]);
     }
 }

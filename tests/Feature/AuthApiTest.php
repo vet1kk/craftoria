@@ -21,7 +21,7 @@ class AuthApiTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-                 ->assertJsonPath('data.email', 'john@example.com');
+            ->assertJsonPath('data.email', 'john@example.com');
 
         $this->assertDatabaseHas('users', ['email' => 'john@example.com', 'role' => 'client']);
     }
@@ -39,16 +39,16 @@ class AuthApiTest extends TestCase
         ])->assertOk();
 
         $this->getJson('/api/session')
-             ->assertOk()
-             ->assertJson(['authenticated' => true]);
+            ->assertOk()
+            ->assertJson(['authenticated' => true]);
     }
 
     public function test_user_can_logout(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user)
-             ->postJson('/api/logout')
-             ->assertNoContent();
+            ->postJson('/api/logout')
+            ->assertNoContent();
 
         $this->getJson('/api/session')
             ->assertOk()
@@ -58,11 +58,11 @@ class AuthApiTest extends TestCase
     public function test_it_returns_session_state_without_unauthorized_response(): void
     {
         $this->getJson('/api/session')
-             ->assertOk()
-             ->assertJson([
-                 'authenticated' => false,
-                 'user' => null,
-             ]);
+            ->assertOk()
+            ->assertJson([
+                'authenticated' => false,
+                'user' => null,
+            ]);
 
         $user = User::factory()->create([
             'email' => 'session@example.test',
@@ -75,10 +75,10 @@ class AuthApiTest extends TestCase
         ])->assertOk();
 
         $this->getJson('/api/session')
-             ->assertOk()
-             ->assertJsonPath('authenticated', true)
-             ->assertJsonPath('user.id', $user->getKey())
-             ->assertJsonPath('user.email', 'session@example.test');
+            ->assertOk()
+            ->assertJsonPath('authenticated', true)
+            ->assertJsonPath('user.id', $user->getKey())
+            ->assertJsonPath('user.email', 'session@example.test');
     }
 
     public function test_it_rejects_invalid_credentials(): void

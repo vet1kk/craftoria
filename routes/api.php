@@ -53,7 +53,7 @@ Route::middleware(StartSession::class)->group(function (): void {
         Route::patch('/ingredients/{ingredient}', [IngredientController::class, 'update']);
         Route::delete('/ingredients/{ingredient}', [
             IngredientController::class,
-            'destroy'
+            'destroy',
         ])->name('ingredients.destroy');
 
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
@@ -70,37 +70,37 @@ Route::middleware(StartSession::class)->group(function (): void {
             Route::post('/orders/{order}/items', [OrderItemController::class, 'store'])->name('orders.items.store');
             Route::put('/orders/{order}/items/{order_item}', [
                 OrderItemController::class,
-                'update'
+                'update',
             ])->name('orders.items.update');
             Route::delete('/orders/{order}/items/{order_item}', [
                 OrderItemController::class,
-                'destroy'
+                'destroy',
             ])->name('orders.items.destroy');
 
             Route::post('/products/{product}/ingredients', [
                 ProductIngredientController::class,
-                'store'
+                'store',
             ])->name('products.ingredients.store');
             Route::put('/products/{product}/ingredients/{product_ingredient}', [
                 ProductIngredientController::class,
-                'update'
+                'update',
             ])->name('products.ingredients.update');
             Route::delete('/products/{product}/ingredients/{product_ingredient}', [
                 ProductIngredientController::class,
-                'destroy'
+                'destroy',
             ])->name('products.ingredients.destroy');
 
             Route::post('/products/{product}/metadata', [
                 ProductMetadataController::class,
-                'store'
+                'store',
             ])->name('products.metadata.store');
             Route::put('/products/{product}/metadata/{metadata}', [
                 ProductMetadataController::class,
-                'update'
+                'update',
             ])->name('products.metadata.update');
             Route::delete('/products/{product}/metadata/{metadata}', [
                 ProductMetadataController::class,
-                'destroy'
+                'destroy',
             ])->name('products.metadata.destroy');
         });
     });
