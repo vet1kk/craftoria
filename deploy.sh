@@ -1,31 +1,26 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 APP_ROOT="/home/site/wwwroot"
-NGINX_CONF="$APP_ROOT/.docker/conf/nginx/nginx.conf"
+log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"; }
 
-log() {
-  printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
-}
-
-log "Seizing control of Nginx configuration..."
+log "Updating Nginx configuration..."
 rm -rf /etc/nginx/sites-enabled/*
-rm -rf /etc/nginx/sites-available/*
-
-cp "$NGINX_CONF" /etc/nginx/sites-available/default
+cp "$APP_ROOT/.docker/conf/nginx/nginx.conf" /etc/nginx/sites-available/default
 ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-log "Setting file ownership..."
-chown -R www-data:www-data "$APP_ROOT"
-chmod -R 755 "$APP_ROOT"
+log "Fixing permissions for www-data..."
+chown -R www-data:www-data "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
+chmod -R 775 "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
 
-log "Restarting Nginx binary..."
+log "Restarting Nginx..."
 pkill -9 nginx || true
-sleep 2
-/usr/sbin/nginx -g "daemon on;" || nginx
+/usr/sbin/nginx -g "daemon on;" || log "Nginx started with warnings"
 
+set -e
 cd "$APP_ROOT"
-log "Running Composer deploy script..."
-composer run-script deploy
+log "Executing Laravel Deploy Script..."
 
-log "Deployment finished successfully!"
+/usr/local/bin/php /usr/local/bin/composer run-script deploy
+
+log "DEPLOYMENT COMPLETE"
