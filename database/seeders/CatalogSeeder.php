@@ -134,8 +134,9 @@ class CatalogSeeder extends Seeder
             ->values()
             ->map(fn(Ingredient $ingredient, int $position): array => [
                 'ingredient_id' => $ingredient->getKey(),
-                'quantity' => fake()->randomFloat(2, 10, 250),
+                'quantity' => fake()->randomFloat(2, 10, 50),
                 'position' => $position,
+                'image_url' => $this->inlineImage($ingredient->name, 900, 600),
             ])
             ->all();
 

@@ -43,8 +43,8 @@ class ResourceTest extends TestCase
 
         $this->assertSame('cake', $categoryPayload['icon']);
         $this->assertSame('https://example.com/cat.jpg', $categoryPayload['image_url']);
-        $this->assertSame(123, $ingredientPayload['nutrition_per_100']['calories']);
-        $this->assertSame(10.5, $ingredientPayload['nutrition_per_100']['proteins']);
+        $this->assertSame(123, $ingredientPayload['nutrition_totals']['calories']);
+        $this->assertSame(10.5, $ingredientPayload['nutrition_totals']['proteins']);
         $this->assertSame(14.2, $ingredientPayload['cost_amount']);
     }
 

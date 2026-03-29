@@ -28,6 +28,7 @@ class IngredientWithPivotResource extends JsonResource
             'unit' => $this->unit,
             'quantity' => (float)$this->pivot?->quantity,
             'position' => $this->pivot?->position,
+            'image_url' => $this->pivot?->image_url,
             'nutrition_totals' => [
                 'calories' => $this->calories * (float)$this->pivot?->quantity,
                 'proteins' => (float)$this->proteins * (float)$this->pivot?->quantity,

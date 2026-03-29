@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
-import { ApiResourceResponse, Category, Ingredient, IngredientUnit, Product, ResolvedProductIngredient } from '../models';
+import { ApiResourceResponse, Category, Ingredient, IngredientUnit, Product, } from '../models';
 import { DataService } from './data.service';
 import { I18nService } from './i18n.service';
 import { firstValueFrom } from 'rxjs';
@@ -20,13 +20,11 @@ export class ProductService {
     return this.dataService.categories().find((category) => category.id === categoryId);
   }
 
-  getProductIngredientBreakdown(product: Product): ResolvedProductIngredient[] {
+  getProductIngredientBreakdown(product: Product): Ingredient[] {
     return product.ingredients.map((ingredient: Ingredient) => {
       return {
-        ingredient,
-        quantity: ingredient.quantity,
+        ...ingredient,
         quantity_label: this.formatQuantity(ingredient.quantity, ingredient.unit),
-        nutrition: ingredient.nutrition_totals
       };
     });
   }

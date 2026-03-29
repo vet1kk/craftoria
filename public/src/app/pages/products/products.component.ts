@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, DataService } from '../../services';
 import { ProductComponent, ProductsCategoryFilterComponent, ProductsHeroComponent } from '../components';
@@ -37,5 +37,11 @@ export class ProductsComponent {
 
   constructor() {
     void this.dataService.ensureCatalogLoaded();
+
+    effect(() => {
+      if (this.dataService.shouldReloadCatalogForLocale()) {
+        void this.dataService.ensureCatalogLoaded(true);
+      }
+    });
   }
 }

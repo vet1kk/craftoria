@@ -108,7 +108,7 @@ class Ingredient extends Model
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param \Illuminate\Database\Query\Builder $query
      * @return \App\Models\Builders\IngredientBuilder
      */
     public function newEloquentBuilder($query): IngredientBuilder
@@ -119,7 +119,7 @@ class Ingredient extends Model
     /**
      * Scope the query to active records.
      *
-     * @param  \App\Models\Builders\IngredientBuilder  $query
+     * @param \App\Models\Builders\IngredientBuilder $query
      * @return void
      */
     public function scopeActive(IngredientBuilder $query): void

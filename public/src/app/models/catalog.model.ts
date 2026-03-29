@@ -22,22 +22,21 @@ export interface Ingredient {
   name: string;
   slug: string;
   unit: IngredientUnit;
+  ingredient_id?: string;
+  product_id?: string;
   quantity: number;
-  position: number;
-  nutrition_totals: NutritionFacts;
+  quantity_label?: string | null;
+  position?: number;
+  created_at?: string | null;
+  updated_at?: string | null;
+  ingredient?: Ingredient;
+  product?: Product;
+  image_url?: string | null;
+  nutrition_totals?: NutritionFacts;
 }
 
 export interface ProductIngredient {
-  ingredient_id: string;
-  quantity: number;
-  position: number;
-}
 
-export interface ResolvedProductIngredient {
-  ingredient: Ingredient;
-  quantity: number;
-  quantity_label: string;
-  nutrition: NutritionFacts;
 }
 
 export interface PackageDetails {

@@ -18,7 +18,7 @@ export class DataService {
   private readonly localeService = inject(LocaleService);
   private readonly settingsService = inject(AppSettingsService);
   private catalogRequest: Promise<void> | null = null;
-  private lastLoadedLocale: string | null = null;
+  lastLoadedLocale: string | null = null;
 
   readonly categories = signal<Category[]>([]);
   readonly products = signal<Product[]>([]);
@@ -28,19 +28,19 @@ export class DataService {
 
   constructor() {
     effect(() => {
-      const locale = this.localeService.locale();
-      const shouldForceReload = this.lastLoadedLocale !== null && this.lastLoadedLocale !== locale;
-
-      this.lastLoadedLocale = locale;
-
-      void this.ensureCatalogLoaded(shouldForceReload);
-    });
-
-    effect(() => {
       this.settingsService.settings().then((settings) => {
         this.appSettings.set(settings.data);
       });
     });
+  }
+
+  shouldReloadCatalogForLocale(): boolean {
+    const locale = this.localeService.locale();
+    const shouldForceReload = this.lastLoadedLocale !== null && this.lastLoadedLocale !== locale;
+
+    this.lastLoadedLocale = locale;
+
+    return shouldForceReload;
   }
 
   async ensureCatalogLoaded(force = false): Promise<void> {

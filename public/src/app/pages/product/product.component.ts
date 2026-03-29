@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
@@ -29,7 +29,7 @@ export class ProductComponent {
   readonly productService = inject(ProductService);
   readonly cartService = inject(CartService);
   readonly i18n = inject(I18nService);
-  readonly isLoading = signal(true);
+  readonly isLoading = signal(false);
   readonly loadError = signal('');
   private readonly route = inject(ActivatedRoute);
   private readonly productSlug = toSignal(
@@ -96,24 +96,34 @@ export class ProductComponent {
 
   constructor() {
     this.fetchProduct();
+
+    effect(() => {
+      if (this.dataService.shouldReloadCatalogForLocale()) {
+        void this.fetchProduct();
+      }
+    });
   }
 
   fetchProduct(): void {
     const slug = this.productSlug();
     this.loadError.set('');
+    this.product = undefined;
 
     if (!slug) {
+      this.isLoading.set(false);
       return;
     }
 
     this.isLoading.set(true);
 
     this.productService.loadProduct(slug).then((product) => {
-      this.isLoading.set(false);
       this.product = product;
+      this.isLoading.set(false);
       if (!product) {
         this.loadError.set(this.i18n.translate('ui.itemDetail.notFoundHint'));
       }
+    }).catch(() => {
+      this.isLoading.set(false);
     });
   }
 
