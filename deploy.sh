@@ -3,75 +3,110 @@ set -euo pipefail
 
 APP_ROOT="/home/site/wwwroot"
 NGINX_CONF="/etc/nginx/sites-available/default"
-NGINX_EXTRA_CONF="/etc/nginx/conf.d/laravel_angular.conf"
-STARTUP_LOG="/home/LogFiles/deploy-startup.log"
+APP_WEBROOT="$APP_ROOT/webroot"
 
-mkdir -p /home/LogFiles
-exec > >(tee -a "$STARTUP_LOG") 2>&1
+log() {
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+}
 
-echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Startup script begin"
-echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] User: $(id -u -n)"
-echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] PWD: $(pwd)"
+die() {
+    log "ERROR: $*"
+    exit 1
+}
 
-echo "Starting Nginx configuration..."
+require_command() {
+    command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
+}
 
-# Detect PHP-FPM socket path provided by the runtime image.
-PHP_FPM_SOCK="$(ls /run/php/php*-fpm.sock 2>/dev/null | head -n 1 || true)"
-if [ -n "$PHP_FPM_SOCK" ]; then
-  PHP_FPM_UPSTREAM="unix:$PHP_FPM_SOCK"
-else
-  PHP_FPM_UPSTREAM="127.0.0.1:9000"
-  echo "Warning: PHP-FPM socket not found, falling back to $PHP_FPM_UPSTREAM"
-fi
+require_path() {
+    [ -e "$1" ] || die "Required path not found: $1"
+}
 
-cat > "$NGINX_CONF" <<EOF
+detect_php_fpm_upstream() {
+    local sockets
+    sockets=(
+        "/run/php/php8.3-fpm.sock"
+        "/run/php/php-fpm.sock"
+        "/var/run/php/php8.3-fpm.sock"
+        "/var/run/php/php-fpm.sock"
+    )
+
+    for sock in "${sockets[@]}"; do
+        if [ -S "$sock" ]; then
+            printf 'unix:%s' "$sock"
+            return 0
+        fi
+    done
+
+    # Common fallback for php-fpm in containerized setups.
+    printf '127.0.0.1:9000'
+}
+
+main() {
+    local php_fpm_upstream
+    local tmp_conf
+
+    require_command nginx
+    require_command composer
+    require_path "$APP_ROOT"
+    require_path "$APP_WEBROOT"
+
+    php_fpm_upstream="${PHP_FPM_UPSTREAM:-$(detect_php_fpm_upstream)}"
+    log "Using PHP-FPM upstream: $php_fpm_upstream"
+
+    tmp_conf="$(mktemp)"
+    trap 'rm -f "$tmp_conf"' EXIT
+
+    cat >"$tmp_conf" <<EOF
 server {
     listen 80;
-    listen [::]:80;
     listen 8080;
-    listen [::]:8080;
     server_name _;
-
-    root $APP_ROOT/webroot;
-    index index.php index.html index.htm;
-
+    root $APP_WEBROOT;
+    index index.html index.php;
     charset utf-8;
 
+    # Laravel API Routes
     location ~ /(api|webhook|public)(/|$) {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
-    location / {
-        try_files \$uri \$uri/ /index.html /index.php?\$query_string;
+    # Static Assets
+    location ~* \.(?:css|js|jpg|jpeg|gif|png|ico|svg|woff|woff2)$ {
+        try_files \$uri =404;
     }
 
+    # Angular SPA Frontend
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+
+    # PHP-FPM Processing
     location ~ \.php$ {
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
-        fastcgi_param DOCUMENT_ROOT \$realpath_root;
-        fastcgi_pass ${PHP_FPM_UPSTREAM};
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
+        fastcgi_pass $php_fpm_upstream;
     }
 }
 EOF
 
-rm -f "$NGINX_EXTRA_CONF"
+    if [ -f "$NGINX_CONF" ] && cmp -s "$tmp_conf" "$NGINX_CONF"; then
+        log "Nginx config unchanged"
+    else
+        if [ -f "$NGINX_CONF" ]; then
+            cp "$NGINX_CONF" "${NGINX_CONF}.bak"
+            log "Backed up existing nginx config to ${NGINX_CONF}.bak"
+        fi
+        cp "$tmp_conf" "$NGINX_CONF"
+        log "Wrote nginx config to $NGINX_CONF"
+    fi
 
-nginx -t
-service nginx reload
+    nginx -t
+    service nginx reload
 
-touch "$APP_ROOT/.startup-ran"
-echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Created marker: $APP_ROOT/.startup-ran"
-
-cd "$APP_ROOT"
-echo "Running Composer deploy script..."
-command -v composer >/dev/null 2>&1 || {
-  echo "Composer is not available in PATH"
-  exit 1
+    cd "$APP_ROOT"
+    composer run-script deploy
+    log "Deployment script finished successfully"
 }
-composer run-script deploy
 
-echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Deployment complete."
+main "$@"
