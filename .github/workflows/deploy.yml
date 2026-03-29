@@ -32,9 +32,6 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-      - name: Run Composer Deploy Script
-        run: composer deploy
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
