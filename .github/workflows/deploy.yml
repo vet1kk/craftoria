@@ -1,0 +1,115 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AZURE_WEBAPP_NAME: craftoria-api
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, gd, pdo_pgsql
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: public/package-lock.json
+
+      - name: Install & Build Angular
+        run: |
+          cd public
+          npm ci
+          npm run build:prod
+
+      - name: Make startup script executable
+        run: chmod +x deploy.sh
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p deploy
+          rsync -a --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'public/node_modules' \
+            --exclude 'tests' \
+            ./ deploy/
+          cd deploy
+          zip -r ../deploy.zip .
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: craftoria-deploy
+          path: deploy.zip
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: craftoria-deploy
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: deploy.zip
+
+      - name: Post-deploy health check
+        env:
+          HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}
+          HEALTHCHECK_RETRIES: ${{ vars.HEALTHCHECK_RETRIES || '10' }}
+          HEALTHCHECK_DELAY_SECONDS: ${{ vars.HEALTHCHECK_DELAY_SECONDS || '15' }}
+          HEALTHCHECK_TIMEOUT_SECONDS: ${{ vars.HEALTHCHECK_TIMEOUT_SECONDS || '10' }}
+        run: |
+          URL="${HEALTHCHECK_URL:-https://${AZURE_WEBAPP_NAME}.azurewebsites.net/api/health}"
+          RETRIES="${HEALTHCHECK_RETRIES}"
+          DELAY="${HEALTHCHECK_DELAY_SECONDS}"
+          TIMEOUT="${HEALTHCHECK_TIMEOUT_SECONDS}"
+
+          echo "Checking health endpoint: ${URL}"
+
+          for attempt in $(seq 1 "${RETRIES}"); do
+            if curl --silent --show-error --fail --max-time "${TIMEOUT}" "${URL}" > /tmp/health.json; then
+              echo "Health check passed on attempt ${attempt}/${RETRIES}."
+              cat /tmp/health.json
+              exit 0
+            fi
+
+            echo "Health check attempt ${attempt}/${RETRIES} failed. Waiting ${DELAY}s..."
+            sleep "${DELAY}"
+          done
+
+          echo "Health check failed after ${RETRIES} attempts."
+          exit 1

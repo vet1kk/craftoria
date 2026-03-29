@@ -36,6 +36,14 @@
     }
   },
   "scripts": {
+    "deploy": [
+      "php artisan migrate --force --isolated --no-interaction",
+      "php artisan db:seed",
+      "php artisan optimize:clear",
+      "php artisan config:cache",
+      "php artisan route:cache",
+      "php artisan view:cache"
+    ],
     "setup": [
       "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
       "composer install",

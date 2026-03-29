@@ -17,6 +17,7 @@ return tap(
                    $middleware->api(prepend: [
                        \App\Http\Middleware\SetRequestLocale::class,
                    ]);
+                   $middleware->trustProxies(at: '*');
                })
                ->withExceptions(function (Exceptions $exceptions): void {
                    //
