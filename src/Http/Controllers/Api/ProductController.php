@@ -4,37 +4,29 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\FileUpload;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProductUpsertRequest;
+use App\Http\Requests\Product\ProductStoreRequest;
+use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use App\Services\ProductService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
     /**
-     * @param  \App\Services\ProductService  $productService
-     * @return void
-     */
-    public function __construct(
-        private readonly ProductService $productService,
-    ) {}
-
-    /**
      * Return the public product collection.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(): AnonymousResourceCollection
     {
-        $products = $this->productService->listPublic(
-            $request->filled('category') ? (string) $request->string('category') : null,
-            $request->filled('search') ? trim((string) $request->string('search')) : null,
-        );
+        $products = Product::query()
+                           ->with(['category', 'images', 'metadata', 'ingredients'])
+                           ->orderBy('position')
+                           ->orderBy('name')
+                           ->get();
 
         return ProductResource::collection($products);
     }
@@ -42,64 +34,81 @@ class ProductController extends Controller
     /**
      * Return a single public product by slug.
      *
-     * @param  string  $slug
+     * @param string $slug
      * @return \App\Http\Resources\ProductResource
      */
     public function show(string $slug): ProductResource
     {
-        $product = $this->productService->findPublicBySlug($slug);
+        $product = Product::query()
+                          ->with(['category', 'images', 'metadata', 'ingredients'])
+                          ->where('slug', $slug)
+                          ->firstOrFail();
 
         return new ProductResource($product);
     }
 
     /**
      * Create a product from the validated payload.
-     * Optional payload sections:
      *
-     * @param  \App\Http\Requests\ProductUpsertRequest  $request
+     * @param \App\Http\Requests\Product\ProductStoreRequest $request
      * @return \App\Http\Resources\ProductResource
      *
      * @throws \Throwable
      */
-    public function store(ProductUpsertRequest $request): ProductResource
+    public function store(ProductStoreRequest $request): ProductResource
     {
         $this->authorize('create', Product::class);
 
-        $product = $this->productService->create($request->validated());
+        $data = $request->validated();
 
-        return new ProductResource($product);
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image_url'] = FileUpload::storePublicImage(
+                $request->file('featured_image'),
+                'uploads/products'
+            );
+        }
+
+        return new ProductResource(Product::create($data));
     }
 
     /**
      * Update a product from the validated payload.
-     * Optional payload sections:
      *
-     * @param  \App\Http\Requests\ProductUpsertRequest  $request
-     * @param  \App\Models\Product  $product
+     * @param \App\Http\Requests\Product\ProductUpdateRequest $request
+     * @param \App\Models\Product $product
      * @return \App\Http\Resources\ProductResource
      *
      * @throws \Throwable
      */
-    public function update(ProductUpsertRequest $request, Product $product): ProductResource
+    public function update(ProductUpdateRequest $request, Product $product): ProductResource
     {
         $this->authorize('update', $product);
 
-        $product = $this->productService->update($product, $request->validated());
+        $data = $request->validated();
 
-        return new ProductResource($product);
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image_url'] = FileUpload::storePublicImage(
+                $request->file('featured_image'),
+                'uploads/products/featured'
+            );
+        }
+
+        $product->update($data);
+
+        return $this->show($product->slug);
     }
 
     /**
      * Soft-delete a product.
      *
-     * @param  \App\Models\Product  $product
+     * @param \App\Models\Product $product
      * @return \Illuminate\Http\Response
      */
     public function destroy(Product $product): Response
     {
         $this->authorize('delete', $product);
 
-        $this->productService->delete($product);
+        $product->delete();
 
         return response()->noContent();
     }

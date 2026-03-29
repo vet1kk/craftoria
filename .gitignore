@@ -12,8 +12,8 @@ public/dist
 public/dist-ssr
 *.local
 public/.angular
-public/environments/environment.local.ts
-public/environments/environment.production.ts
+public/src/environments/environment.local.ts
+public/src/environments/environment.production.ts
 vendor
 .env
 .env.backup
@@ -24,6 +24,9 @@ vendor
 /storage/pail
 /public/hot
 /public/storage
+/webroot
+.docker/conf/php/.env
+.docker/conf/php/.pgpass
 
 # Editor directories and files
 .vscode/*

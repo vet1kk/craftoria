@@ -17,10 +17,17 @@ use Illuminate\Support\Str;
 class SupportSeeder extends Seeder
 {
     /**
+     * Seed analytics and audit logs only if none exist.
+     *
      * @return void
      */
     public function run(): void
     {
+        // Skip if analytics or audit logs already exist
+        if (AnalyticsEvent::query()->exists() || AuditLog::query()->exists()) {
+            return;
+        }
+
         /** @var \Illuminate\Support\Collection<int, \Illuminate\Database\Eloquent\Model> $collection */
         $collection = collect([
             ...Category::query()->limit(5)->get()->all(),

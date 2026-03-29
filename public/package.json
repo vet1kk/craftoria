@@ -4,12 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "NG_CLI_ANALYTICS=false ng serve",
-    "dev:php": "php -S 127.0.0.1:8080 -t .",
-    "build": "NG_CLI_ANALYTICS=false ng build",
-    "build:local-analytics": "if [ -f environments/environment.local.ts ]; then NG_CLI_ANALYTICS=false ng build --configuration=production-local-analytics; else NG_CLI_ANALYTICS=false ng build; fi",
-    "preview": "NG_CLI_ANALYTICS=false ng serve --configuration=production",
-    "preview:local-analytics": "if [ -f environments/environment.local.ts ]; then NG_CLI_ANALYTICS=false ng serve --configuration=production-local-analytics; else NG_CLI_ANALYTICS=false ng serve --configuration=production; fi"
+    "start": "ng serve",
+    "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "build:local": "ng build --configuration local",
+    "build:webroot": "ng build --configuration local",
+    "build:webroot:prod": "ng build --configuration production",
+    "serve:prod": "ng serve --configuration production",
+    "serve:local": "ng serve --configuration local",
+    "watch": "ng build --watch"
   },
   "dependencies": {
     "@angular/build": "^21.1.0",
@@ -22,7 +25,8 @@
     "@angular/platform-browser": "^21.1.0",
     "@angular/router": "^21.1.4",
     "rxjs": "^7.8.2",
-    "tailwindcss": "latest"
+    "tailwindcss": "latest",
+    "zone.js": "~0.15.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",

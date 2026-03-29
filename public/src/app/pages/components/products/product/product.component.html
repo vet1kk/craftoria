@@ -1,0 +1,65 @@
+@if (product()) {
+  <article class="group flex flex-col rounded-[2.5rem] border border-stone-200 bg-white p-4 transition-all hover:border-orange-200 hover:shadow-xl sm:p-5"
+           (click)="openDetails()"
+           [attr.aria-label]="itemAriaLabel()"
+           tabindex="0">
+    <div class="relative aspect-square w-full overflow-hidden rounded-4xl bg-stone-50 border border-stone-100/50">
+      @if (hasImage()) {
+        <img loading="lazy"
+             [src]="product().featured_image_url"
+             [alt]="product().name"
+             class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110">
+      } @else {
+        <div class="aspect-square overflow-hidden rounded-2xl border-stone-200 bg-stone-50/70 p-2">
+          <div class="flex h-full items-center justify-center opacity-20">
+            <span class="text-3xl">📸</span>
+          </div>
+        </div>
+      }
+
+      @if (!product().is_available) {
+        <div class="absolute inset-0 flex items-center justify-center bg-stone-900/40 backdrop-blur-[2px]">
+        <span class="rounded-full bg-white px-3 py-1 text-[9px] font-black uppercase tracking-widest text-stone-900">
+          {{ 'ui.itemCard.outOfStock' | t }}
+        </span>
+        </div>
+      }
+
+      <div class="pointer-events-none absolute inset-x-3 bottom-3 flex translate-y-2 items-center justify-between rounded-full bg-white/90 px-3 py-2 text-xs font-semibold text-stone-700 opacity-0 shadow-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+        <span>{{ 'ui.itemCard.openDetails' | t }}</span>
+        <span aria-hidden="true">→</span>
+      </div>
+    </div>
+
+    <div class="mt-4 flex items-start justify-between gap-2 px-1">
+      <div class="flex-1 min-w-0">
+        <h3 class="text-base font-black leading-tight text-stone-900 line-clamp-1 group-hover:text-orange-600 transition-colors">
+          {{ product().name }}
+        </h3>
+        <p class="mt-1 text-[11px] font-medium text-stone-400 line-clamp-1">
+          {{ product().description }}
+        </p>
+      </div>
+
+      <div class="text-right shrink-0">
+        <p class="text-lg font-black leading-none text-stone-900">{{ product().price }}</p>
+        <p class="mt-1 text-[9px] font-bold uppercase tracking-tighter text-stone-400">{{ currency() }}</p>
+      </div>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between gap-3">
+      <div class="flex flex-1 items-center justify-center rounded-2xl bg-stone-50/80 border border-stone-100 py-2">
+      <span class="text-[14px] font-bold text-stone-500 uppercase tracking-tight">
+        {{ portionLabel() }}
+      </span>
+      </div>
+
+      <button type="button"
+              [disabled]="!product().is_available"
+              (click)="addToCart.emit(product()); $event.stopPropagation()"
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-90 disabled:bg-stone-100 disabled:text-stone-300 disabled:shadow-none">
+        <span class="text-xl font-light">＋</span>
+      </button>
+    </div>
+  </article>
+}

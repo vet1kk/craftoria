@@ -14,9 +14,18 @@ class CatalogApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_returns_public_categories_and_products(): void
+    public function test_it_returns_localized_catalog_fields_when_requested_locale_exists(): void
     {
-        $category = Category::query()->create([
+        Category::create([
+            'name' => 'All',
+            'slug' => 'all',
+            'icon' => '🍽️',
+            'image_url' => null,
+            'position' => -1,
+            'is_active' => true,
+        ]);
+
+        $category = Category::create([
             'name' => 'Burgers',
             'slug' => 'burgers',
             'icon' => '🍔',
@@ -25,7 +34,7 @@ class CatalogApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $ingredient = Ingredient::query()->create([
+        $ingredient = Ingredient::create([
             'name' => 'Beef',
             'slug' => 'beef',
             'unit' => 'g',
@@ -37,11 +46,12 @@ class CatalogApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        $product = Product::query()->create([
+        $product = Product::create([
             'category_id' => $category->getKey(),
             'name' => 'Classic Burger',
             'slug' => 'classic-burger',
             'description' => 'A solid burger.',
+            'shelf_life' => '48 hours',
             'price' => 250,
             'featured_image_url' => 'https://example.com/burger.jpg',
             'position' => 1,
@@ -49,11 +59,6 @@ class CatalogApiTest extends TestCase
             'reorder_level' => 2,
             'is_active' => true,
             'is_available' => true,
-        ]);
-
-        $product->images()->create([
-            'image_url' => 'https://example.com/burger-gallery.jpg',
-            'position' => 0,
         ]);
 
         $product->metadata()->create([
@@ -67,20 +72,22 @@ class CatalogApiTest extends TestCase
             'position' => 0,
         ]);
 
-        $this->getJson('/api/categories')
+        $this->withHeader('Accept-Language', 'uk')
+            ->getJson('/api/categories')
             ->assertOk()
+            ->assertJsonPath('data.0.name', 'Все меню')
             ->assertJsonFragment([
-                'name' => 'Burgers',
+                'name' => 'Бургери',
                 'slug' => 'burgers',
             ]);
 
-        $this->getJson('/api/products?category=burgers')
+        $this->withHeader('Accept-Language', 'uk')
+            ->getJson('/api/products')
             ->assertOk()
-            ->assertJsonFragment([
-                'name' => 'Classic Burger',
-                'slug' => 'classic-burger',
-            ])
-            ->assertJsonPath('data.0.gallery_image_urls.0', 'https://example.com/burger-gallery.jpg')
-            ->assertJsonPath('data.0.metadata.serving_details', 'Served warm.');
+            ->assertJsonPath('data.0.name', 'Класичний бургер')
+            ->assertJsonPath('data.0.description', 'Надійний бургер на щодень.')
+            ->assertJsonPath('data.0.metadata.0.value', 'Подавати теплим.')
+            ->assertJsonPath('data.0.ingredients.0.name', 'Яловичина')
+            ->assertJsonPath('data.0.shelf_life', '48 hours');
     }
 }

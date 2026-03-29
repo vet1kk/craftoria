@@ -43,7 +43,7 @@ class OrderFactory extends Factory
             'payment_status' => fake()->randomElement(['pending', 'paid']),
             'payment_reference' => fake()->optional()->bothify('PAY-########'),
             'delivery_address_line_1' => fake()->optional()->streetAddress(),
-            'delivery_address_line_2' => fake()->optional()->secondaryAddress(),
+            'delivery_address_line_2' => fake()->optional()->streetAddress(),
             'delivery_city' => fake()->optional()->city(),
             'delivery_postal_code' => fake()->optional()->postcode(),
             'delivery_country_code' => fake()->optional()->countryCode(),

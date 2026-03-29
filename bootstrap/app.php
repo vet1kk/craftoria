@@ -8,19 +8,21 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 return tap(
     Application::configure(basePath: dirname(__DIR__))
-        ->withRouting(
-            api: __DIR__.'/../routes/api.php',
-            commands: __DIR__.'/../routes/console.php',
-            health: '/api/up',
-        )
-        ->withMiddleware(function (Middleware $middleware): void {
-            //
-        })
-        ->withExceptions(function (Exceptions $exceptions): void {
-            //
-        })
-        ->create(),
+               ->withRouting(
+                   api: __DIR__ . '/../routes/api.php',
+                   commands: __DIR__ . '/../routes/console.php',
+                   health: '/api/up',
+               )
+               ->withMiddleware(function (Middleware $middleware): void {
+                   $middleware->api(prepend: [
+                       \App\Http\Middleware\SetRequestLocale::class,
+                   ]);
+               })
+               ->withExceptions(function (Exceptions $exceptions): void {
+                   //
+               })
+               ->create(),
     static function (Application $app): void {
-        $app->useAppPath(__DIR__.'/../src');
+        $app->useAppPath(__DIR__ . '/../src');
     }
 );

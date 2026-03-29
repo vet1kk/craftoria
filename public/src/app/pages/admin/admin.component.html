@@ -1,0 +1,28 @@
+<div class="max-w-4xl mx-auto px-4 py-8 pb-20">
+  <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl font-bold text-stone-800">{{ 'ui.admin.title' | t }}</h1>
+    <app-admin-tabs [activeTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-admin-tabs>
+  </div>
+
+  @if (dataService.isCatalogLoading() && dataService.products().length === 0) {
+    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-10 text-center text-stone-500">
+      {{ 'ui.admin.loadingCatalog' | t }}
+    </div>
+  } @else if (dataService.catalogError()) {
+    <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-red-700">
+      <p class="font-semibold">{{ 'ui.admin.loadError' | t }}</p>
+      <p class="mt-2 text-sm">{{ dataService.catalogError() }}</p>
+    </div>
+  } @else {
+    @if (activeTab() === 'items') {
+      <app-admin-product-panel [products]="dataService.products()"
+                               [categories]="dataService.categories()"
+                               [currency]="dataService.appSettings().currency">
+      </app-admin-product-panel>
+    }
+
+    @if (activeTab() === 'categories') {
+      <app-admin-categories-panel [categories]="editableCategories()"></app-admin-categories-panel>
+    }
+  }
+</div>

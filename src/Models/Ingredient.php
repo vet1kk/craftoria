@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Builders\IngredientBuilder;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Concerns\HasTranslationConfig;
+use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,14 +35,24 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $productIngredients
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $product_ingredients
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
+ * @property-read \App\Models\ProductIngredient|null $pivot
  */
 class Ingredient extends Model
 {
     use HasFactory;
+    use HasTranslationConfig;
+    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
+
+    protected ?string $translationPrefix = 'catalog.ingredients';
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $translatableFields = ['name'];
 
     protected $fillable = [
         'name',
@@ -97,7 +108,7 @@ class Ingredient extends Model
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param \Illuminate\Database\Query\Builder $query
      * @return \App\Models\Builders\IngredientBuilder
      */
     public function newEloquentBuilder($query): IngredientBuilder
@@ -108,7 +119,7 @@ class Ingredient extends Model
     /**
      * Scope the query to active records.
      *
-     * @param  \App\Models\Builders\IngredientBuilder  $query
+     * @param \App\Models\Builders\IngredientBuilder $query
      * @return void
      */
     public function scopeActive(IngredientBuilder $query): void

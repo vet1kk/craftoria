@@ -21,6 +21,22 @@ class ModelFactoryTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_ingredient_factory_uses_per_unit_nutrition_and_cost_values(): void
+    {
+        $ingredient = Ingredient::factory()->create();
+
+        $this->assertGreaterThanOrEqual(0, $ingredient->calories);
+        $this->assertLessThanOrEqual(10, $ingredient->calories);
+        $this->assertGreaterThanOrEqual(0.0, (float)$ingredient->proteins);
+        $this->assertLessThanOrEqual(1.0, (float)$ingredient->proteins);
+        $this->assertGreaterThanOrEqual(0.0, (float)$ingredient->fats);
+        $this->assertLessThanOrEqual(1.0, (float)$ingredient->fats);
+        $this->assertGreaterThanOrEqual(0.0, (float)$ingredient->carbs);
+        $this->assertLessThanOrEqual(1.0, (float)$ingredient->carbs);
+        $this->assertGreaterThanOrEqual(0.0, (float)$ingredient->cost_amount);
+        $this->assertLessThanOrEqual(1.0, (float)$ingredient->cost_amount);
+    }
+
     public function test_it_creates_all_domain_models_with_factories(): void
     {
         $category = Category::factory()->create();

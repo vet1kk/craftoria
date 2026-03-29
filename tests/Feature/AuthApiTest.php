@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Tests\Feature;
 
 use App\Models\User;
@@ -12,50 +10,75 @@ class AuthApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_registers_a_client_user(): void
+    public function test_user_can_register(): void
     {
         $response = $this->postJson('/api/register', [
-            'name' => 'Ihor Client',
-            'email' => 'ihor@example.test',
-            'phone' => '+380671112233',
-            'password' => 'secret123',
+            'name' => 'John Doe',
+            'email' => 'JOHN@example.com', // Test case insensitivity
+            'phone' => '1234567890',
+            'password' => 'password',
+            'password_confirmation' => 'password',
         ]);
 
-        $response
-            ->assertCreated()
-            ->assertJsonPath('data.email', 'ihor@example.test')
-            ->assertJsonPath('data.role', 'client');
+        $response->assertStatus(201)
+            ->assertJsonPath('data.email', 'john@example.com');
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'ihor@example.test',
-            'role' => 'client',
-        ]);
+        $this->assertDatabaseHas('users', ['email' => 'john@example.com', 'role' => 'client']);
     }
 
-    public function test_it_logs_in_and_out_with_session_authentication(): void
+    public function test_user_can_login_and_get_session(): void
     {
+        User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $this->postJson('/api/login', [
+            'email' => 'TEST@example.com',
+            'password' => 'password',
+        ])->assertOk();
+
+        $this->getJson('/api/session')
+            ->assertOk()
+            ->assertJson(['authenticated' => true]);
+    }
+
+    public function test_user_can_logout(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)
+            ->postJson('/api/logout')
+            ->assertNoContent();
+
+        $this->getJson('/api/session')
+            ->assertOk()
+            ->assertJson(['authenticated' => false]);
+    }
+
+    public function test_it_returns_session_state_without_unauthorized_response(): void
+    {
+        $this->getJson('/api/session')
+            ->assertOk()
+            ->assertJson([
+                'authenticated' => false,
+                'user' => null,
+            ]);
+
         $user = User::factory()->create([
-            'email' => 'ihor@example.test',
+            'email' => 'session@example.test',
             'password' => 'secret123',
         ]);
 
-        $this
-            ->postJson('/api/login', [
-                'email' => 'ihor@example.test',
-                'password' => 'secret123',
-            ])
+        $this->postJson('/api/login', [
+            'email' => 'session@example.test',
+            'password' => 'secret123',
+        ])->assertOk();
+
+        $this->getJson('/api/session')
             ->assertOk()
-            ->assertJsonPath('data.id', $user->getKey());
-
-        $this->getJson('/api/profile')
-             ->assertOk()
-             ->assertJsonPath('data.email', 'ihor@example.test');
-
-        $this->postJson('/api/logout')
-             ->assertNoContent();
-
-        $this->getJson('/api/profile')
-             ->assertUnauthorized();
+            ->assertJsonPath('authenticated', true)
+            ->assertJsonPath('user.id', $user->getKey())
+            ->assertJsonPath('user.email', 'session@example.test');
     }
 
     public function test_it_rejects_invalid_credentials(): void

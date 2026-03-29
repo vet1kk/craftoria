@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Helpers\FileUpload;
 use App\Models\Builders\ProductBuilder;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Concerns\HasTranslationConfig;
+use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 /**
  * @method static \App\Models\Builders\ProductBuilder query()
@@ -42,15 +45,24 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \App\Models\Category $category
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductMetadata> $metadata
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductImage> $images
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $productIngredients
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $product_ingredients
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Ingredient> $ingredients
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $orderItems
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $order_items
  */
 class Product extends Model
 {
     use HasFactory;
+    use HasTranslationConfig;
+    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
+
+    protected ?string $translationPrefix = 'catalog.products';
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $translatableFields = ['name', 'description', 'shelf_life'];
 
     protected $fillable = [
         'category_id',
@@ -133,7 +145,7 @@ class Product extends Model
     public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class, 'product_ingredients')
-            ->withPivot(['id', 'quantity', 'position'])
+            ->withPivot(['id', 'quantity', 'position', 'image_url'])
             ->withTimestamps()
             ->orderBy('product_ingredients.position');
     }
@@ -151,7 +163,7 @@ class Product extends Model
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param \Illuminate\Database\Query\Builder $query
      * @return \App\Models\Builders\ProductBuilder
      */
     public function newEloquentBuilder($query): ProductBuilder
@@ -162,11 +174,58 @@ class Product extends Model
     /**
      * Scope the query to publicly visible records.
      *
-     * @param  \App\Models\Builders\ProductBuilder  $query
+     * @param \App\Models\Builders\ProductBuilder $query
      * @return void
      */
     public function scopePubliclyVisible(ProductBuilder $query): void
     {
         $query->where('is_active', true)->where('is_available', true);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (self $product): void {
+            if (!$product->wasChanged('featured_image_url')) {
+                return;
+            }
+
+            FileUpload::deletePublicFile($product->getOriginal('featured_image_url'));
+        });
+
+        static::deleting(static function (self $product): void {
+            FileUpload::deletePublicFile($product->featured_image_url);
+        });
+    }
+
+    /**
+     * @return \App\Models\Product
+     */
+    public function loadDetails(): self
+    {
+        return $this->load(['category', 'images', 'metadata', 'ingredients']);
+    }
+
+    /**
+     * Update the translation prefix for the metadata relation.
+     *
+     * @return mixed
+     */
+    public function getMetadataAttribute(): mixed
+    {
+        $metadata = $this->getRelationValue('metadata');
+        if ($metadata instanceof Collection && $metadata->isNotEmpty()) {
+            $prefix = "products.$this->slug.metadata";
+
+            $metadata->each(function ($item) use ($prefix) {
+                if (method_exists($item, 'setTranslationPrefix')) {
+                    $item->setTranslationPrefix($prefix);
+                }
+            });
+        }
+
+        return $metadata;
     }
 }

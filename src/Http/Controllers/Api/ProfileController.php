@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class ProfileController extends Controller
     /**
      * Return the authenticated profile payload.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \App\Http\Resources\UserResource
      */
     public function show(Request $request): UserResource
@@ -22,13 +22,13 @@ class ProfileController extends Controller
         $user = $request->user();
         $this->authorize('view', $user);
 
-        return new UserResource($user->load(['orders.items']));
+        return new UserResource($user->load(['orders.orderItems']));
     }
 
     /**
      * Update the authenticated profile.
      *
-     * @param  \App\Http\Requests\UpdateProfileRequest  $request
+     * @param \App\Http\Requests\Auth\UpdateProfileRequest $request
      * @return \App\Http\Resources\UserResource
      */
     public function update(UpdateProfileRequest $request): UserResource
@@ -38,6 +38,6 @@ class ProfileController extends Controller
 
         $user->update($request->validated());
 
-        return new UserResource($user->refresh()->load(['orders.items']));
+        return new UserResource($user->refresh()->load(['orders.orderItems']));
     }
 }

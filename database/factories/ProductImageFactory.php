@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use Database\Factories\Concerns\BuildsInlineImage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProductImageFactory extends Factory
 {
+    use BuildsInlineImage;
+
     protected $model = ProductImage::class;
 
     /**
@@ -22,7 +25,7 @@ class ProductImageFactory extends Factory
     {
         return [
             'product_id' => Product::factory(),
-            'image_url' => fake()->unique()->imageUrl(),
+            'image_url' => $this->inlineImage('Craftoria', 900, 600),
             'position' => fake()->numberBetween(0, 10),
         ];
     }

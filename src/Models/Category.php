@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Helpers\FileUpload;
 use App\Models\Builders\CategoryBuilder;
+use App\Models\Concerns\HasTranslationConfig;
+use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $image_url
  * @property int $position
  * @property bool $is_active
+ * @property bool $is_system
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -34,8 +38,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Category extends Model
 {
     use HasFactory;
+    use HasTranslationConfig;
+    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
+
+    protected ?string $translationPrefix = 'catalog.categories';
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $translatableFields = ['name'];
 
     protected $fillable = [
         'name',
@@ -44,6 +57,7 @@ class Category extends Model
         'image_url',
         'position',
         'is_active',
+        'is_system',
     ];
 
     /**
@@ -56,6 +70,7 @@ class Category extends Model
         return [
             'position' => 'integer',
             'is_active' => 'boolean',
+            'is_system' => 'boolean',
         ];
     }
 
@@ -72,7 +87,7 @@ class Category extends Model
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param \Illuminate\Database\Query\Builder $query
      * @return \App\Models\Builders\CategoryBuilder
      */
     public function newEloquentBuilder($query): CategoryBuilder
@@ -83,11 +98,29 @@ class Category extends Model
     /**
      * Scope the query to active records.
      *
-     * @param  \App\Models\Builders\CategoryBuilder  $query
+     * @param \App\Models\Builders\CategoryBuilder $query
      * @return void
      */
     public function scopeActive(CategoryBuilder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (self $category): void {
+            if (!$category->wasChanged('image_url')) {
+                return;
+            }
+
+            FileUpload::deletePublicFile($category->getOriginal('image_url'));
+        });
+
+        static::deleting(static function (self $category): void {
+            FileUpload::deletePublicFile($category->image_url);
+        });
     }
 }

@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\ProductIngredient;
+use Database\Factories\Concerns\BuildsInlineImage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProductIngredientFactory extends Factory
 {
+    use BuildsInlineImage;
+
     protected $model = ProductIngredient::class;
 
     /**
@@ -24,8 +27,9 @@ class ProductIngredientFactory extends Factory
         return [
             'product_id' => Product::factory(),
             'ingredient_id' => Ingredient::factory(),
-            'quantity' => fake()->randomFloat(2, 5, 500),
+            'quantity' => fake()->randomFloat(2, 5, 50),
             'position' => fake()->numberBetween(0, 10),
+            'image_url' => $this->inlineImage('photo', 900, 600),
         ];
     }
 }

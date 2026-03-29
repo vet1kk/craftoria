@@ -1,0 +1,37 @@
+<div class="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm">
+  <div class="flex flex-col items-start gap-2 border-b border-stone-100 bg-stone-50 p-6 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-lg font-bold text-stone-700">{{ 'ui.admin.itemsTitle' | t }}</h2>
+  </div>
+
+  <div>
+    @for (product of products(); track product.id) {
+      <div class="flex flex-col gap-4 p-4 transition-colors hover:bg-stone-50 sm:flex-row sm:items-center">
+        @if (product.featured_image_url) {
+          <img [src]="product.featured_image_url"
+               [alt]="product.name"
+               width="120"
+               height="120"
+               loading="lazy"
+               class="h-12 w-12 rounded-lg bg-stone-200 object-cover">
+        } @else {
+          <div class="aspect-square overflow-hidden rounded-2xl border-stone-200 bg-stone-50/70 p-2">
+            <div class="flex w-16 h-16 items-center justify-center opacity-20">
+              <span class="text-3xl">📸</span>
+            </div>
+          </div>
+        }
+        <div class="min-w-0 flex-1">
+          <h3 class="truncate font-medium text-stone-800">{{ product.name }}</h3>
+          <div class="flex flex-wrap items-center gap-2 text-xs text-stone-500">
+            <span>{{ getCategoryName(product.category_id) }}</span>
+            <span>•</span>
+            <span>{{ product.price }} {{ currency() }}</span>
+            @if (!product.is_available) {
+              <span class="font-bold text-red-500">• {{ 'ui.admin.outOfStock' | t }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
