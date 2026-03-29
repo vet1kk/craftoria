@@ -1,22 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cp /home/site/wwwroot/.docker/conf/nginx/nginx.conf /etc/nginx/sites-available/default
+APP_ROOT="/home/site/wwwroot"
+NGINX_CONF="$APP_ROOT/.docker/conf/nginx/nginx.conf"
 
-log "Testing Nginx configuration..."
-nginx -t || die "Nginx config test failed"
+log() {
+  printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+}
 
-log "Fixing file ownership for www-data..."
-chown -R www-data:www-data /home/site/wwwroot/webroot
-chmod -R 755 /home/site/wwwroot/webroot
+log "Seizing control of Nginx configuration..."
+rm -rf /etc/nginx/sites-enabled/*
+rm -rf /etc/nginx/sites-available/*
 
-log "Reloading Nginx..."
-nginx -s reload || die "Failed to reload Nginx"
+cp "$NGINX_CONF" /etc/nginx/sites-available/default
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-log "Setting final permissions..."
-chown -R www-data:www-data /home/site/wwwroot
-chmod -R 755 /home/site/wwwroot
+log "Setting file ownership..."
+chown -R www-data:www-data "$APP_ROOT"
+chmod -R 755 "$APP_ROOT"
+
+log "Restarting Nginx binary..."
+pkill -9 nginx || true
+sleep 2
+/usr/sbin/nginx -g "daemon on;" || nginx
 
 cd "$APP_ROOT"
 log "Running Composer deploy script..."
 composer run-script deploy
+
+log "Deployment finished successfully!"

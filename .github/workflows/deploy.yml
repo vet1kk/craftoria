@@ -96,9 +96,9 @@ jobs:
       - name: Post-deploy health check
         env:
           HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}
-          HEALTHCHECK_RETRIES: ${{ vars.HEALTHCHECK_RETRIES || '10' }}
-          HEALTHCHECK_DELAY_SECONDS: ${{ vars.HEALTHCHECK_DELAY_SECONDS || '15' }}
-          HEALTHCHECK_TIMEOUT_SECONDS: ${{ vars.HEALTHCHECK_TIMEOUT_SECONDS || '10' }}
+          HEALTHCHECK_RETRIES: ${{ vars.HEALTHCHECK_RETRIES || '5' }}
+          HEALTHCHECK_DELAY_SECONDS: ${{ vars.HEALTHCHECK_DELAY_SECONDS || '10' }}
+          HEALTHCHECK_TIMEOUT_SECONDS: ${{ vars.HEALTHCHECK_TIMEOUT_SECONDS || '5' }}
         run: |
           URL="${HEALTHCHECK_URL:-https://${AZURE_WEBAPP_NAME}.azurewebsites.net/api/health}"
           RETRIES="${HEALTHCHECK_RETRIES}"
