@@ -3,8 +3,12 @@ set -euo pipefail
 
 cp /home/site/wwwroot/.docker/conf/nginx/nginx.conf /etc/nginx/sites-available/default
 
-nginx -t
-service nginx reload
+log "Testing Nginx configuration..."
+nginx -t || die "Nginx config test failed"
 
-cd /home/site/wwwroot
+log "Reloading Nginx..."
+nginx -s reload || die "Failed to reload Nginx"
+
+cd "$APP_ROOT"
+log "Running Composer deploy script..."
 composer run-script deploy
