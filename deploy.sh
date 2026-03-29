@@ -13,6 +13,10 @@ chmod -R 755 /home/site/wwwroot/webroot
 log "Reloading Nginx..."
 nginx -s reload || die "Failed to reload Nginx"
 
+log "Setting final permissions..."
+chown -R www-data:www-data /home/site/wwwroot
+chmod -R 755 /home/site/wwwroot
+
 cd "$APP_ROOT"
 log "Running Composer deploy script..."
 composer run-script deploy
