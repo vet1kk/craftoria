@@ -32,7 +32,7 @@ return new class extends Migration
         });
 
         Schema::create('sessions', static function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->string('id')->primary();
             $table->foreignUuid('user_id')
                 ->nullable()
                 ->index()
