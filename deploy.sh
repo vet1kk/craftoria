@@ -4,6 +4,14 @@ set -euo pipefail
 APP_ROOT="/home/site/wwwroot"
 NGINX_CONF="/etc/nginx/sites-available/default"
 NGINX_EXTRA_CONF="/etc/nginx/conf.d/laravel_angular.conf"
+STARTUP_LOG="/home/LogFiles/deploy-startup.log"
+
+mkdir -p /home/LogFiles
+exec > >(tee -a "$STARTUP_LOG") 2>&1
+
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Startup script begin"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] User: $(id -u -n)"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] PWD: $(pwd)"
 
 echo "Starting Nginx configuration..."
 
@@ -18,6 +26,8 @@ fi
 
 cat > "$NGINX_CONF" <<EOF
 server {
+    listen 80;
+    listen [::]:80;
     listen 8080;
     listen [::]:8080;
     server_name _;
@@ -53,6 +63,9 @@ rm -f "$NGINX_EXTRA_CONF"
 nginx -t
 service nginx reload
 
+touch "$APP_ROOT/.startup-ran"
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Created marker: $APP_ROOT/.startup-ran"
+
 cd "$APP_ROOT"
 echo "Running Composer deploy script..."
 command -v composer >/dev/null 2>&1 || {
@@ -61,4 +74,4 @@ command -v composer >/dev/null 2>&1 || {
 }
 composer run-script deploy
 
-echo "Deployment complete."
+echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Deployment complete."
