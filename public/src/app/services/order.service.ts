@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
+import { catchError, concatMap, forkJoin, map, Observable, of, switchMap, throwError } from 'rxjs';
 
 import { OrderRequest } from '../models';
 import { extractApiErrorMessage } from './api-error';
@@ -18,19 +18,33 @@ export class OrderService {
   submitOrder(orderRequest: OrderRequest): Observable<void> {
     const currentUser = this.authService.currentUser();
 
-    return this.orderApiService.submit({
+    return this.orderApiService.createOrder({
       customer_name: currentUser?.name ?? null,
       customer_email: currentUser?.email ?? null,
       customer_phone: orderRequest.phone,
       fulfillment_type: 'pickup',
       currency: 'UAH',
-      payment_method: 'cash',
-      items: orderRequest.items.map((item) => ({
-        product_id: item.product.id,
-        quantity: item.quantity,
-        notes: item.notes?.trim() || null
-      }))
+      payment_method: 'cash'
     }).pipe(
+      concatMap((orderResponse) => {
+        const orderId = orderResponse.data?.id;
+
+        if (!orderId) {
+          return throwError(() => new Error('Order id is missing in create order response.'));
+        }
+
+        const itemRequests = orderRequest.items.map((item) => this.orderApiService.createOrderItem(orderId, {
+          product_id: item.product.id,
+          quantity: item.quantity,
+          notes: item.notes?.trim() || null
+        }));
+
+        if (itemRequests.length === 0) {
+          return of(void 0);
+        }
+
+        return forkJoin(itemRequests).pipe(map(() => void 0));
+      }),
       switchMap(() => {
         if (!currentUser) {
           return of(void 0);

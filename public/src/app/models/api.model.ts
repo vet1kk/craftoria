@@ -21,6 +21,14 @@ export interface ApiResponse<T> extends Record<string, any> {
   readonly data: T;
 }
 
+export interface AnalyticsEventPayload {
+  session_id: string | null;
+  name: string;
+  url: string | undefined;
+  properties: Record<string, unknown>;
+  occurred_at: string;
+}
+
 export interface SessionResponse {
   authenticated: boolean;
   user: User | null;

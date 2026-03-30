@@ -1,22 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { ApiResponse } from '../models';
+import { ApiResponse, CreateOrderItemPayload, CreateOrderPayload, Order } from '../models';
 import { ApiService } from './api.service';
-
-export interface SubmitOrderPayload {
-  customer_name: string | null;
-  customer_email: string | null;
-  customer_phone: string;
-  fulfillment_type: 'pickup';
-  currency: string;
-  payment_method: 'cash';
-  items: Array<{
-    product_id: string;
-    quantity: number;
-    notes: string | null;
-  }>;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -24,8 +10,12 @@ export interface SubmitOrderPayload {
 export class OrderApiService {
   private readonly apiService = inject(ApiService);
 
-  submit(payload: SubmitOrderPayload): Observable<ApiResponse<unknown>> {
-    return this.apiService.post<unknown>('/orders', payload);
+  createOrder(payload: CreateOrderPayload): Observable<ApiResponse<Order>> {
+    return this.apiService.post<Order>('/orders', payload);
+  }
+
+  createOrderItem(orderId: string, payload: CreateOrderItemPayload): Observable<ApiResponse<Order>> {
+    return this.apiService.post<Order>(`/orders/${orderId}/items`, payload);
   }
 }
 
