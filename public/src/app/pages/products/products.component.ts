@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { catchError, forkJoin, of, take } from 'rxjs';
+import { take } from 'rxjs';
+import { CatalogHelper } from '../../helpers';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { CartService, CategoryApiService, I18nService, LocaleService, ProductApiService, SettingsApiService } from '../../services';
+import { CartService, I18nService, SettingsApiService } from '../../services';
 import { ProductComponent, ProductsCategoryFilterComponent, ProductsHeroComponent } from '../components';
 import { Category, Product } from '../../models';
-import { extractApiErrorMessage } from '../../services/api-error';
 
 @Component({
   selector: 'app-products',
@@ -15,10 +15,8 @@ import { extractApiErrorMessage } from '../../services/api-error';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductsComponent {
-  private readonly categoryApiService = inject(CategoryApiService);
-  private readonly productApiService = inject(ProductApiService);
+  private readonly catalogHelper = inject(CatalogHelper);
   private readonly settingsApiService = inject(SettingsApiService);
-  private readonly localeService = inject(LocaleService);
   private readonly i18n = inject(I18nService);
   readonly cartService = inject(CartService);
   readonly selectedCategorySlug = signal('all');
@@ -56,7 +54,7 @@ export class ProductsComponent {
     this.loadCatalog();
 
     effect(() => {
-      const locale = this.localeService.locale();
+      const locale = this.i18n.locale();
       const shouldForceReload = this.lastLoadedLocale !== null && this.lastLoadedLocale !== locale;
       this.lastLoadedLocale = locale;
 
@@ -67,26 +65,6 @@ export class ProductsComponent {
   }
 
   loadCatalog(): void {
-    this.isCatalogLoading.set(true);
-    this.catalogError.set('');
-
-    forkJoin([
-      this.categoryApiService.listing(),
-      this.productApiService.listing()
-    ]).pipe(
-      take(1),
-      catchError((error: unknown) => {
-        this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.catalogLoadError'), this.i18n));
-        return of(null);
-      })
-    ).subscribe((result) => {
-      if (result) {
-        const [categoriesResponse, productsResponse] = result;
-        this.categories.set((categoriesResponse.data ?? []).filter((category) => Boolean(category?.id)));
-        this.products.set((productsResponse.data ?? []).filter((product) => Boolean(product?.id)));
-      }
-
-      this.isCatalogLoading.set(false);
-    });
+    this.catalogHelper.loadCatalogIntoState(this.categories, this.products, this.isCatalogLoading, this.catalogError);
   }
 }

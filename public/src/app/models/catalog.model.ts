@@ -8,6 +8,11 @@ export interface Category {
   is_active: boolean;
 }
 
+export interface CatalogData {
+  categories: Category[];
+  products: Product[];
+}
+
 export interface NutritionFacts {
   calories: number;
   proteins: number;
@@ -33,10 +38,6 @@ export interface Ingredient {
   product?: Product;
   image_url?: string | null;
   nutrition_totals?: NutritionFacts;
-}
-
-export interface ProductIngredient {
-
 }
 
 export interface PackageDetails {

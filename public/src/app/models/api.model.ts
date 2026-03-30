@@ -1,4 +1,4 @@
-import { User } from './user.model';
+import { User } from './auth.model';
 import { HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 
 export type HttpRequestParams = HttpParams | {
@@ -32,4 +32,9 @@ export interface AnalyticsEventPayload {
 export interface SessionResponse {
   authenticated: boolean;
   user: User | null;
+}
+
+export interface LaravelValidationErrors {
+  message?: string;
+  errors?: Record<string, string[]>;
 }

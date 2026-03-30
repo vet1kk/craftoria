@@ -4,7 +4,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { take } from 'rxjs';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthApiService, AuthService, CartDrawerService, CartService, SettingsApiService } from '../../services';
+import { AuthApiService, CartDrawerService, CartService, SettingsApiService, UserService } from '../../services';
 
 @Component({
   selector: 'app-header',
@@ -20,7 +20,7 @@ export class AppHeaderComponent {
   private readonly authApiService = inject(AuthApiService);
   readonly cartService = inject(CartService);
   readonly cartDrawerService = inject(CartDrawerService);
-  readonly authService = inject(AuthService);
+  readonly userService = inject(UserService);
   readonly isMobileMenuOpen = signal(false);
   readonly currency = signal('');
   protected readonly router = inject(Router);
@@ -32,7 +32,7 @@ export class AppHeaderComponent {
   }
 
   get avatarInitials(): string {
-    const user = this.authService.currentUser();
+    const user = this.userService.currentUser();
 
     if (!user) {
       return '';
@@ -63,11 +63,11 @@ export class AppHeaderComponent {
     this.closeMobileMenu();
     this.authApiService.logout().pipe(take(1)).subscribe({
       next: () => {
-        this.authService.clearCurrentUser();
+        this.userService.clearCurrentUser();
         void this.router.navigate(['/products']);
       },
       error: () => {
-        this.authService.clearCurrentUser();
+        this.userService.clearCurrentUser();
       }
     });
   }

@@ -3,18 +3,18 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { catchError, concatMap, forkJoin, map, of, switchMap, take, throwError } from 'rxjs';
 
+import { ApiErrorHelper } from '../../helpers';
 import { OrderRequest } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import {
   AuthApiService,
-  AuthService,
   CartDrawerService,
   CartService,
   I18nService,
   OrderApiService,
-  SettingsApiService
+  SettingsApiService,
+  UserService
 } from '../../services';
-import { extractApiErrorMessage } from '../../services/api-error';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -26,9 +26,10 @@ import { extractApiErrorMessage } from '../../services/api-error';
 })
 export class CartDrawerComponent {
   readonly cartDrawerService = inject(CartDrawerService);
+  private readonly apiErrorHelper = inject(ApiErrorHelper);
   readonly cartService = inject(CartService);
   readonly router = inject(Router);
-  readonly authService = inject(AuthService);
+  readonly authService = inject(UserService);
   private readonly authApiService = inject(AuthApiService);
   private readonly orderApiService = inject(OrderApiService);
   private readonly settingsApiService = inject(SettingsApiService);
@@ -106,7 +107,7 @@ export class CartDrawerComponent {
         }
       }),
       catchError((error: unknown) => {
-        return throwError(() => new Error(extractApiErrorMessage(error, 'Failed to submit the order. Please try again later.', this.i18n)));
+        return throwError(() => new Error(this.apiErrorHelper.extractApiErrorMessage(error, 'Failed to submit the order. Please try again later.')));
       }),
       take(1)
     ).subscribe({

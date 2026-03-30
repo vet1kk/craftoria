@@ -4,11 +4,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, take } from 'rxjs';
 
+import { ApiErrorHelper, ProductHelper } from '../../helpers';
+import { Category, Metadata, PackageDetails, Product, ProductImage } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { CartService, CategoryApiService, I18nService, LocaleService, ProductApiService, SettingsApiService } from '../../services';
+import { CartService, CategoryApiService, I18nService, ProductApiService, SettingsApiService } from '../../services';
 import { ProductGalleryComponent, ProductIngredientsComponent, ProductNutritionComponent, ProductPackagingComponent } from './components';
-import { Category, Ingredient, IngredientUnit, Metadata, PackageDetails, Product, ProductImage } from '../../models';
-import { extractApiErrorMessage } from '../../services/api-error';
 
 @Component({
   selector: 'app-product',
@@ -26,10 +26,10 @@ import { extractApiErrorMessage } from '../../services/api-error';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductComponent {
+  private readonly apiErrorHelper = inject(ApiErrorHelper);
   private readonly productApiService = inject(ProductApiService);
   private readonly categoryApiService = inject(CategoryApiService);
   private readonly settingsApiService = inject(SettingsApiService);
-  private readonly localeService = inject(LocaleService);
   readonly cartService = inject(CartService);
   readonly i18n = inject(I18nService);
   readonly isLoading = signal(false);
@@ -76,7 +76,7 @@ export class ProductComponent {
     if (!product) {
       return '';
     }
-    return this.getProductPortionLabel(product);
+    return ProductHelper.getProductPortionLabel(product, (key) => this.i18n.translate(key));
   });
 
   readonly ingredientBreakdown = computed(() => {
@@ -84,7 +84,7 @@ export class ProductComponent {
     if (!product) {
       return [];
     }
-    return this.getProductIngredientBreakdown(product);
+    return ProductHelper.getProductIngredientBreakdown(product, (key) => this.i18n.translate(key));
   });
 
   readonly packageDetailsBreakdown = computed((): PackageDetails => {
@@ -112,7 +112,7 @@ export class ProductComponent {
     this.fetchProduct();
 
     effect(() => {
-      const locale = this.localeService.locale();
+      const locale = this.i18n.locale();
       const shouldForceReload = this.lastLoadedLocale !== null && this.lastLoadedLocale !== locale;
       this.lastLoadedLocale = locale;
 
@@ -143,42 +143,12 @@ export class ProductComponent {
         }
       },
       error: (error: unknown) => {
-        this.loadError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.itemLoadError'), this.i18n));
+        this.loadError.set(this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.products.itemLoadError')));
         this.isLoading.set(false);
       }
     });
   }
 
-  private getProductIngredientBreakdown(product: Product): Ingredient[] {
-    return product.ingredients.map((ingredient: Ingredient) => ({
-      ...ingredient,
-      quantity_label: this.formatQuantity(ingredient.quantity, ingredient.unit)
-    }));
-  }
-
-  private getProductPortionLabel(product: Product): string {
-    const totalsByUnit = product.ingredients.reduce<Record<IngredientUnit, number>>(
-      (accumulator, ingredient: Ingredient) => {
-        accumulator[ingredient.unit] += ingredient.quantity;
-
-        return accumulator;
-      },
-      { g: 0, ml: 0 }
-    );
-
-    const portionLabel = (Object.entries(totalsByUnit) as Array<[IngredientUnit, number]>)
-      .filter(([, total]) => total > 0)
-      .map(([unit, total]) => this.formatQuantity(total, unit))
-      .join(' + ');
-
-    return portionLabel || 'Порція уточнюється';
-  }
-
-  private formatQuantity(quantity: number, unit: IngredientUnit): string {
-    const formattedQuantity = Number.isInteger(quantity) ? quantity.toString() : quantity.toFixed(1);
-
-    return `${formattedQuantity} ${this.i18n.translate('ui.itemDetail.' + unit)}`;
-  }
 
   getMetadata(type: string): Metadata | undefined {
     return this.metadata().find((metadata: Metadata): boolean => metadata.type === type);

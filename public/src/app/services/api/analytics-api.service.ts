@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { AnalyticsEventPayload, ApiResponse } from '../models';
-import { ApiService } from './api.service';
+import { AnalyticsEventPayload, ApiResponse } from '../../models';
+import { ApiService } from '../api.service';
 
 
 @Injectable({

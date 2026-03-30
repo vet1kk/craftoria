@@ -7,7 +7,7 @@ import { catchError, map, of, tap } from 'rxjs';
 import { AppComponent } from './app/app.component';
 import { appRoutes } from './app/app.routes';
 import { localeHeaderInterceptor } from './app/interceptors/locale-header.interceptor';
-import { AuthApiService, AuthService } from './app/services';
+import { AuthApiService, UserService } from './app/services';
 import { environment } from './environments/environment';
 import { NgxGoogleAnalyticsModule, NgxGoogleAnalyticsRouterModule } from 'ngx-google-analytics';
 
@@ -21,7 +21,7 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([localeHeaderInterceptor])),
     provideAppInitializer(() => {
       const authApiService = inject(AuthApiService);
-      const authService = inject(AuthService);
+      const authService = inject(UserService);
 
       return authApiService.session().pipe(
         map((response) => response.data),

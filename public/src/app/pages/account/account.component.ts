@@ -3,6 +3,7 @@ import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, Validatio
 import { Router, RouterLink } from '@angular/router';
 import { catchError, of, switchMap, take } from 'rxjs';
 
+import { ApiErrorHelper } from '../../helpers';
 import {
   AuthActionResult,
   AuthMode,
@@ -14,8 +15,7 @@ import {
   RegistrationControlName
 } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthApiService, AuthService, CartDrawerService, CartService, I18nService, ProductApiService } from '../../services';
-import { extractApiErrorMessage } from '../../services/api-error';
+import { AuthApiService, CartDrawerService, CartService, I18nService, ProductApiService, UserService } from '../../services';
 import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '../components';
 
 
@@ -27,7 +27,8 @@ import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '..
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AccountComponent {
-  readonly authService = inject(AuthService);
+  readonly authService = inject(UserService);
+  private readonly apiErrorHelper = inject(ApiErrorHelper);
   private readonly authApiService = inject(AuthApiService);
   private readonly productApiService = inject(ProductApiService);
   private readonly cartService = inject(CartService);
@@ -104,7 +105,7 @@ export class AccountComponent {
       }),
       catchError((error: unknown) => of({
         success: false,
-        message: extractApiErrorMessage(error, 'Enabled to log in. Please check your credentials and try again.', this.i18n)
+        message: this.apiErrorHelper.extractApiErrorMessage(error, 'Enabled to log in. Please check your credentials and try again.')
       }))
     ).subscribe((loginResult: AuthActionResult) => {
       if (!loginResult.success) {
@@ -153,7 +154,7 @@ export class AccountComponent {
       }),
       catchError((error: unknown) => of({
         success: false,
-        message: extractApiErrorMessage(error, 'Enabled to register. Please try again.', this.i18n)
+        message: this.apiErrorHelper.extractApiErrorMessage(error, 'Enabled to register. Please try again.')
       }))
     ).subscribe((registrationResult: AuthActionResult) => {
       if (!registrationResult.success) {

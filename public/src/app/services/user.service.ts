@@ -5,7 +5,7 @@ import { User } from '../models';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class UserService {
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => this.currentUser() !== null);
   readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');

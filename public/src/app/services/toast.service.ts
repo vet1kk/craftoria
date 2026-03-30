@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { ToastHelper } from '../helpers';
 import { Toast } from '../models';
 
 @Injectable({
@@ -11,27 +12,30 @@ export class ToastService {
   readonly toasts = signal<Toast[]>([]);
 
   success(message: string, duration = this.defaultDuration): void {
-    this.show(message, 'success', duration);
+    const id = this.nextId++;
+    const toast = ToastHelper.createToast(id, message, 'success');
+
+    this.toasts.update((current) => ToastHelper.appendToast(current, toast));
+    setTimeout(() => this.dismiss(id), duration);
   }
 
   error(message: string, duration = this.defaultDuration): void {
-    this.show(message, 'error', duration);
+    const id = this.nextId++;
+    const toast = ToastHelper.createToast(id, message, 'error');
+
+    this.toasts.update((current) => ToastHelper.appendToast(current, toast));
+    setTimeout(() => this.dismiss(id), duration);
   }
 
   info(message: string, duration = this.defaultDuration): void {
-    this.show(message, 'info', duration);
-  }
-
-  private show(message: string, type: Toast['type'], duration: number): void {
     const id = this.nextId++;
-    const toast: Toast = { id, message, type };
+    const toast = ToastHelper.createToast(id, message, 'info');
 
-    this.toasts.update((current) => [...current, toast]);
-
+    this.toasts.update((current) => ToastHelper.appendToast(current, toast));
     setTimeout(() => this.dismiss(id), duration);
   }
 
   dismiss(id: number): void {
-    this.toasts.update((current) => current.filter((toast) => toast.id !== id));
+    this.toasts.update((current) => ToastHelper.removeToastById(current, id));
   }
 }

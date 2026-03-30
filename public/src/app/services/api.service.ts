@@ -1,8 +1,9 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, shareReplay } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import { ApiRequestHelper } from '../helpers';
 import { ApiResponse, HttpOptions, HttpRequestParams } from '../models';
 
 @Injectable({
@@ -58,82 +59,11 @@ export class ApiService {
   }
 
   buildOptions(params?: HttpRequestParams, options: HttpOptions = {}): HttpOptions {
-    const builtOptions: HttpOptions = { ...options };
-
-    if (params instanceof HttpParams) {
-      builtOptions.params = params;
-      return builtOptions;
-    }
-
-    if (params) {
-      builtOptions.params = this.buildHttpParams(params);
-    }
-
-    if (builtOptions.headers && !(builtOptions.headers instanceof HttpHeaders)) {
-      builtOptions.headers = new HttpHeaders(builtOptions.headers);
-    }
-
-    return builtOptions;
+    return ApiRequestHelper.buildOptions(params, options);
   }
 
   build(params: Record<string, unknown> = {}, filter: Record<string, unknown> = {}): HttpParams {
-    let httpParams = new HttpParams();
-
-    httpParams = this.appendParams(httpParams, params);
-    httpParams = this.appendParams(httpParams, filter);
-
-    return httpParams;
-  }
-
-  private buildHttpParams(
-    query: { [param: string]: string | number | boolean | ReadonlyArray<string | number | boolean> }
-  ): HttpParams {
-    let params = new HttpParams();
-
-    Object.entries(query).forEach(([key, value]) => {
-      if (value === null || typeof value === 'undefined') {
-        return;
-      }
-
-      if (Array.isArray(value)) {
-        value.forEach((entry) => {
-          params = params.append(key, String(entry));
-        });
-
-        return;
-      }
-
-      params = params.set(key, String(value));
-    });
-
-    return params;
-  }
-
-  private appendParams(httpParams: HttpParams, source: Record<string, unknown>): HttpParams {
-    let params = httpParams;
-
-    Object.entries(source).forEach(([key, value]) => {
-      if (value === null || typeof value === 'undefined' || value === '') {
-        return;
-      }
-
-      if (Array.isArray(value)) {
-        value.forEach((entry) => {
-          params = params.append(key, String(entry));
-        });
-
-        return;
-      }
-
-      if (value instanceof Date) {
-        params = params.set(key, value.toISOString());
-        return;
-      }
-
-      params = params.set(key, String(value));
-    });
-
-    return params;
+    return ApiRequestHelper.build(params, filter);
   }
 }
 

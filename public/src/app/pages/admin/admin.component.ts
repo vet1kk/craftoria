@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { catchError, forkJoin, of, take } from 'rxjs';
+import { take } from 'rxjs';
 
+import { CatalogHelper } from '../../helpers';
 import { AdminTab, Category, Product } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { CategoryApiService, I18nService, ProductApiService, SettingsApiService } from '../../services';
-import { extractApiErrorMessage } from '../../services/api-error';
+import { SettingsApiService } from '../../services';
 import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsComponent } from '../components';
 
 @Component({
@@ -15,10 +15,8 @@ import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsCom
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminComponent {
-  private readonly categoryApiService = inject(CategoryApiService);
-  private readonly productApiService = inject(ProductApiService);
+  private readonly catalogHelper = inject(CatalogHelper);
   private readonly settingsApiService = inject(SettingsApiService);
-  private readonly i18n = inject(I18nService);
   readonly categories = signal<Category[]>([]);
   readonly products = signal<Product[]>([]);
   readonly isCatalogLoading = signal(false);
@@ -35,30 +33,6 @@ export class AdminComponent {
       this.currency.set(response.data.currency);
     });
 
-    this.loadCatalog();
-  }
-
-  loadCatalog(): void {
-    this.isCatalogLoading.set(true);
-    this.catalogError.set('');
-
-    forkJoin([
-      this.categoryApiService.listing(),
-      this.productApiService.listing()
-    ]).pipe(
-      take(1),
-      catchError((error: unknown) => {
-        this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.catalogLoadError'), this.i18n));
-        return of(null);
-      })
-    ).subscribe((result) => {
-      if (result) {
-        const [categoriesResponse, productsResponse] = result;
-        this.categories.set((categoriesResponse.data ?? []).filter((category) => Boolean(category?.id)));
-        this.products.set((productsResponse.data ?? []).filter((product) => Boolean(product?.id)));
-      }
-
-      this.isCatalogLoading.set(false);
-    });
+    this.catalogHelper.loadCatalogIntoState(this.categories, this.products, this.isCatalogLoading, this.catalogError);
   }
 }

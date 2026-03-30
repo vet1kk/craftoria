@@ -1,6 +1,9 @@
 import { Order } from './order.model';
 
 export type UserRole = 'admin' | 'client';
+export type AuthMode = 'login' | 'register';
+export type LoginControlName = 'email' | 'password';
+export type RegistrationControlName = 'fullName' | 'email' | 'phone' | 'password' | 'confirmPassword';
 
 export interface User {
   id: string;
@@ -17,4 +20,9 @@ export interface ClientRegistrationData {
   email: string;
   phone: string;
   password: string;
+}
+
+export interface AuthActionResult {
+  success: boolean;
+  message?: string;
 }
