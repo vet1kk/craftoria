@@ -11,7 +11,7 @@ return tap(
                ->withRouting(
                    api: __DIR__ . '/../routes/api.php',
                    commands: __DIR__ . '/../routes/console.php',
-                   health: '/api/up',
+                   health: '/api/health',
                )
                ->withMiddleware(function (Middleware $middleware): void {
                    $middleware->api(prepend: [
