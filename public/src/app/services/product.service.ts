@@ -1,19 +1,18 @@
 import { inject, Injectable } from '@angular/core';
 
-import { ApiResourceResponse, Category, Ingredient, IngredientUnit, Product, } from '../models';
+import { Category, Ingredient, IngredientUnit, Product, } from '../models';
 import { DataService } from './data.service';
 import { I18nService } from './i18n.service';
-import { firstValueFrom } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { catchError, map, Observable, of } from 'rxjs';
 import { extractApiErrorMessage } from './api-error';
-import { HttpClient } from '@angular/common/http';
+import { ProductApiService } from './product-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private readonly dataService = inject(DataService);
-  private readonly http = inject(HttpClient);
+  private readonly productApiService = inject(ProductApiService);
   private readonly i18n = inject(I18nService);
 
   getCategoryById(categoryId: string): Category | undefined {
@@ -53,16 +52,14 @@ export class ProductService {
     return `${formattedQuantity} ${this.i18n.translate('ui.itemDetail.' + unit)}`;
   }
 
-  async loadProduct(slug: string): Promise<Product | undefined> {
-    try {
-      const response = await firstValueFrom(
-        this.http.get<ApiResourceResponse<Product>>(`${environment.apiUrl}/products/${slug}`)
-      );
-      return response.data;
-    } catch (error: unknown) {
-      this.dataService.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.itemLoadError'), this.i18n));
+  loadProduct(slug: string): Observable<Product | undefined> {
+    return this.productApiService.item(slug).pipe(
+      map((response) => response.data),
+      catchError((error: unknown) => {
+        this.dataService.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.itemLoadError'), this.i18n));
 
-      return undefined;
-    }
+        return of(undefined);
+      })
+    );
   }
 }

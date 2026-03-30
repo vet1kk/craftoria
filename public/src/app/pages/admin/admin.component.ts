@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { take } from 'rxjs';
 
 import { AdminTab } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -21,6 +22,6 @@ export class AdminComponent {
   );
 
   constructor() {
-    void this.dataService.ensureCatalogLoaded();
+    this.dataService.ensureCatalogLoaded().pipe(take(1)).subscribe();
   }
 }

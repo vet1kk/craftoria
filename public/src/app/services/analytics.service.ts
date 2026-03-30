@@ -1,18 +1,17 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { environment } from '../../environments/environment';
+import { AnalyticsApiService } from './analytics-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsService {
   private readonly document = inject(DOCUMENT);
-  private readonly http = inject(HttpClient);
+  private readonly analyticsApiService = inject(AnalyticsApiService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
 
@@ -33,7 +32,7 @@ export class AnalyticsService {
       occurred_at: new Date().toISOString()
     };
 
-    this.http.post(`${environment.apiUrl}/analytics/events`, payload).subscribe({
+    this.analyticsApiService.createEvent(payload).subscribe({
       error: (err) => console.error('Backend analytics failed:', err)
     });
   }

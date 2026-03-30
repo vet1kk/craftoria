@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 
 import { OrderRequest } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -39,7 +40,7 @@ export class CartDrawerComponent {
     this.clearMessages();
   }
 
-  async placeOrder(phone: string): Promise<void> {
+  placeOrder(phone: string): void {
     const phoneRegex = /^\+?[0-9()\s.-]{10,20}$/;
 
     if (!phoneRegex.test(phone)) {
@@ -50,19 +51,21 @@ export class CartDrawerComponent {
     this.isSending.set(true);
     this.clearMessages();
 
-    try {
-      await this.orderService.submitOrder(this.buildOrderRequest(phone));
-      this.isSending.set(false);
-      this.successMessage.set(this.i18n.translate('ui.cart.success'));
-      setTimeout(() => {
-        this.close();
-        this.clearMessages();
-        this.cartService.clearCart();
-      }, 4000);
-    } catch (error: unknown) {
-      this.isSending.set(false);
-      this.errorMessage.set(error instanceof Error ? this.i18n.translate(error.message) : this.i18n.translate('ui.cart.orderError'));
-    }
+    this.orderService.submitOrder(this.buildOrderRequest(phone)).pipe(take(1)).subscribe({
+      next: () => {
+        this.isSending.set(false);
+        this.successMessage.set(this.i18n.translate('ui.cart.success'));
+        setTimeout(() => {
+          this.close();
+          this.clearMessages();
+          this.cartService.clearCart();
+        }, 4000);
+      },
+      error: (error: unknown) => {
+        this.isSending.set(false);
+        this.errorMessage.set(error instanceof Error ? this.i18n.translate(error.message) : this.i18n.translate('ui.cart.orderError'));
+      }
+    });
   }
 
   private buildOrderRequest(phone: string): OrderRequest {

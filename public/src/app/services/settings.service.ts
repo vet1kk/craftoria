@@ -1,21 +1,16 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable } from 'rxjs';
 
-import { AppSettings } from '../models';
-import { environment } from '../../environments/environment';
-
-interface ApiAppSettingsResponse {
-  data: AppSettings;
-}
+import { ApiResponse, AppSettings } from '../models';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AppSettingsService {
-  private readonly http = inject(HttpClient);
+export class SettingsApiService {
+  private readonly apiService = inject(ApiService);
 
-  async settings(): Promise<ApiAppSettingsResponse> {
-    return firstValueFrom(this.http.get<ApiAppSettingsResponse>(`${environment.apiUrl}/settings`));
+  settings(): Observable<ApiResponse<AppSettings>> {
+    return this.apiService.get<AppSettings>('/settings');
   }
 }

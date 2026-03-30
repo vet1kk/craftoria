@@ -2,7 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map } from 'rxjs';
+import { map, take } from 'rxjs';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, DataService, I18nService, ProductService } from '../../services';
@@ -99,7 +99,7 @@ export class ProductComponent {
 
     effect(() => {
       if (this.dataService.shouldReloadCatalogForLocale()) {
-        void this.fetchProduct();
+        this.fetchProduct();
       }
     });
   }
@@ -116,14 +116,17 @@ export class ProductComponent {
 
     this.isLoading.set(true);
 
-    this.productService.loadProduct(slug).then((product) => {
-      this.product = product;
-      this.isLoading.set(false);
-      if (!product) {
-        this.loadError.set(this.i18n.translate('ui.itemDetail.notFoundHint'));
+    this.productService.loadProduct(slug).pipe(take(1)).subscribe({
+      next: (product) => {
+        this.product = product;
+        this.isLoading.set(false);
+        if (!product) {
+          this.loadError.set(this.i18n.translate('ui.itemDetail.notFoundHint'));
+        }
+      },
+      error: () => {
+        this.isLoading.set(false);
       }
-    }).catch(() => {
-      this.isLoading.set(false);
     });
   }
 

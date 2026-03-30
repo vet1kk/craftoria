@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { take } from 'rxjs';
 
 import { CartItem, Order } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -74,10 +75,10 @@ export class AccountComponent {
   );
 
   constructor() {
-    void this.dataService.ensureCatalogLoaded();
+    this.dataService.ensureCatalogLoaded().pipe(take(1)).subscribe();
   }
 
-  async login(): Promise<void> {
+  login(): void {
     this.authError.set('');
 
     if (this.loginForm.invalid) {
@@ -89,29 +90,23 @@ export class AccountComponent {
 
     const { email, password } = this.loginForm.getRawValue();
     this.isSubmitting.set(true);
-    const loginResult = await this.authService.login(email.trim(), password);
+    this.authService.login(email.trim(), password).pipe(take(1)).subscribe((loginResult) => {
+      if (!loginResult.success) {
+        this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
+        this.isSubmitting.set(false);
+        return;
+      }
 
-    if (!loginResult.success) {
-      this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
+      this.loginForm.reset({ email: '', password: '' });
+      this.loginForm.markAsPristine();
+      this.loginForm.markAsUntouched();
+
       this.isSubmitting.set(false);
-      return;
-    }
-
-    this.loginForm.reset({ email: '', password: '' });
-    this.loginForm.markAsPristine();
-    this.loginForm.markAsUntouched();
-
-    if (this.isAdmin()) {
-      this.isSubmitting.set(false);
-      await this.router.navigate(['/admin']);
-      return;
-    }
-
-    this.isSubmitting.set(false);
-    await this.router.navigate(['/account']);
+      void this.router.navigate([this.isAdmin() ? '/admin' : '/account']);
+    });
   }
 
-  async register(): Promise<void> {
+  register(): void {
     this.authError.set('');
 
     if (this.registrationForm.invalid) {
@@ -126,30 +121,30 @@ export class AccountComponent {
 
     const { fullName, email, phone, password } = this.registrationForm.getRawValue();
     this.isSubmitting.set(true);
-    const registrationResult = await this.authService.register({
+    this.authService.register({
       name: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
       password
-    });
+    }).pipe(take(1)).subscribe((registrationResult) => {
+      if (!registrationResult.success) {
+        this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
+        this.isSubmitting.set(false);
+        return;
+      }
 
-    if (!registrationResult.success) {
-      this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
+      this.registrationForm.reset({
+        fullName: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: ''
+      });
+      this.registrationForm.markAsPristine();
+      this.registrationForm.markAsUntouched();
       this.isSubmitting.set(false);
-      return;
-    }
-
-    this.registrationForm.reset({
-      fullName: '',
-      email: '',
-      phone: '',
-      password: '',
-      confirmPassword: ''
+      void this.router.navigate(['/account']);
     });
-    this.registrationForm.markAsPristine();
-    this.registrationForm.markAsUntouched();
-    this.isSubmitting.set(false);
-    await this.router.navigate(['/account']);
   }
 
   setAuthMode(mode: AuthMode): void {

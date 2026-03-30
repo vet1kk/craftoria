@@ -1,6 +1,7 @@
 import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { take } from 'rxjs';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService, CartDrawerService, CartService, DataService } from '../../services';
@@ -50,9 +51,10 @@ export class AppHeaderComponent {
     this.cartDrawerService.open();
   }
 
-  async logout(): Promise<void> {
+  logout(): void {
     this.closeMobileMenu();
-    await this.authService.logout();
-    await this.router.navigate(['/products']);
+    this.authService.logout().pipe(take(1)).subscribe(() => {
+      void this.router.navigate(['/products']);
+    });
   }
 }

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { take } from 'rxjs';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, DataService } from '../../services';
 import { ProductComponent, ProductsCategoryFilterComponent, ProductsHeroComponent } from '../components';
@@ -36,11 +37,11 @@ export class ProductsComponent {
   readonly showCategories = computed(() => this.dataService.products().length > 0);
 
   constructor() {
-    void this.dataService.ensureCatalogLoaded();
+    this.dataService.ensureCatalogLoaded().pipe(take(1)).subscribe();
 
     effect(() => {
       if (this.dataService.shouldReloadCatalogForLocale()) {
-        void this.dataService.ensureCatalogLoaded(true);
+        this.dataService.ensureCatalogLoaded(true).pipe(take(1)).subscribe();
       }
     });
   }

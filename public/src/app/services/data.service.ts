@@ -1,23 +1,24 @@
-import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { catchError, finalize, forkJoin, map, Observable, of, shareReplay, tap, throwError } from 'rxjs';
 
-import { ApiCollectionResponse, Category, Product } from '../models';
-import { environment } from '../../environments/environment';
+import { Category, Product } from '../models';
 import { extractApiErrorMessage } from './api-error';
+import { CategoryApiService } from './category.service';
 import { I18nService } from './i18n.service';
 import { LocaleService } from './locale.service';
-import { AppSettingsService } from './settings.service';
+import { ProductApiService } from './product-api.service';
+import { SettingsApiService } from './settings.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  private readonly http = inject(HttpClient);
+  private readonly categoryService = inject(CategoryApiService);
+  private readonly productApiService = inject(ProductApiService);
   private readonly i18n = inject(I18nService);
   private readonly localeService = inject(LocaleService);
-  private readonly settingsService = inject(AppSettingsService);
-  private catalogRequest: Promise<void> | null = null;
+  private readonly settingsService = inject(SettingsApiService);
+  private catalogRequest$: Observable<void> | null = null;
   lastLoadedLocale: string | null = null;
 
   readonly categories = signal<Category[]>([]);
@@ -28,7 +29,7 @@ export class DataService {
 
   constructor() {
     effect(() => {
-      this.settingsService.settings().then((settings) => {
+      this.settingsService.settings().subscribe((settings) => {
         this.appSettings.set(settings.data);
       });
     });
@@ -43,40 +44,44 @@ export class DataService {
     return shouldForceReload;
   }
 
-  async ensureCatalogLoaded(force = false): Promise<void> {
+  ensureCatalogLoaded(force = false): Observable<void> {
     if (!force && this.categories().length > 0 && this.products().length > 0) {
-      return;
+      return of(void 0);
     }
 
-    if (this.catalogRequest) {
-      return this.catalogRequest;
+    if (this.catalogRequest$) {
+      return this.catalogRequest$;
     }
 
     this.isCatalogLoading.set(true);
     this.catalogError.set('');
 
-    this.catalogRequest = Promise
-      .all([
-        firstValueFrom(this.http.get<ApiCollectionResponse<Category>>(`${environment.apiUrl}/categories`)),
-        firstValueFrom(this.http.get<ApiCollectionResponse<Product>>(`${environment.apiUrl}/products`))
-      ])
-      .then(([categoriesResponse, productsResponse]) => {
-        const categories = categoriesResponse.data ?? [];
-        const products = productsResponse.data ?? [];
+    this.catalogRequest$ = forkJoin([
+      this.categoryService.listing(),
+      this.productApiService.listing()
+    ]).pipe(
+      tap(([categoriesResponse, productsResponse]) => {
+        const categories = (categoriesResponse.data ?? []).filter((category) => Boolean(category?.id));
+        const products = (productsResponse.data ?? []).filter((product) => Boolean(product?.id));
 
         this.categories.set(categories);
         this.products.set(products);
       })
-      .catch((error: unknown) => {
+      ,
+      map(() => void 0),
+      catchError((error: unknown) => {
         this.catalogError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.catalogLoadError'), this.i18n));
-        throw error;
+        return throwError(() => error);
       })
-      .finally(() => {
+      ,
+      finalize(() => {
         this.isCatalogLoading.set(false);
-        this.catalogRequest = null;
-      });
+        this.catalogRequest$ = null;
+      }),
+      shareReplay(1)
+    );
 
-    return this.catalogRequest;
+    return this.catalogRequest$;
   }
 }
 
