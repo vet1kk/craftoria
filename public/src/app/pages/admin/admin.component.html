@@ -4,20 +4,20 @@
     <app-admin-tabs [activeTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-admin-tabs>
   </div>
 
-  @if (dataService.isCatalogLoading() && dataService.products().length === 0) {
+  @if (isCatalogLoading() && products().length === 0) {
     <div class="rounded-2xl border border-stone-200 bg-white px-5 py-10 text-center text-stone-500">
       {{ 'ui.admin.loadingCatalog' | t }}
     </div>
-  } @else if (dataService.catalogError()) {
+  } @else if (catalogError()) {
     <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-red-700">
       <p class="font-semibold">{{ 'ui.admin.loadError' | t }}</p>
-      <p class="mt-2 text-sm">{{ dataService.catalogError() }}</p>
+      <p class="mt-2 text-sm">{{ catalogError() }}</p>
     </div>
   } @else {
     @if (activeTab() === 'items') {
-      <app-admin-product-panel [products]="dataService.products()"
-                               [categories]="dataService.categories()"
-                               [currency]="dataService.appSettings().currency">
+      <app-admin-product-panel [products]="products()"
+                               [categories]="categories()"
+                               [currency]="currency()">
       </app-admin-product-panel>
     }
 

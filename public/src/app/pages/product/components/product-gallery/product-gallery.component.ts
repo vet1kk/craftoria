@@ -1,11 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
+import { GallerySlot } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 
-export interface GallerySlot {
-  image_url: string | null;
-  is_placeholder: boolean;
-}
 
 @Component({
   selector: 'app-product-gallery',

@@ -1,12 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 
 import { enTranslations } from '../i18n/en';
+import { TranslationDictionary } from '../models';
 import { uaTranslations } from '../i18n/ua';
 import { LocaleService } from './locale.service';
 
-interface TranslationDictionary {
-  [key: string]: string | TranslationDictionary;
-}
 
 @Injectable({
   providedIn: 'root'

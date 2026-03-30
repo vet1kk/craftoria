@@ -1,8 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, PLATFORM_ID } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 
 import { AppFooterComponent, AppHeaderComponent, CartDrawerComponent, ToastContainerComponent } from './components';
-import { AnalyticsService } from './services';
+import { AnalyticsApiService } from './services';
 
 @Component({
   selector: 'app-root',
@@ -12,9 +15,59 @@ import { AnalyticsService } from './services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
-  private readonly analyticsService = inject(AnalyticsService);
+  private readonly document = inject(DOCUMENT);
+  private readonly analyticsApiService = inject(AnalyticsApiService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
+  private readonly sessionId = this.getOrCreateSessionId();
 
   constructor() {
-    void this.analyticsService;
+    if (isPlatformBrowser(this.platformId)) {
+      this.trackRouteChanges();
+    }
+  }
+
+  private logEvent(eventName: string, params: Record<string, unknown> = {}): void {
+    const payload = {
+      session_id: this.sessionId,
+      name: eventName,
+      url: this.document.location?.href,
+      properties: params,
+      occurred_at: new Date().toISOString()
+    };
+
+    this.analyticsApiService.createEvent(payload).subscribe({
+      error: (err) => console.error('Backend analytics failed:', err)
+    });
+  }
+
+  private trackRouteChanges(): void {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed()
+      )
+      .subscribe((event) => {
+        this.logEvent('page_view', {
+          page_path: event.urlAfterRedirects,
+          page_title: this.document.title
+        });
+      });
+  }
+
+  private getOrCreateSessionId(): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
+
+    const key = 'craftoria.analytics-session-id';
+    let sessionId = sessionStorage.getItem(key);
+
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      sessionStorage.setItem(key, sessionId);
+    }
+
+    return sessionId;
   }
 }

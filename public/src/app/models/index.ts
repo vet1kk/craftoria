@@ -4,3 +4,4 @@ export * from './order.model';
 export * from './user.model';
 export * from './api.model';
 export * from './core.model';
+export * from './view.model';

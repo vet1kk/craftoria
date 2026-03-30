@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-
-export type InputType = 'text' | 'email' | 'password' | 'tel' | 'number';
+import { InputType } from '../../models';
 
 @Component({
   selector: 'ui-form-input',

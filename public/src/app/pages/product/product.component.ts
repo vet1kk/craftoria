@@ -5,9 +5,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, take } from 'rxjs';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { CartService, DataService, I18nService, ProductService } from '../../services';
+import { CartService, CategoryApiService, I18nService, LocaleService, ProductApiService, SettingsApiService } from '../../services';
 import { ProductGalleryComponent, ProductIngredientsComponent, ProductNutritionComponent, ProductPackagingComponent } from './components';
-import { Metadata, PackageDetails, Product, ProductImage } from '../../models';
+import { Category, Ingredient, IngredientUnit, Metadata, PackageDetails, Product, ProductImage } from '../../models';
+import { extractApiErrorMessage } from '../../services/api-error';
 
 @Component({
   selector: 'app-product',
@@ -25,12 +26,17 @@ import { Metadata, PackageDetails, Product, ProductImage } from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductComponent {
-  readonly dataService = inject(DataService);
-  readonly productService = inject(ProductService);
+  private readonly productApiService = inject(ProductApiService);
+  private readonly categoryApiService = inject(CategoryApiService);
+  private readonly settingsApiService = inject(SettingsApiService);
+  private readonly localeService = inject(LocaleService);
   readonly cartService = inject(CartService);
   readonly i18n = inject(I18nService);
   readonly isLoading = signal(false);
   readonly loadError = signal('');
+  readonly currency = signal('');
+  readonly categories = signal<Category[]>([]);
+  private lastLoadedLocale: string | null = null;
   private readonly route = inject(ActivatedRoute);
   private readonly productSlug = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')),
@@ -44,7 +50,7 @@ export class ProductComponent {
     if (!product) {
       return undefined;
     }
-    return this.productService.getCategoryById(product.category_id);
+    return this.categories().find((category) => category.id === product.category_id);
   });
 
   readonly galleryImages = computed(() => {
@@ -70,7 +76,7 @@ export class ProductComponent {
     if (!product) {
       return '';
     }
-    return this.productService.getProductPortionLabel(product);
+    return this.getProductPortionLabel(product);
   });
 
   readonly ingredientBreakdown = computed(() => {
@@ -78,7 +84,7 @@ export class ProductComponent {
     if (!product) {
       return [];
     }
-    return this.productService.getProductIngredientBreakdown(product);
+    return this.getProductIngredientBreakdown(product);
   });
 
   readonly packageDetailsBreakdown = computed((): PackageDetails => {
@@ -95,10 +101,22 @@ export class ProductComponent {
   });
 
   constructor() {
+    this.settingsApiService.settings().pipe(take(1)).subscribe((response) => {
+      this.currency.set(response.data.currency);
+    });
+
+    this.categoryApiService.listing().pipe(take(1)).subscribe((response) => {
+      this.categories.set(response.data ?? []);
+    });
+
     this.fetchProduct();
 
     effect(() => {
-      if (this.dataService.shouldReloadCatalogForLocale()) {
+      const locale = this.localeService.locale();
+      const shouldForceReload = this.lastLoadedLocale !== null && this.lastLoadedLocale !== locale;
+      this.lastLoadedLocale = locale;
+
+      if (shouldForceReload) {
         this.fetchProduct();
       }
     });
@@ -116,18 +134,50 @@ export class ProductComponent {
 
     this.isLoading.set(true);
 
-    this.productService.loadProduct(slug).pipe(take(1)).subscribe({
+    this.productApiService.item(slug).pipe(take(1)).subscribe({
       next: (product) => {
-        this.product = product;
+        this.product = product.data;
         this.isLoading.set(false);
-        if (!product) {
+        if (!product.data) {
           this.loadError.set(this.i18n.translate('ui.itemDetail.notFoundHint'));
         }
       },
-      error: () => {
+      error: (error: unknown) => {
+        this.loadError.set(extractApiErrorMessage(error, this.i18n.translate('ui.products.itemLoadError'), this.i18n));
         this.isLoading.set(false);
       }
     });
+  }
+
+  private getProductIngredientBreakdown(product: Product): Ingredient[] {
+    return product.ingredients.map((ingredient: Ingredient) => ({
+      ...ingredient,
+      quantity_label: this.formatQuantity(ingredient.quantity, ingredient.unit)
+    }));
+  }
+
+  private getProductPortionLabel(product: Product): string {
+    const totalsByUnit = product.ingredients.reduce<Record<IngredientUnit, number>>(
+      (accumulator, ingredient: Ingredient) => {
+        accumulator[ingredient.unit] += ingredient.quantity;
+
+        return accumulator;
+      },
+      { g: 0, ml: 0 }
+    );
+
+    const portionLabel = (Object.entries(totalsByUnit) as Array<[IngredientUnit, number]>)
+      .filter(([, total]) => total > 0)
+      .map(([unit, total]) => this.formatQuantity(total, unit))
+      .join(' + ');
+
+    return portionLabel || 'Порція уточнюється';
+  }
+
+  private formatQuantity(quantity: number, unit: IngredientUnit): string {
+    const formattedQuantity = Number.isInteger(quantity) ? quantity.toString() : quantity.toFixed(1);
+
+    return `${formattedQuantity} ${this.i18n.translate('ui.itemDetail.' + unit)}`;
   }
 
   getMetadata(type: string): Metadata | undefined {

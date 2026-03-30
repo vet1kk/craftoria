@@ -1,7 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-
-export type UiLocale = 'en' | 'ua';
+import { UiLocale } from '../models';
 
 const LOCALE_STORAGE_KEY = 'craftoria.locale';
 

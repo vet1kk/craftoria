@@ -1,21 +1,23 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { take } from 'rxjs';
+import { catchError, of, switchMap, take } from 'rxjs';
 
-import { CartItem, Order } from '../../models';
+import {
+  AuthActionResult,
+  AuthMode,
+  CartItem,
+  ClientRegistrationData,
+  LoginControlName,
+  Order,
+  Product,
+  RegistrationControlName
+} from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthService, CartDrawerService, CartService, DataService, I18nService } from '../../services';
+import { AuthApiService, AuthService, CartDrawerService, CartService, I18nService, ProductApiService } from '../../services';
+import { extractApiErrorMessage } from '../../services/api-error';
 import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '../components';
 
-type AuthMode = 'login' | 'register';
-type LoginControlName = 'email' | 'password';
-type RegistrationControlName =
-  | 'fullName'
-  | 'email'
-  | 'phone'
-  | 'password'
-  | 'confirmPassword';
 
 @Component({
   selector: 'app-account',
@@ -26,12 +28,14 @@ type RegistrationControlName =
 })
 export class AccountComponent {
   readonly authService = inject(AuthService);
+  private readonly authApiService = inject(AuthApiService);
+  private readonly productApiService = inject(ProductApiService);
   private readonly cartService = inject(CartService);
   private readonly cartDrawerService = inject(CartDrawerService);
-  private readonly dataService = inject(DataService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
+  private readonly products = signal<Product[]>([]);
 
   readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = this.authService.isAuthenticated;
@@ -75,7 +79,9 @@ export class AccountComponent {
   );
 
   constructor() {
-    this.dataService.ensureCatalogLoaded().pipe(take(1)).subscribe();
+    this.productApiService.listing().pipe(take(1)).subscribe((response) => {
+      this.products.set(response.data ?? []);
+    });
   }
 
   login(): void {
@@ -90,7 +96,17 @@ export class AccountComponent {
 
     const { email, password } = this.loginForm.getRawValue();
     this.isSubmitting.set(true);
-    this.authService.login(email.trim(), password).pipe(take(1)).subscribe((loginResult) => {
+    this.authApiService.login(email.trim(), password).pipe(
+      take(1),
+      switchMap((response) => {
+        this.authService.setCurrentUser(response.data);
+        return of({ success: true });
+      }),
+      catchError((error: unknown) => of({
+        success: false,
+        message: extractApiErrorMessage(error, 'Enabled to log in. Please check your credentials and try again.', this.i18n)
+      }))
+    ).subscribe((loginResult: AuthActionResult) => {
       if (!loginResult.success) {
         this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
         this.isSubmitting.set(false);
@@ -121,12 +137,25 @@ export class AccountComponent {
 
     const { fullName, email, phone, password } = this.registrationForm.getRawValue();
     this.isSubmitting.set(true);
-    this.authService.register({
+    const registrationData: ClientRegistrationData = {
       name: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
       password
-    }).pipe(take(1)).subscribe((registrationResult) => {
+    };
+
+    this.authApiService.register(registrationData).pipe(
+      take(1),
+      switchMap(() => this.authApiService.login(registrationData.email, registrationData.password)),
+      switchMap((response) => {
+        this.authService.setCurrentUser(response.data);
+        return of({ success: true });
+      }),
+      catchError((error: unknown) => of({
+        success: false,
+        message: extractApiErrorMessage(error, 'Enabled to register. Please try again.', this.i18n)
+      }))
+    ).subscribe((registrationResult: AuthActionResult) => {
       if (!registrationResult.success) {
         this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
         this.isSubmitting.set(false);
@@ -288,7 +317,7 @@ export class AccountComponent {
 
   repeatOrder(order: Order): void {
     const repeatedItems = (order?.items ?? []).reduce<CartItem[]>((items, orderItem) => {
-      const product = this.dataService.products().find((item) => item.id === orderItem.product_id);
+      const product = this.products().find((item) => item.id === orderItem.product_id);
 
       if (!product) {
         return items;

@@ -1,10 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { LaravelValidationErrors } from '../models';
 import { I18nService } from './i18n.service';
 
-interface LaravelValidationErrors {
-  message?: string;
-  errors?: Record<string, string[]>;
-}
 
 export function extractApiErrorMessage(error: unknown, fallbackMessage: string, i18n: I18nService): string {
   if (!(error instanceof HttpErrorResponse)) {

@@ -4,7 +4,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { take } from 'rxjs';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthService, CartDrawerService, CartService, DataService } from '../../services';
+import { AuthApiService, AuthService, CartDrawerService, CartService, SettingsApiService } from '../../services';
 
 @Component({
   selector: 'app-header',
@@ -16,12 +16,20 @@ import { AuthService, CartDrawerService, CartService, DataService } from '../../
 export class AppHeaderComponent {
   @ViewChild('headerNav', { static: true }) private readonly headerNav?: ElementRef<HTMLElement>;
 
-  readonly dataService = inject(DataService);
+  private readonly settingsApiService = inject(SettingsApiService);
+  private readonly authApiService = inject(AuthApiService);
   readonly cartService = inject(CartService);
   readonly cartDrawerService = inject(CartDrawerService);
   readonly authService = inject(AuthService);
   readonly isMobileMenuOpen = signal(false);
+  readonly currency = signal('');
   protected readonly router = inject(Router);
+
+  constructor() {
+    this.settingsApiService.settings().pipe(take(1)).subscribe((response) => {
+      this.currency.set(response.data.currency);
+    });
+  }
 
   get avatarInitials(): string {
     const user = this.authService.currentUser();
@@ -53,8 +61,14 @@ export class AppHeaderComponent {
 
   logout(): void {
     this.closeMobileMenu();
-    this.authService.logout().pipe(take(1)).subscribe(() => {
-      void this.router.navigate(['/products']);
+    this.authApiService.logout().pipe(take(1)).subscribe({
+      next: () => {
+        this.authService.clearCurrentUser();
+        void this.router.navigate(['/products']);
+      },
+      error: () => {
+        this.authService.clearCurrentUser();
+      }
     });
   }
 }
