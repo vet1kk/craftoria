@@ -24,12 +24,7 @@
     @if (activeTab() === 'categories') {
       <app-admin-categories-panel [categories]="editableCategories()"
                                   [productOptions]="categoryProductOptions()"
-                                  [isBusy]="isCategoryActionLoading()"
-                                  [actionError]="categoryActionError()"
-                                  [actionSuccessTick]="categoryActionSuccessTick()"
-                                  (createCategory)="createCategory($event)"
-                                  (updateCategory)="updateCategory($event)"
-                                  (deleteCategory)="deleteCategory($event)">
+                                  (categoryChanged)="onCategoryChanged()">
       </app-admin-categories-panel>
     }
   }

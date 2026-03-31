@@ -1,10 +1,12 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, EventEmitter, inject, input, Output, signal } from '@angular/core';
 import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize, of, switchMap, take } from 'rxjs';
+
 import { Category, CategoryProductOption, CategoryUpdatePayload, CategoryUpsertPayload } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { CatalogHelper } from '../../../../helpers';
-import { I18nService } from '../../../../services';
+import { ApiErrorHelper, CatalogHelper, FormHelper } from '../../../../helpers';
+import { CategoryApiService, I18nService, ToastService } from '../../../../services';
 import { FormInputComponent } from '../../../../ui';
 
 @Component({
@@ -17,16 +19,13 @@ import { FormInputComponent } from '../../../../ui';
 export class AdminCategoriesPanelComponent {
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly i18n = inject(I18nService);
-  private lastActionSuccessTick = -1;
+  private readonly categoryApiService = inject(CategoryApiService);
+  private readonly apiErrorHelper = inject(ApiErrorHelper);
+  private readonly toastService = inject(ToastService);
 
   readonly categories = input.required<Category[]>();
   readonly productOptions = input.required<CategoryProductOption[]>();
-  readonly isBusy = input(false);
-  readonly actionError = input('');
-  readonly actionSuccessTick = input(0);
-  readonly createCategory = output<CategoryUpsertPayload>();
-  readonly updateCategory = output<CategoryUpdatePayload>();
-  readonly deleteCategory = output<string>();
+  @Output() readonly categoryChanged = new EventEmitter<void>();
 
   readonly selectedCategory = signal<Category | null>(null);
   readonly isCreateModalOpen = signal(false);
@@ -34,6 +33,9 @@ export class AdminCategoriesPanelComponent {
   readonly isDeleteModalOpen = signal(false);
   readonly isViewModalOpen = signal(false);
   readonly selectedImageName = signal('');
+  readonly isBusy = signal(false);
+  readonly busyAction = signal<'create' | 'update' | 'delete' | null>(null);
+  readonly actionError = signal('');
   readonly categoryForm = this.formBuilder.group({
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
     slug: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
@@ -45,23 +47,6 @@ export class AdminCategoriesPanelComponent {
   });
 
   readonly hasSelection = computed(() => this.selectedCategory() !== null);
-
-  constructor() {
-    effect(() => {
-      const successTick = this.actionSuccessTick();
-
-      if (this.lastActionSuccessTick === -1) {
-        this.lastActionSuccessTick = successTick;
-        return;
-      }
-
-      if (successTick !== this.lastActionSuccessTick) {
-        this.closeModals();
-      }
-
-      this.lastActionSuccessTick = successTick;
-    });
-  }
 
   openCreateModal(): void {
     this.selectedCategory.set(null);
@@ -120,10 +105,15 @@ export class AdminCategoriesPanelComponent {
   }
 
   closeModals(): void {
+    if (this.isBusy()) {
+      return;
+    }
+
     this.isCreateModalOpen.set(false);
     this.isEditModalOpen.set(false);
     this.isDeleteModalOpen.set(false);
     this.isViewModalOpen.set(false);
+    this.actionError.set('');
   }
 
   submitCreate(): void {
@@ -132,7 +122,43 @@ export class AdminCategoriesPanelComponent {
       return;
     }
 
-    this.createCategory.emit(this.buildPayload());
+    const payload = this.buildPayload();
+    const formData = FormHelper.objectToFormData({
+      ...payload,
+      name: payload.name.trim(),
+      slug: payload.slug.trim(),
+      icon: payload.icon?.trim() ?? null,
+    }, ['name', 'slug', 'icon', 'position', 'is_active', 'image']);
+
+    this.isBusy.set(true);
+    this.busyAction.set('create');
+    this.actionError.set('');
+
+    this.categoryApiService.create(formData).pipe(
+      switchMap((response) => {
+        if (payload.product_ids.length === 0) {
+          return of(null);
+        }
+
+        return this.categoryApiService.assignProducts(response.data.id, payload.product_ids);
+      }),
+      take(1),
+      finalize(() => {
+        this.isBusy.set(false);
+        this.busyAction.set(null);
+      })
+    ).subscribe({
+      next: () => {
+        this.toastService.success(this.i18n.translate('ui.admin.categoryCreateSuccess'));
+        this.closeModals();
+        this.categoryChanged.emit();
+      },
+      error: (error: unknown) => {
+        const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryCreateError'));
+        this.actionError.set(message);
+        this.toastService.error(message);
+      }
+    });
   }
 
   submitUpdate(): void {
@@ -141,9 +167,47 @@ export class AdminCategoriesPanelComponent {
       return;
     }
 
-    this.updateCategory.emit({
+    const payload: CategoryUpdatePayload = {
       id: this.selectedCategory()!.id,
       ...this.buildPayload()
+    };
+
+    const formData = FormHelper.objectToFormData({
+      ...payload,
+      _method: 'PUT',
+      name: payload.name.trim(),
+      slug: payload.slug.trim(),
+      icon: payload.icon?.trim() ?? null,
+    }, ['_method', 'name', 'slug', 'icon', 'position', 'is_active', 'image']);
+
+    this.isBusy.set(true);
+    this.busyAction.set('update');
+    this.actionError.set('');
+
+    this.categoryApiService.update(payload.id, formData).pipe(
+      switchMap(() => {
+        if (payload.product_ids.length === 0) {
+          return of(null);
+        }
+
+        return this.categoryApiService.assignProducts(payload.id, payload.product_ids);
+      }),
+      take(1),
+      finalize(() => {
+        this.isBusy.set(false);
+        this.busyAction.set(null);
+      })
+    ).subscribe({
+      next: () => {
+        this.toastService.success(this.i18n.translate('ui.admin.categoryUpdateSuccess'));
+        this.closeModals();
+        this.categoryChanged.emit();
+      },
+      error: (error: unknown) => {
+        const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryUpdateError'));
+        this.actionError.set(message);
+        this.toastService.error(message);
+      }
     });
   }
 
@@ -152,7 +216,28 @@ export class AdminCategoriesPanelComponent {
       return;
     }
 
-    this.deleteCategory.emit(this.selectedCategory()!.id);
+    this.isBusy.set(true);
+    this.busyAction.set('delete');
+    this.actionError.set('');
+
+    this.categoryApiService.delete(this.selectedCategory()!.id).pipe(
+      take(1),
+      finalize(() => {
+        this.isBusy.set(false);
+        this.busyAction.set(null);
+      })
+    ).subscribe({
+      next: () => {
+        this.toastService.success(this.i18n.translate('ui.admin.categoryDeleteSuccess'));
+        this.closeModals();
+        this.categoryChanged.emit();
+      },
+      error: (error: unknown) => {
+        const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryDeleteError'));
+        this.actionError.set(message);
+        this.toastService.error(message);
+      }
+    });
   }
 
   isCreateSubmitDisabled(): boolean {
@@ -272,6 +357,19 @@ export class AdminCategoriesPanelComponent {
 
     this.categoryForm.controls.image.setValue(file);
     this.selectedImageName.set(file?.name ?? '');
+  }
+
+  busyActionLabel(): string {
+    switch (this.busyAction()) {
+      case 'create':
+        return this.i18n.translate('ui.admin.categoryCreateAction');
+      case 'update':
+        return this.i18n.translate('ui.admin.categorySaveAction');
+      case 'delete':
+        return this.i18n.translate('ui.admin.categoryDeleteAction');
+      default:
+        return this.i18n.translate('ui.admin.loadingCatalog');
+    }
   }
 
   private buildPayload(): CategoryUpsertPayload {

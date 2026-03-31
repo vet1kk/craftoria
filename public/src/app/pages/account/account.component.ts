@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { catchError, of, switchMap, take } from 'rxjs';
+import { catchError, finalize, of, switchMap, take } from 'rxjs';
 
 import { ApiErrorHelper } from '../../helpers';
 import {
@@ -54,6 +54,8 @@ export class AccountComponent {
   readonly authMode = signal<AuthMode>('login');
   readonly authError = signal('');
   readonly isSubmitting = signal(false);
+  readonly isTransitioning = signal(false);
+  readonly isOrdersLoading = signal(false);
   readonly repeatOrderError = signal('');
   readonly orders = signal<Order[]>([]);
 
@@ -96,10 +98,15 @@ export class AccountComponent {
     });
 
     effect(() => {
+      if (this.isTransitioning()) {
+        return;
+      }
+
       const user = this.currentUser();
 
       if (!user) {
         this.orders.set([]);
+        this.isOrdersLoading.set(false);
         return;
       }
 
@@ -108,12 +115,15 @@ export class AccountComponent {
   }
 
   private loadProfileOrders(): void {
+    this.isOrdersLoading.set(true);
+
     this.orderApiService.profileOrders().pipe(
       take(1),
       catchError(() => {
         this.orders.set([]);
         return of({ data: [] as Order[] });
-      })
+      }),
+      finalize(() => this.isOrdersLoading.set(false))
     ).subscribe((response) => {
       this.orders.set(response.data ?? []);
     });
@@ -130,13 +140,18 @@ export class AccountComponent {
     }
 
     const { email, password } = this.loginForm.getRawValue();
+    let postAuthPath: '/admin' | '/account' = '/account';
+
     this.isSubmitting.set(true);
     this.authApiService.login(email.trim(), password).pipe(
       take(1),
       switchMap((response) => {
         const authData: JwtAuthData = response.data;
+        this.isTransitioning.set(true);
         this.authService.setToken(authData.access_token);
         this.authService.setCurrentUser(authData.user);
+        postAuthPath = authData.user.role === 'admin' ? '/admin' : '/account';
+
         return of({ success: true });
       }),
       catchError((error: unknown) => of({
@@ -145,6 +160,7 @@ export class AccountComponent {
       }))
     ).subscribe((loginResult: AuthActionResult) => {
       if (!loginResult.success) {
+        this.isTransitioning.set(false);
         this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
         this.isSubmitting.set(false);
         return;
@@ -155,7 +171,9 @@ export class AccountComponent {
       this.loginForm.markAsUntouched();
 
       this.isSubmitting.set(false);
-      void this.router.navigate([this.isAdmin() ? '/admin' : '/account']);
+      void this.router.navigate([postAuthPath], { replaceUrl: true }).finally(() => {
+        this.isTransitioning.set(false);
+      });
     });
   }
 
@@ -173,6 +191,8 @@ export class AccountComponent {
     }
 
     const { fullName, email, phone, password } = this.registrationForm.getRawValue();
+    let postAuthPath: '/admin' | '/account' = '/account';
+
     this.isSubmitting.set(true);
     const registrationData: ClientRegistrationData = {
       name: fullName.trim(),
@@ -185,8 +205,11 @@ export class AccountComponent {
       take(1),
       switchMap((response) => {
         const authData: JwtAuthData = response.data;
+        this.isTransitioning.set(true);
         this.authService.setToken(authData.access_token);
         this.authService.setCurrentUser(authData.user);
+        postAuthPath = authData.user.role === 'admin' ? '/admin' : '/account';
+
         return of({ success: true });
       }),
       catchError((error: unknown) => of({
@@ -195,6 +218,7 @@ export class AccountComponent {
       }))
     ).subscribe((registrationResult: AuthActionResult) => {
       if (!registrationResult.success) {
+        this.isTransitioning.set(false);
         this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
         this.isSubmitting.set(false);
         return;
@@ -210,7 +234,9 @@ export class AccountComponent {
       this.registrationForm.markAsPristine();
       this.registrationForm.markAsUntouched();
       this.isSubmitting.set(false);
-      void this.router.navigate(['/account']);
+      void this.router.navigate([postAuthPath], { replaceUrl: true }).finally(() => {
+        this.isTransitioning.set(false);
+      });
     });
   }
 

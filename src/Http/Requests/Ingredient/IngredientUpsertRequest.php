@@ -20,7 +20,12 @@ class IngredientUpsertRequest extends AdminRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('ingredients', 'slug')->ignore($ingredientId)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('ingredients', 'slug')->ignore($ingredientId)->whereNull('deleted_at')
+            ],
             'unit' => ['required', 'string', Rule::in(['g', 'ml'])],
             'calories' => ['nullable', 'integer', 'min:0'],
             'proteins' => ['nullable', 'numeric', 'min:0'],

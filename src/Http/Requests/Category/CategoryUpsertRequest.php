@@ -21,7 +21,12 @@ class CategoryUpsertRequest extends AdminRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('categories', 'slug')->ignore($categoryId)],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories', 'slug')->ignore($categoryId)->whereNull('deleted_at')
+            ],
             'icon' => ['nullable', 'string', 'max:255'],
             'image' => [
                 'nullable',
