@@ -6,6 +6,7 @@ import { catchError, map, of, tap } from 'rxjs';
 
 import { AppComponent } from './app/app.component';
 import { appRoutes } from './app/app.routes';
+import { authTokenInterceptor } from './app/interceptors/auth-token.interceptor';
 import { localeHeaderInterceptor } from './app/interceptors/locale-header.interceptor';
 import { AuthApiService, UserService } from './app/services';
 import { environment } from './environments/environment';
@@ -18,19 +19,25 @@ if (environment.production) {
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(appRoutes),
-    provideHttpClient(withInterceptors([localeHeaderInterceptor])),
+    provideHttpClient(withInterceptors([authTokenInterceptor, localeHeaderInterceptor])),
     provideAppInitializer(() => {
       const authApiService = inject(AuthApiService);
-      const authService = inject(UserService);
+      const userService = inject(UserService);
 
-      return authApiService.session().pipe(
+      if (!userService.getToken()) {
+        userService.clearCurrentUser();
+        return of(void 0);
+      }
+
+      return authApiService.profile().pipe(
         map((response) => response.data),
-        tap((session) => {
-          authService.setCurrentUser(session.authenticated && session.user ? session.user : null);
+        tap((user) => {
+          userService.setCurrentUser(user);
         }),
         map(() => void 0),
         catchError(() => {
-          authService.clearCurrentUser();
+          userService.clearToken();
+          userService.clearCurrentUser();
           return of(void 0);
         })
       );

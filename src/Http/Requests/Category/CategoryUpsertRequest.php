@@ -31,4 +31,15 @@ class CategoryUpsertRequest extends AdminRequest
             'is_active' => ['nullable', 'boolean'],
         ];
     }
+
+    /**
+     * @inheritDoc
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_active' => $this->boolean('is_active'),
+            'position' => $this->integer('position'),
+        ]);
+    }
 }

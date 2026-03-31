@@ -21,7 +21,10 @@ class AuthApiTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.email', 'john@example.com');
+            ->assertJsonPath('data.user.email', 'john@example.com')
+            ->assertJsonStructure([
+                'data' => ['access_token', 'token_type', 'expires_in', 'user'],
+            ]);
 
         $this->assertDatabaseHas('users', ['email' => 'john@example.com', 'role' => 'client']);
     }
@@ -33,52 +36,68 @@ class AuthApiTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        $this->postJson('/api/login', [
+        $loginResponse = $this->postJson('/api/login', [
             'email' => 'TEST@example.com',
             'password' => 'password',
         ])->assertOk();
 
-        $this->getJson('/api/session')
+        $token = $loginResponse->json('data.access_token');
+
+        $this->withHeaders(['Authorization' => "Bearer {$token}"])
+             ->getJson('/api/session')
             ->assertOk()
-            ->assertJson(['authenticated' => true]);
+             ->assertJsonPath('data.authenticated', true);
     }
 
     public function test_user_can_logout(): void
     {
-        $user = User::factory()->create();
-        $this->actingAs($user)
+        $user = User::factory()->create([
+            'email' => 'logout@example.test',
+            'password' => bcrypt('secret123'),
+        ]);
+
+        $loginResponse = $this->postJson('/api/login', [
+            'email' => 'logout@example.test',
+            'password' => 'secret123',
+        ])->assertOk();
+
+        $token = $loginResponse->json('data.access_token');
+
+        $this->withHeaders(['Authorization' => "Bearer {$token}"])
             ->postJson('/api/logout')
             ->assertNoContent();
 
-        $this->getJson('/api/session')
+        $this->withHeaders(['Authorization' => "Bearer {$token}"])
+             ->getJson('/api/session')
             ->assertOk()
-            ->assertJson(['authenticated' => false]);
+             ->assertJsonPath('data.authenticated', false);
     }
 
     public function test_it_returns_session_state_without_unauthorized_response(): void
     {
         $this->getJson('/api/session')
             ->assertOk()
-            ->assertJson([
-                'authenticated' => false,
-                'user' => null,
-            ]);
+            ->assertJsonPath('data.authenticated', false)
+            ->assertJsonPath('data.user', null);
 
         $user = User::factory()->create([
             'email' => 'session@example.test',
             'password' => 'secret123',
         ]);
 
-        $this->postJson('/api/login', [
+        $loginResponse = $this->postJson('/api/login', [
             'email' => 'session@example.test',
             'password' => 'secret123',
         ])->assertOk();
 
-        $this->getJson('/api/session')
+        $token = $loginResponse->json('data.access_token');
+
+        $this->withHeaders(['Authorization' => "Bearer {$token}"])
+             ->getJson('/api/session')
             ->assertOk()
-            ->assertJsonPath('authenticated', true)
-            ->assertJsonPath('user.id', $user->getKey())
-            ->assertJsonPath('user.email', 'session@example.test');
+             ->assertJsonPath('data.authenticated', true)
+             ->assertJsonPath('data.user.id', $user->getKey())
+             ->assertJsonPath('data.user.email', 'session@example.test');
     }
 
     public function test_it_rejects_invalid_credentials(): void

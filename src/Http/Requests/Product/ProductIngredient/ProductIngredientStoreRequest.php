@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Product\ProductIngredient;
 
 use App\Http\Requests\AdminRequest;
+use App\Models\Product;
 use App\Models\ProductIngredient;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
@@ -20,11 +21,6 @@ class ProductIngredientStoreRequest extends AdminRequest
     public function rules(): array
     {
         return [
-            'product_id' => [
-                'required',
-                'uuid',
-                Rule::exists('products', 'id')->whereNull('deleted_at'),
-            ],
             'ingredient_id' => [
                 'required',
                 'uuid',
@@ -47,8 +43,17 @@ class ProductIngredientStoreRequest extends AdminRequest
                 return;
             }
 
+            /** @var \App\Models\Product|null $product */
+            $product = $this->route('product');
+
+            if (!$product instanceof Product) {
+                $validator->errors()->add('product', 'Product route binding is required.');
+
+                return;
+            }
+
             $alreadyExists = ProductIngredient::query()
-                                              ->where('product_id', $this->input('product_id'))
+                ->where('product_id', $product->id)
                                               ->where('ingredient_id', $this->input('ingredient_id'))
                                               ->whereNull('deleted_at')
                                               ->exists();

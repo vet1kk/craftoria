@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Http\UploadedFile;
 
 /**
  * @property string $id
@@ -32,8 +33,25 @@ class ProductIngredient extends Model
         'ingredient_id',
         'quantity',
         'position',
+        'image',
         'image_url',
     ];
+
+    /**
+     * @param \Illuminate\Http\UploadedFile|string|null $file
+     * @return void
+     */
+    public function setImageAttribute(UploadedFile|string|null $file): void
+    {
+        if (!$file instanceof UploadedFile) {
+            return;
+        }
+
+        $this->attributes['image_url'] = FileUpload::storePublicImage(
+            $file,
+            'uploads/products/ingredients'
+        );
+    }
 
     /**
      * Get the attributes that should be cast.

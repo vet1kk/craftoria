@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 
 /**
@@ -71,6 +72,7 @@ class Product extends Model
         'sku',
         'description',
         'price',
+        'featured_image',
         'featured_image_url',
         'shelf_life',
         'position',
@@ -79,6 +81,22 @@ class Product extends Model
         'is_active',
         'is_available',
     ];
+
+    /**
+     * @param \Illuminate\Http\UploadedFile|string|null $file
+     * @return void
+     */
+    public function setFeaturedImageAttribute(UploadedFile|string|null $file): void
+    {
+        if (!$file instanceof UploadedFile) {
+            return;
+        }
+
+        $this->attributes['featured_image_url'] = FileUpload::storePublicImage(
+            $file,
+            'uploads/products/featured'
+        );
+    }
 
     /**
      * Get the attributes that should be cast.

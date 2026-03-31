@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\UploadedFile;
 
 /**
  * @method static \App\Models\Builders\CategoryBuilder query()
@@ -54,11 +55,28 @@ class Category extends Model
         'name',
         'slug',
         'icon',
+        'image',
         'image_url',
         'position',
         'is_active',
         'is_system',
     ];
+
+    /**
+     * @param \Illuminate\Http\UploadedFile|string|null $file
+     * @return void
+     */
+    public function setImageAttribute(UploadedFile|string|null $file): void
+    {
+        if (!$file instanceof UploadedFile) {
+            return;
+        }
+
+        $this->attributes['image_url'] = FileUpload::storePublicImage(
+            $file,
+            'uploads/categories'
+        );
+    }
 
     /**
      * Get the attributes that should be cast.

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { catchError, of, switchMap, take } from 'rxjs';
@@ -9,13 +9,22 @@ import {
   AuthMode,
   CartItem,
   ClientRegistrationData,
+  JwtAuthData,
   LoginControlName,
   Order,
   Product,
   RegistrationControlName
 } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthApiService, CartDrawerService, CartService, I18nService, ProductApiService, UserService } from '../../services';
+import {
+  AuthApiService,
+  CartDrawerService,
+  CartService,
+  I18nService,
+  OrderApiService,
+  ProductApiService,
+  UserService
+} from '../../services';
 import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '../components';
 
 
@@ -30,6 +39,7 @@ export class AccountComponent {
   readonly authService = inject(UserService);
   private readonly apiErrorHelper = inject(ApiErrorHelper);
   private readonly authApiService = inject(AuthApiService);
+  private readonly orderApiService = inject(OrderApiService);
   private readonly productApiService = inject(ProductApiService);
   private readonly cartService = inject(CartService);
   private readonly cartDrawerService = inject(CartDrawerService);
@@ -45,6 +55,7 @@ export class AccountComponent {
   readonly authError = signal('');
   readonly isSubmitting = signal(false);
   readonly repeatOrderError = signal('');
+  readonly orders = signal<Order[]>([]);
 
   readonly loginEmailHasError = signal(false);
   readonly loginPasswordHasError = signal(false);
@@ -83,6 +94,29 @@ export class AccountComponent {
     this.productApiService.listing().pipe(take(1)).subscribe((response) => {
       this.products.set(response.data ?? []);
     });
+
+    effect(() => {
+      const user = this.currentUser();
+
+      if (!user) {
+        this.orders.set([]);
+        return;
+      }
+
+      this.loadProfileOrders();
+    });
+  }
+
+  private loadProfileOrders(): void {
+    this.orderApiService.profileOrders().pipe(
+      take(1),
+      catchError(() => {
+        this.orders.set([]);
+        return of({ data: [] as Order[] });
+      })
+    ).subscribe((response) => {
+      this.orders.set(response.data ?? []);
+    });
   }
 
   login(): void {
@@ -100,7 +134,9 @@ export class AccountComponent {
     this.authApiService.login(email.trim(), password).pipe(
       take(1),
       switchMap((response) => {
-        this.authService.setCurrentUser(response.data);
+        const authData: JwtAuthData = response.data;
+        this.authService.setToken(authData.access_token);
+        this.authService.setCurrentUser(authData.user);
         return of({ success: true });
       }),
       catchError((error: unknown) => of({
@@ -147,9 +183,10 @@ export class AccountComponent {
 
     this.authApiService.register(registrationData).pipe(
       take(1),
-      switchMap(() => this.authApiService.login(registrationData.email, registrationData.password)),
       switchMap((response) => {
-        this.authService.setCurrentUser(response.data);
+        const authData: JwtAuthData = response.data;
+        this.authService.setToken(authData.access_token);
+        this.authService.setCurrentUser(authData.user);
         return of({ success: true });
       }),
       catchError((error: unknown) => of({

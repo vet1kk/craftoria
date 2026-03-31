@@ -14,6 +14,10 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class OrderController extends Controller
 {
+    public function __construct(private readonly OrderService $orderService)
+    {
+    }
+
     /**
      * Create a public checkout order.
      *
@@ -23,12 +27,7 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request): OrderResource
     {
-        $order = Order::create(array_merge($request->validated(), [
-            'user_id' => auth()->id(),
-            'order_number' => OrderService::generateOrderNumber(),
-            'status' => 'pending',
-            'placed_at' => now(),
-        ]));
+        $order = $this->orderService->store($request->validated(), auth()->id());
 
         return new OrderResource($order);
     }
@@ -42,11 +41,7 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $orders = Order::query()
-            ->with(['orderItems', 'user'])
-                       ->latest('placed_at')
-                       ->latest('created_at')
-                       ->get();
+        $orders = $this->orderService->index();
 
         return OrderResource::collection($orders);
     }
@@ -61,7 +56,7 @@ class OrderController extends Controller
     {
         $this->authorize('view', $order);
 
-        return new OrderResource($order->loadDetails());
+        return new OrderResource($this->orderService->show($order));
     }
 
     /**
@@ -75,8 +70,6 @@ class OrderController extends Controller
     {
         $this->authorize('update', $order);
 
-        $order->update($request->validated());
-
-        return $this->show($order);
+        return new OrderResource($this->orderService->update($order, $request->validated()));
     }
 }

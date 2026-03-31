@@ -10,6 +10,10 @@ import { ApiService } from '../api.service';
 export class OrderApiService {
   private readonly apiService = inject(ApiService);
 
+  profileOrders(): Observable<ApiResponse<Order[]>> {
+    return this.apiService.get<Order[]>('/profile/orders');
+  }
+
   createOrder(payload: CreateOrderPayload): Observable<ApiResponse<Order>> {
     return this.apiService.post<Order>('/orders', payload);
   }

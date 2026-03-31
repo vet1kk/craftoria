@@ -24,7 +24,7 @@ class ProductImageUploadTest extends TestCase
 
         $image = UploadedFile::fake()->image('cake.jpg');
 
-        $response = $this->actingAs($admin)->postJson('/api/products', [
+        $response = $this->actingAs($admin, 'api')->postJson('/api/products', [
             'category_id' => $category->id,
             'name' => 'Uploaded Cake',
             'description' => 'A delicious cake.',
@@ -47,7 +47,7 @@ class ProductImageUploadTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
         $category = Category::factory()->create();
         $image = UploadedFile::fake()->image('cake.jpg');
-        $response = $this->actingAs($client)->postJson('/api/products', [
+        $response = $this->actingAs($client, 'api')->postJson('/api/products', [
             'category_id' => $category->id,
             'name' => 'Uploaded Cake',
             'description' => 'A delicious cake.',
@@ -67,7 +67,7 @@ class ProductImageUploadTest extends TestCase
         $category = Category::factory()->create();
 
         $image1 = UploadedFile::fake()->image('first.png');
-        $this->actingAs($admin)->postJson('/api/products', [
+        $this->actingAs($admin, 'api')->postJson('/api/products', [
             'name' => 'Cake',
             'slug' => 'cake',
             'description' => 'A delicious cake.',
@@ -81,7 +81,7 @@ class ProductImageUploadTest extends TestCase
         Storage::disk('public')->assertExists($oldPath);
 
         $image2 = UploadedFile::fake()->image('second.png');
-        $response = $this->actingAs($admin)->putJson("/api/products/{$product->id}", [
+        $response = $this->actingAs($admin, 'api')->putJson("/api/products/{$product->id}", [
             'name' => 'Cake Updated',
             'category_id' => $category->id,
             'price' => 100,

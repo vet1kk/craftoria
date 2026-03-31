@@ -1,14 +1,14 @@
-<div class="flex flex-wrap gap-2">
+<div class="flex w-full flex-wrap gap-2 sm:w-auto">
   <button type="button"
           (click)="tabChange.emit('items')"
           [class]="activeTab() === 'items' ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+          class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none">
     <span>{{ 'ui.admin.tabItems' | t }}</span>
   </button>
   <button type="button"
           (click)="tabChange.emit('categories')"
           [class]="activeTab() === 'categories' ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+          class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none">
     <span>{{ 'ui.admin.tabCategories' | t }}</span>
   </button>
 </div>

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { ApiResponse, ClientRegistrationData, SessionResponse, User } from '../../models';
+import { ApiResponse, ClientRegistrationData, JwtAuthData, SessionResponse, User } from '../../models';
 import { ApiService } from '../api.service';
 
 @Injectable({
@@ -14,15 +14,15 @@ export class AuthApiService {
     return this.apiService.get<SessionResponse>('/session');
   }
 
-  login(email: string, password: string): Observable<ApiResponse<User>> {
-    return this.apiService.post<User>('/login', {
+  login(email: string, password: string): Observable<ApiResponse<JwtAuthData>> {
+    return this.apiService.post<JwtAuthData>('/login', {
       email,
       password
     });
   }
 
-  register(registrationData: ClientRegistrationData): Observable<ApiResponse<User>> {
-    return this.apiService.post<User>('/register', {
+  register(registrationData: ClientRegistrationData): Observable<ApiResponse<JwtAuthData>> {
+    return this.apiService.post<JwtAuthData>('/register', {
       name: registrationData.name,
       email: registrationData.email,
       phone: registrationData.phone,
@@ -33,6 +33,10 @@ export class AuthApiService {
 
   logout(): Observable<ApiResponse<void>> {
     return this.apiService.post<void>('/logout', {});
+  }
+
+  refresh(): Observable<ApiResponse<JwtAuthData>> {
+    return this.apiService.post<JwtAuthData>('/refresh', {});
   }
 
   profile(): Observable<ApiResponse<User>> {

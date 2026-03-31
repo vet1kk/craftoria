@@ -8,6 +8,26 @@ export interface Category {
   is_active: boolean;
 }
 
+export interface CategoryUpsertPayload {
+  name: string;
+  slug: string;
+  icon: string | null;
+  position: number;
+  is_active: boolean;
+  image: File | null;
+  product_ids: string[];
+}
+
+export interface CategoryUpdatePayload extends CategoryUpsertPayload {
+  id: string;
+}
+
+export interface CategoryProductOption {
+  id: string;
+  name: string;
+  category_id: string | null;
+}
+
 export interface CatalogData {
   categories: Category[];
   products: Product[];

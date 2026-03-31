@@ -11,13 +11,14 @@ return tap(
                ->withRouting(
                    api: __DIR__ . '/../routes/api.php',
                    commands: __DIR__ . '/../routes/console.php',
-                   health: '/api/health',
+                   health: '/up',
                )
                ->withMiddleware(function (Middleware $middleware): void {
                    $middleware->api(prepend: [
                        \App\Http\Middleware\SetRequestLocale::class,
                    ]);
                    $middleware->trustProxies(at: '*');
+                   $middleware->convertEmptyStringsToNull();
                })
                ->withExceptions(function (Exceptions $exceptions): void {
                    //

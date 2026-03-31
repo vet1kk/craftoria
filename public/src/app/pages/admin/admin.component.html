@@ -22,7 +22,15 @@
     }
 
     @if (activeTab() === 'categories') {
-      <app-admin-categories-panel [categories]="editableCategories()"></app-admin-categories-panel>
+      <app-admin-categories-panel [categories]="editableCategories()"
+                                  [productOptions]="categoryProductOptions()"
+                                  [isBusy]="isCategoryActionLoading()"
+                                  [actionError]="categoryActionError()"
+                                  [actionSuccessTick]="categoryActionSuccessTick()"
+                                  (createCategory)="createCategory($event)"
+                                  (updateCategory)="updateCategory($event)"
+                                  (deleteCategory)="deleteCategory($event)">
+      </app-admin-categories-panel>
     }
   }
 </div>

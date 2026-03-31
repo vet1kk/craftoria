@@ -5,4 +5,5 @@ export * from './i18n.service';
 export * from './toast.service';
 export * from './settings.service';
 export * from './user.service';
+export * from './token-storage.service';
 export * from './api';

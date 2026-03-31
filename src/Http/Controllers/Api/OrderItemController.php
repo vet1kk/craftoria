@@ -10,11 +10,14 @@ use App\Http\Requests\Order\OrderItem\UpdateOrderItemRequest;
 use App\Http\Resources\OrderItemResource;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Product;
-use Illuminate\Support\Facades\DB;
+use App\Services\OrderItemService;
 
 class OrderItemController extends Controller
 {
+    public function __construct(private readonly OrderItemService $orderItemService)
+    {
+    }
+
     /**
      * @param \App\Http\Requests\Order\OrderItem\StoreOrderItemRequest $request
      * @param \App\Models\Order $order
@@ -26,20 +29,9 @@ class OrderItemController extends Controller
     {
         $this->authorize('update', $order);
 
-        return DB::transaction(static function () use ($request, $order) {
-            $product = Product::findOrFail($request->validated('product_id'));
-            $orderItem = $order->orderItems()->create([
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'product_sku' => $product->sku,
-                'quantity' => $request->validated('quantity'),
-                'unit_price' => $product->price,
-                'line_total' => $product->price * $request->validated('quantity'),
-                'notes' => $request->validated('notes'),
-            ]);
+        $orderItem = $this->orderItemService->store($order, $request->validated());
 
-            return new OrderItemResource($orderItem);
-        });
+        return new OrderItemResource($orderItem);
     }
 
     /**
@@ -53,14 +45,9 @@ class OrderItemController extends Controller
     {
         $this->authorize('update', $order);
 
-        return DB::transaction(static function () use ($request, $orderItem) {
-            $orderItem->fill($request->validated());
+        $updatedOrderItem = $this->orderItemService->update($orderItem, $request->validated());
 
-            $orderItem->line_total = $orderItem->unit_price * $orderItem->quantity;
-            $orderItem->save();
-
-            return new OrderItemResource($orderItem);
-        });
+        return new OrderItemResource($updatedOrderItem);
     }
 
     /**
@@ -70,9 +57,7 @@ class OrderItemController extends Controller
     {
         $this->authorize('delete', $order);
 
-        DB::transaction(static function () use ($orderItem) {
-            $orderItem->delete();
-        });
+        $this->orderItemService->delete($orderItem);
 
         return response()->noContent();
     }

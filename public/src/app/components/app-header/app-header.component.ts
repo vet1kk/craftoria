@@ -63,10 +63,12 @@ export class AppHeaderComponent {
     this.closeMobileMenu();
     this.authApiService.logout().pipe(take(1)).subscribe({
       next: () => {
+        this.userService.clearToken();
         this.userService.clearCurrentUser();
         void this.router.navigate(['/products']);
       },
       error: () => {
+        this.userService.clearToken();
         this.userService.clearCurrentUser();
       }
     });

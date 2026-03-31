@@ -18,7 +18,7 @@ class AdminCatalogApiTest extends TestCase
     public function test_admin_can_manage_categories_ingredients_and_products(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin);
+        $this->actingAs($admin, 'api');
 
         $categoryResponse = $this->postJson('/api/categories', [
             'name' => 'Desserts',
@@ -128,7 +128,7 @@ class AdminCatalogApiTest extends TestCase
         $ingredient = Ingredient::factory()->create();
         $product = Product::factory()->for($category)->create();
 
-        $this->actingAs($client);
+        $this->actingAs($client, 'api');
 
         $this->postJson('/api/categories', [
             'name' => 'Forbidden',
