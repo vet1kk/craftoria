@@ -21,7 +21,9 @@ export const uaTranslations = {
     actions: {
       goToMenu: 'Перейти до меню',
       retry: 'Спробувати ще раз',
-      checkout: 'Оформити замовлення'
+      checkout: 'Оформити замовлення',
+      refresh: 'Оновити',
+      refreshing: 'Оновлюємо...'
     },
     cart: {
       title: 'Ваше замовлення',

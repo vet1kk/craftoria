@@ -21,7 +21,9 @@ export const enTranslations = {
     actions: {
       goToMenu: 'Go to menu',
       retry: 'Try again',
-      checkout: 'Place order'
+      checkout: 'Place order',
+      refresh: 'Refresh',
+      refreshing: 'Refreshing...'
     },
     cart: {
       title: 'Your order',

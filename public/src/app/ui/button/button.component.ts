@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 
 import { ButtonSize, ButtonVariant } from '../../models';
 import { LoaderComponent } from '../loader';
@@ -18,9 +18,25 @@ export class ButtonComponent {
   readonly disabled = input(false);
   readonly loading = input(false);
   readonly loadingLabel = input<string | null>(null);
+  readonly reloadable = input(false);
   readonly fullWidth = input(false);
   readonly rounded = input<'default' | 'full'>('default');
   readonly className = input('');
+  readonly reloadStateChange = output<boolean>();
+
+  private wasLoading = false;
+
+  constructor() {
+    effect(() => {
+      const isLoading = this.loading();
+
+      if (this.reloadable() && this.wasLoading && !isLoading) {
+        this.reloadStateChange.emit(false);
+      }
+
+      this.wasLoading = isLoading;
+    });
+  }
 
   isDisabled(): boolean {
     return this.disabled() || this.loading();
@@ -28,5 +44,11 @@ export class ButtonComponent {
 
   loaderTone(): 'light' | 'dark' {
     return ['primary', 'secondary', 'danger'].includes(this.variant()) ? 'light' : 'dark';
+  }
+
+  onClick(): void {
+    if (this.reloadable() && !this.isDisabled()) {
+      this.reloadStateChange.emit(true);
+    }
   }
 }

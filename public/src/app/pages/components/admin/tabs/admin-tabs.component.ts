@@ -13,5 +13,7 @@ import { ButtonComponent } from '../../../../ui';
 })
 export class AdminTabsComponent {
   readonly activeTab = input.required<AdminTab>();
+  readonly isReloading = input(false);
   readonly tabChange = output<AdminTab>();
+  readonly reloadStateChange = output<boolean>();
 }

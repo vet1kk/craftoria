@@ -1,6 +1,7 @@
 <button [type]="type()"
         [disabled]="isDisabled()"
-        class="inline-flex items-center justify-center font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+        class="group inline-flex items-center justify-center font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+        (click)="onClick()"
         [ngClass]="className()"
         [class.w-full]="fullWidth()"
         [class.rounded-lg]="rounded() === 'default'"

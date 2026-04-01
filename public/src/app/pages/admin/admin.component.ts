@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { CatalogHelper } from '../../helpers';
@@ -21,6 +21,7 @@ export class AdminComponent {
   readonly categories = signal<Category[]>([]);
   readonly products = signal<Product[]>([]);
   readonly isCatalogLoading = signal(false);
+  readonly isRefreshing = signal(false);
   readonly catalogError = signal('');
   readonly currency = signal('');
   readonly categoryProductOptions = signal<CategoryProductOption[]>([]);
@@ -37,11 +38,36 @@ export class AdminComponent {
 
     this.reloadCatalog();
     this.reloadCategoryOptions();
+
+    effect(() => {
+      if (this.isRefreshing() && !this.isCatalogLoading()) {
+        this.isRefreshing.set(false);
+      }
+    });
   }
 
   onCategoryChanged(): void {
     this.reloadCatalog();
     this.reloadCategoryOptions();
+  }
+
+  refreshPage(): void {
+    if (this.isCatalogLoading()) {
+      return;
+    }
+
+    this.isRefreshing.set(true);
+    this.reloadCatalog();
+    this.reloadCategoryOptions();
+  }
+
+  onRefreshStateChange(isRefreshing: boolean): void {
+    if (!isRefreshing) {
+      this.isRefreshing.set(false);
+      return;
+    }
+
+    this.refreshPage();
   }
 
   private reloadCatalog(): void {

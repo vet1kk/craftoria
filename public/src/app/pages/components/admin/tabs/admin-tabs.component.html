@@ -2,16 +2,26 @@
   <ui-button type="button"
              size="md"
              rounded="default"
+             [reloadable]="activeTab() === 'items'"
+             [disabled]="isReloading()"
+             [loading]="isReloading() && activeTab() === 'items'"
+             [loadingLabel]="'ui.admin.tabItems' | t"
              [variant]="activeTab() === 'items' ? 'secondary' : 'outline'"
              [className]="'flex-1 sm:flex-none transition-none duration-0'"
+             (reloadStateChange)="reloadStateChange.emit($event)"
              (click)="tabChange.emit('items')">
     {{ 'ui.admin.tabItems' | t }}
   </ui-button>
   <ui-button type="button"
              size="md"
              rounded="default"
+             [reloadable]="activeTab() === 'categories'"
+             [disabled]="isReloading()"
+             [loading]="isReloading() && activeTab() === 'categories'"
+             [loadingLabel]="'ui.admin.tabCategories' | t"
              [variant]="activeTab() === 'categories' ? 'secondary' : 'outline'"
              [className]="'flex-1 sm:flex-none transition-none duration-0'"
+             (reloadStateChange)="reloadStateChange.emit($event)"
              (click)="tabChange.emit('categories')">
     {{ 'ui.admin.tabCategories' | t }}
   </ui-button>
