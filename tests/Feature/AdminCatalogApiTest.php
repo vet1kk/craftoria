@@ -180,4 +180,83 @@ class AdminCatalogApiTest extends TestCase
     {
         $this->assertTrue(true);
     }
+
+    public function test_deactivating_category_deactivates_its_products_only(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'api');
+
+        $targetCategory = Category::factory()->create(['is_active' => true]);
+        $otherCategory = Category::factory()->create(['is_active' => true]);
+
+        $targetProductA = Product::factory()->for($targetCategory)->create(['is_active' => true]);
+        $targetProductB = Product::factory()->for($targetCategory)->create(['is_active' => true]);
+        $otherProduct = Product::factory()->for($otherCategory)->create(['is_active' => true]);
+
+        $this->putJson("/api/categories/{$targetCategory->getKey()}", [
+            'name' => $targetCategory->name,
+            'position' => $targetCategory->position,
+            'is_active' => false,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $targetProductA->getKey(),
+            'is_active' => false,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $targetProductB->getKey(),
+            'is_active' => false,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $otherProduct->getKey(),
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_reactivating_category_reactivates_its_products_only(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'api');
+
+        $category = Category::factory()->create(['is_active' => true]);
+        $otherCategory = Category::factory()->create(['is_active' => true]);
+        $product = Product::factory()->for($category)->create(['is_active' => true]);
+        $otherProduct = Product::factory()->for($otherCategory)->create(['is_active' => true]);
+
+        $this->putJson("/api/categories/{$category->getKey()}", [
+            'name' => $category->name,
+            'position' => $category->position,
+            'is_active' => false,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'is_active' => false,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $otherProduct->getKey(),
+            'is_active' => true,
+        ]);
+
+        $category->refresh();
+
+        $this->putJson("/api/categories/{$category->getKey()}", [
+            'name' => $category->name,
+            'position' => $category->position,
+            'is_active' => true,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'is_active' => true,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $otherProduct->getKey(),
+            'is_active' => true,
+        ]);
+    }
 }
