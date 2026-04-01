@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
 import { adminGuard } from './guards/admin.guard';
-import { categoryProductOptionsResolver } from './resolvers/category-product-options.resolver';
 
 export const appRoutes: Routes = [
   {
@@ -20,11 +19,13 @@ export const appRoutes: Routes = [
       import('./pages/account/account.component').then((module) => module.AccountComponent)
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./pages/profile/profile.component').then((module) => module.ProfileComponent)
+  },
+  {
     path: 'admin',
     canActivate: [adminGuard],
-    resolve: {
-      categoryProductOptions: categoryProductOptionsResolver
-    },
     loadComponent: () =>
       import('./pages/admin/admin.component').then((module) => module.AdminComponent)
   },

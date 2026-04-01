@@ -3,4 +3,5 @@ export * from './order.model';
 export * from './auth.model';
 export * from './api.model';
 export * from './core.model';
+export * from './transition-state.model';
 export * from './ui.model';

@@ -1,5 +1,6 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { catchError, concatMap, forkJoin, map, of, switchMap, take, throwError } from 'rxjs';
 
@@ -15,11 +16,12 @@ import {
   SettingsApiService,
   UserService
 } from '../../services';
+import { ButtonComponent, FormInputComponent } from '../../ui';
 
 @Component({
   selector: 'app-cart-drawer',
   standalone: true,
-  imports: [DecimalPipe, TranslatePipe],
+  imports: [DecimalPipe, TranslatePipe, ReactiveFormsModule, FormInputComponent, ButtonComponent],
   templateUrl: './cart-drawer.component.html',
   styleUrl: './cart-drawer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -38,6 +40,7 @@ export class CartDrawerComponent {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly currency = signal('UAH');
+  readonly phoneControl = new FormControl('', { nonNullable: true });
   readonly defaultClientPhone = computed(() => {
     const currentUser = this.authService.currentUser();
     return currentUser?.role === 'client' ? currentUser.phone : '';
@@ -47,6 +50,15 @@ export class CartDrawerComponent {
     this.settingsApiService.settings().pipe(take(1)).subscribe((response) => {
       this.currency.set(response.data.currency || 'UAH');
     });
+
+    effect(() => {
+      const phone = this.defaultClientPhone();
+
+      if (phone && !this.phoneControl.dirty) {
+        this.phoneControl.setValue(phone);
+      }
+    });
+
     this.clearMessages();
   }
 
@@ -55,7 +67,8 @@ export class CartDrawerComponent {
     this.clearMessages();
   }
 
-  placeOrder(phone: string): void {
+  placeOrder(): void {
+    const phone = this.phoneControl.value.trim();
     const phoneRegex = /^\+?[0-9()\s.-]{10,20}$/;
 
     if (!phoneRegex.test(phone)) {

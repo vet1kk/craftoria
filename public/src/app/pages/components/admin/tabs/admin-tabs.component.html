@@ -1,14 +1,18 @@
 <div class="flex w-full flex-wrap gap-2 sm:w-auto">
-  <button type="button"
-          (click)="tabChange.emit('items')"
-          [class]="activeTab() === 'items' ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'"
-          class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none">
-    <span>{{ 'ui.admin.tabItems' | t }}</span>
-  </button>
-  <button type="button"
-          (click)="tabChange.emit('categories')"
-          [class]="activeTab() === 'categories' ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'"
-          class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none">
-    <span>{{ 'ui.admin.tabCategories' | t }}</span>
-  </button>
+  <ui-button type="button"
+             size="md"
+             rounded="default"
+             [variant]="activeTab() === 'items' ? 'secondary' : 'outline'"
+             [className]="'flex-1 sm:flex-none transition-none duration-0'"
+             (click)="tabChange.emit('items')">
+    {{ 'ui.admin.tabItems' | t }}
+  </ui-button>
+  <ui-button type="button"
+             size="md"
+             rounded="default"
+             [variant]="activeTab() === 'categories' ? 'secondary' : 'outline'"
+             [className]="'flex-1 sm:flex-none transition-none duration-0'"
+             (click)="tabChange.emit('categories')">
+    {{ 'ui.admin.tabCategories' | t }}
+  </ui-button>
 </div>

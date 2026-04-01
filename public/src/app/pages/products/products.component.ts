@@ -1,17 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
 import { CatalogHelper } from '../../helpers';
+import { Category, Product, SkeletonGroupConfig } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CartService, I18nService, SettingsApiService } from '../../services';
+import { SkeletonComponent } from '../../ui';
 import { ProductComponent, ProductsCategoryFilterComponent, ProductsHeroComponent } from '../components';
-import { Category, Product } from '../../models';
 
 @Component({
   selector: 'app-products',
   standalone: true,
   templateUrl: './products.component.html',
   styleUrl: './products.component.scss',
-  imports: [ProductsHeroComponent, TranslatePipe, ProductsHeroComponent, ProductsCategoryFilterComponent, ProductComponent],
+  imports: [ProductsHeroComponent, TranslatePipe, ProductsHeroComponent, ProductsCategoryFilterComponent, ProductComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductsComponent {
@@ -45,6 +46,52 @@ export class ProductsComponent {
   });
 
   readonly showCategories = computed(() => this.products().length > 0);
+  readonly emptyProductsMessageKey = computed(() =>
+    this.products().length === 0 ? 'ui.products.emptyCatalog' : 'ui.products.emptyCategory'
+  );
+  readonly productCardsSkeletonGroups: SkeletonGroupConfig[] = [
+    {
+      rowsClassName: 'grid gap-6 sm:grid-cols-2 md:grid-cols-3',
+      rows: [
+        {
+          className: 'rounded-2xl border border-stone-100 bg-white p-3 shadow-sm',
+          center: {
+            className: 'space-y-3',
+            lines: [
+              { widthClass: 'w-full', heightClass: 'h-32', roundedClass: 'rounded-xl', tone: 'muted' },
+              { widthClass: 'w-2/3', heightClass: 'h-4', tone: 'default' },
+              { widthClass: 'w-1/2', heightClass: 'h-3', tone: 'muted' },
+              { widthClass: 'w-24', heightClass: 'h-8', roundedClass: 'rounded-full', tone: 'muted' }
+            ]
+          }
+        },
+        {
+          className: 'rounded-2xl border border-stone-100 bg-white p-3 shadow-sm',
+          center: {
+            className: 'space-y-3',
+            lines: [
+              { widthClass: 'w-full', heightClass: 'h-32', roundedClass: 'rounded-xl', tone: 'muted' },
+              { widthClass: 'w-3/4', heightClass: 'h-4', tone: 'default' },
+              { widthClass: 'w-2/5', heightClass: 'h-3', tone: 'muted' },
+              { widthClass: 'w-24', heightClass: 'h-8', roundedClass: 'rounded-full', tone: 'muted' }
+            ]
+          }
+        },
+        {
+          className: 'rounded-2xl border border-stone-100 bg-white p-3 shadow-sm',
+          center: {
+            className: 'space-y-3',
+            lines: [
+              { widthClass: 'w-full', heightClass: 'h-32', roundedClass: 'rounded-xl', tone: 'muted' },
+              { widthClass: 'w-4/5', heightClass: 'h-4', tone: 'default' },
+              { widthClass: 'w-1/2', heightClass: 'h-3', tone: 'muted' },
+              { widthClass: 'w-24', heightClass: 'h-8', roundedClass: 'rounded-full', tone: 'muted' }
+            ]
+          }
+        }
+      ]
+    }
+  ];
 
   constructor() {
     this.settingsApiService.settings().pipe(take(1)).subscribe((response) => {

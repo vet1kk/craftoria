@@ -37,6 +37,7 @@ export const enTranslations = {
     products: {
       loading: 'Loading the latest menu...',
       errorTitle: 'Unable to load the catalog',
+      emptyCatalog: 'No menu items are available right now.',
       emptyCategory: 'There are no items in this category yet.',
       catalogLoadError: 'Failed to load the catalog.',
       itemLoadError: 'Failed to load the item.',
@@ -173,11 +174,12 @@ export const enTranslations = {
     },
     admin: {
       title: 'Admin panel',
-      loadingCatalog: 'Loading catalog from API...',
+      loadingCatalog: 'Loading catalog from...',
       loadError: 'Failed to load data for admin panel.',
       tabItems: 'Menu',
       tabCategories: 'Categories',
       itemsTitle: 'Menu items',
+      itemsEmpty: 'No products yet.',
       categoriesTitle: 'Categories',
       categoriesEmpty: 'No categories yet.',
       categoryImage: 'category image',

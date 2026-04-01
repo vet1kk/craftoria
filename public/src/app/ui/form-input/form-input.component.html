@@ -1,19 +1,26 @@
 <div>
-  <label class="mb-2 block text-sm font-medium text-stone-700">{{ label() }}</label>
-  <input [type]="type()"
-         [formControl]="control()"
-         [placeholder]="placeholder()"
-         [autocomplete]="autocomplete()"
-         (blur)="inputBlur.emit()"
-         (input)="inputChange.emit()"
-         class="w-full rounded-xl border px-4 py-3 text-stone-800 transition-colors focus:outline-none focus:ring-2"
-         [class.border-stone-200]="!hasError()"
-         [class.focus:border-orange-300]="!hasError()"
-         [class.focus:ring-orange-100]="!hasError()"
-         [class.border-red-300]="hasError()"
-         [class.focus:border-red-400]="hasError()"
-         [class.focus:ring-red-100]="hasError()">
-  @if (hasError() && errorMessage()) {
-    <p class="mt-1 text-sm text-red-600">{{ errorMessage() }}</p>
+  <label class="mb-2 block text-sm font-medium text-stone-700">
+    {{ label() }}
+    @if (required()) {
+      <span class="ml-1 text-red-500">*</span>
+    }
+  </label>
+  <app-verifiable-input [group]="validationGroup()" [field]="validationKey()">
+    <input [type]="type()"
+           [formControl]="control()"
+           [placeholder]="placeholder()"
+           [autocomplete]="autocomplete()"
+           (blur)="onBlur()"
+           (input)="onInput()"
+           class="w-full rounded-xl border px-4 py-3 text-stone-800 transition-colors focus:outline-none focus:ring-2"
+           [class.border-stone-200]="!resolvedHasError()"
+           [class.focus:border-orange-300]="!resolvedHasError()"
+           [class.focus:ring-orange-100]="!resolvedHasError()"
+           [class.border-red-300]="resolvedHasError()"
+           [class.focus:border-red-400]="resolvedHasError()"
+           [class.focus:ring-red-100]="resolvedHasError()">
+  </app-verifiable-input>
+  @if (resolvedHasError() && resolvedErrorMessage()) {
+    <p class="mt-1 text-sm text-red-600">{{ resolvedErrorMessage() }}</p>
   }
 </div>

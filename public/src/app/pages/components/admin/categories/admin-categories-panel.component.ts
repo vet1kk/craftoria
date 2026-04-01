@@ -1,29 +1,41 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, EventEmitter, inject, input, Output, signal } from '@angular/core';
-import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, of, switchMap, take } from 'rxjs';
 
-import { Category, CategoryProductOption, CategoryUpdatePayload, CategoryUpsertPayload } from '../../../../models';
+import { Category, CategoryProductOption, CategoryUpdatePayload, CategoryUpsertPayload, SkeletonGroupConfig } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { ApiErrorHelper, CatalogHelper, FormHelper } from '../../../../helpers';
-import { CategoryApiService, I18nService, ToastService } from '../../../../services';
-import { FormInputComponent } from '../../../../ui';
+import { ApiErrorHelper, CatalogHelper, extractValidationPayload, FormHelper } from '../../../../helpers';
+import { CategoryApiService, I18nService, ToastService, TransitionStateService, ValidationService } from '../../../../services';
+import {
+  ButtonComponent,
+  FormInputComponent,
+  ImagePreviewComponent,
+  LoaderComponent,
+  ModalComponent,
+  SkeletonComponent
+} from '../../../../ui';
 
 @Component({
   selector: 'app-admin-categories-panel',
   standalone: true,
-  imports: [TranslatePipe, ReactiveFormsModule, FormInputComponent, NgTemplateOutlet],
+  imports: [TranslatePipe, ReactiveFormsModule, FormInputComponent, NgTemplateOutlet, ModalComponent, LoaderComponent, ButtonComponent, SkeletonComponent, ImagePreviewComponent],
   templateUrl: './admin-categories-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminCategoriesPanelComponent {
+  readonly formGroupName = 'adminCategoryUpsert';
+
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly i18n = inject(I18nService);
   private readonly categoryApiService = inject(CategoryApiService);
   private readonly apiErrorHelper = inject(ApiErrorHelper);
   private readonly toastService = inject(ToastService);
+  private readonly validationService = inject(ValidationService);
+  private readonly transitionStateService = inject(TransitionStateService);
 
   readonly categories = input.required<Category[]>();
+  readonly isLoading = input(false);
   readonly productOptions = input.required<CategoryProductOption[]>();
   @Output() readonly categoryChanged = new EventEmitter<void>();
 
@@ -33,9 +45,10 @@ export class AdminCategoriesPanelComponent {
   readonly isDeleteModalOpen = signal(false);
   readonly isViewModalOpen = signal(false);
   readonly selectedImageName = signal('');
-  readonly isBusy = signal(false);
-  readonly busyAction = signal<'create' | 'update' | 'delete' | null>(null);
-  readonly actionError = signal('');
+  readonly transition = this.transitionStateService.create<'create' | 'update' | 'delete'>();
+  readonly isBusy = this.transition.isBusy;
+  readonly busyAction = this.transition.action;
+  readonly actionError = this.transition.error;
   readonly categoryForm = this.formBuilder.group({
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
     slug: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
@@ -47,8 +60,87 @@ export class AdminCategoriesPanelComponent {
   });
 
   readonly hasSelection = computed(() => this.selectedCategory() !== null);
+  readonly categoriesSkeletonGroups: SkeletonGroupConfig[] = [
+    {
+      lines: [
+        { widthClass: 'w-40', heightClass: 'h-6', tone: 'default' }
+      ]
+    },
+    {
+      rowsClassName: 'space-y-3',
+      rows: [
+        {
+          className: 'rounded-xl border border-stone-100 p-4',
+          left: {
+            lines: [
+              { widthClass: 'w-16', heightClass: 'h-10', roundedClass: 'rounded-lg', tone: 'muted' }
+            ]
+          },
+          center: {
+            className: 'space-y-2',
+            lines: [
+              { widthClass: 'w-36', heightClass: 'h-4', tone: 'default' },
+              { widthClass: 'w-24', heightClass: 'h-3', tone: 'muted' }
+            ]
+          },
+          right: {
+            lines: [
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' },
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' },
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' }
+            ]
+          }
+        },
+        {
+          className: 'rounded-xl border border-stone-100 p-4',
+          left: {
+            lines: [
+              { widthClass: 'w-16', heightClass: 'h-10', roundedClass: 'rounded-lg', tone: 'muted' }
+            ]
+          },
+          center: {
+            className: 'space-y-2',
+            lines: [
+              { widthClass: 'w-40', heightClass: 'h-4', tone: 'default' },
+              { widthClass: 'w-28', heightClass: 'h-3', tone: 'muted' }
+            ]
+          },
+          right: {
+            lines: [
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' },
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' },
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' }
+            ]
+          }
+        },
+        {
+          className: 'rounded-xl border border-stone-100 p-4',
+          left: {
+            lines: [
+              { widthClass: 'w-16', heightClass: 'h-10', roundedClass: 'rounded-lg', tone: 'muted' }
+            ]
+          },
+          center: {
+            className: 'space-y-2',
+            lines: [
+              { widthClass: 'w-32', heightClass: 'h-4', tone: 'default' },
+              { widthClass: 'w-20', heightClass: 'h-3', tone: 'muted' }
+            ]
+          },
+          right: {
+            lines: [
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' },
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' },
+              { widthClass: 'w-20', heightClass: 'h-9', roundedClass: 'rounded-full', tone: 'muted' }
+            ]
+          }
+        }
+      ]
+    }
+  ];
 
   openCreateModal(): void {
+    this.validationService.clearGroupErrors(this.formGroupName);
     this.selectedCategory.set(null);
     this.selectedImageName.set('');
     this.categoryForm.reset({
@@ -75,6 +167,7 @@ export class AdminCategoriesPanelComponent {
       return;
     }
 
+    this.validationService.clearGroupErrors(this.formGroupName);
     this.selectedCategory.set(target);
     this.selectedImageName.set('');
     this.categoryForm.reset({
@@ -113,7 +206,8 @@ export class AdminCategoriesPanelComponent {
     this.isEditModalOpen.set(false);
     this.isDeleteModalOpen.set(false);
     this.isViewModalOpen.set(false);
-    this.actionError.set('');
+    this.transition.clearError();
+    this.validationService.clearGroupErrors(this.formGroupName);
   }
 
   submitCreate(): void {
@@ -130,9 +224,7 @@ export class AdminCategoriesPanelComponent {
       icon: payload.icon?.trim() ?? null,
     }, ['name', 'slug', 'icon', 'position', 'is_active', 'image']);
 
-    this.isBusy.set(true);
-    this.busyAction.set('create');
-    this.actionError.set('');
+    this.transition.start('create');
 
     this.categoryApiService.create(formData).pipe(
       switchMap((response) => {
@@ -144,8 +236,7 @@ export class AdminCategoriesPanelComponent {
       }),
       take(1),
       finalize(() => {
-        this.isBusy.set(false);
-        this.busyAction.set(null);
+        this.transition.finish();
       })
     ).subscribe({
       next: () => {
@@ -154,8 +245,14 @@ export class AdminCategoriesPanelComponent {
         this.categoryChanged.emit();
       },
       error: (error: unknown) => {
+        const payload = extractValidationPayload(error);
+
+        if (payload?.errors) {
+          this.validationService.setFieldErrors(this.formGroupName, payload.errors);
+        }
+
         const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryCreateError'));
-        this.actionError.set(message);
+        this.transition.fail(message);
         this.toastService.error(message);
       }
     });
@@ -180,9 +277,7 @@ export class AdminCategoriesPanelComponent {
       icon: payload.icon?.trim() ?? null,
     }, ['_method', 'name', 'slug', 'icon', 'position', 'is_active', 'image']);
 
-    this.isBusy.set(true);
-    this.busyAction.set('update');
-    this.actionError.set('');
+    this.transition.start('update');
 
     this.categoryApiService.update(payload.id, formData).pipe(
       switchMap(() => {
@@ -194,8 +289,7 @@ export class AdminCategoriesPanelComponent {
       }),
       take(1),
       finalize(() => {
-        this.isBusy.set(false);
-        this.busyAction.set(null);
+        this.transition.finish();
       })
     ).subscribe({
       next: () => {
@@ -204,8 +298,14 @@ export class AdminCategoriesPanelComponent {
         this.categoryChanged.emit();
       },
       error: (error: unknown) => {
+        const payload = extractValidationPayload(error);
+
+        if (payload?.errors) {
+          this.validationService.setFieldErrors(this.formGroupName, payload.errors);
+        }
+
         const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryUpdateError'));
-        this.actionError.set(message);
+        this.transition.fail(message);
         this.toastService.error(message);
       }
     });
@@ -216,15 +316,12 @@ export class AdminCategoriesPanelComponent {
       return;
     }
 
-    this.isBusy.set(true);
-    this.busyAction.set('delete');
-    this.actionError.set('');
+    this.transition.start('delete');
 
     this.categoryApiService.delete(this.selectedCategory()!.id).pipe(
       take(1),
       finalize(() => {
-        this.isBusy.set(false);
-        this.busyAction.set(null);
+        this.transition.finish();
       })
     ).subscribe({
       next: () => {
@@ -234,7 +331,7 @@ export class AdminCategoriesPanelComponent {
       },
       error: (error: unknown) => {
         const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryDeleteError'));
-        this.actionError.set(message);
+        this.transition.fail(message);
         this.toastService.error(message);
       }
     });
@@ -289,60 +386,6 @@ export class AdminCategoriesPanelComponent {
     const normalizedSelected = [...selectedIds].sort();
 
     return JSON.stringify(normalizedSelected) === JSON.stringify(existingIds);
-  }
-
-  hasStringControlError(control: FormControl<string>): boolean {
-    return control.invalid && (control.touched || control.dirty);
-  }
-
-  getNameError(): string | null {
-    const control = this.categoryForm.controls.name;
-
-    if (!this.hasStringControlError(control)) {
-      return null;
-    }
-
-    if (control.hasError('required')) {
-      return this.i18n.translate('ui.admin.categoryNameRequired');
-    }
-
-    if (control.hasError('maxlength')) {
-      return this.i18n.translate('ui.admin.categoryNameMaxLength');
-    }
-
-    return this.i18n.translate('ui.account.validation.fieldInvalid');
-  }
-
-  getSlugError(): string | null {
-    const control = this.categoryForm.controls.slug;
-
-    if (!this.hasStringControlError(control)) {
-      return null;
-    }
-
-    if (control.hasError('required')) {
-      return this.i18n.translate('ui.admin.categorySlugRequired');
-    }
-
-    if (control.hasError('maxlength')) {
-      return this.i18n.translate('ui.admin.categorySlugMaxLength');
-    }
-
-    return this.i18n.translate('ui.account.validation.fieldInvalid');
-  }
-
-  getIconError(): string | null {
-    const control = this.categoryForm.controls.icon;
-
-    if (!this.hasStringControlError(control)) {
-      return null;
-    }
-
-    if (control.hasError('maxlength')) {
-      return this.i18n.translate('ui.admin.categoryIconMaxLength');
-    }
-
-    return this.i18n.translate('ui.account.validation.fieldInvalid');
   }
 
   syncSlugFromName(): void {

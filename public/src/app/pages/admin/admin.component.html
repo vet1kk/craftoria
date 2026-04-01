@@ -4,11 +4,7 @@
     <app-admin-tabs [activeTab]="activeTab()" (tabChange)="activeTab.set($event)"></app-admin-tabs>
   </div>
 
-  @if (isCatalogLoading() && products().length === 0) {
-    <div class="rounded-2xl border border-stone-200 bg-white px-5 py-10 text-center text-stone-500">
-      {{ 'ui.admin.loadingCatalog' | t }}
-    </div>
-  } @else if (catalogError()) {
+  @if (catalogError() && !isCatalogLoading() && products().length === 0 && categories().length === 0) {
     <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-red-700">
       <p class="font-semibold">{{ 'ui.admin.loadError' | t }}</p>
       <p class="mt-2 text-sm">{{ catalogError() }}</p>
@@ -16,6 +12,7 @@
   } @else {
     @if (activeTab() === 'items') {
       <app-admin-product-panel [products]="products()"
+                               [isLoading]="isCatalogLoading()"
                                [categories]="categories()"
                                [currency]="currency()">
       </app-admin-product-panel>
@@ -23,6 +20,7 @@
 
     @if (activeTab() === 'categories') {
       <app-admin-categories-panel [categories]="editableCategories()"
+                                  [isLoading]="isCatalogLoading() && editableCategories().length === 0"
                                   [productOptions]="categoryProductOptions()"
                                   (categoryChanged)="onCategoryChanged()">
       </app-admin-categories-panel>

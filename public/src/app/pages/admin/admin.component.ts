@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { take } from 'rxjs';
 
 import { CatalogHelper } from '../../helpers';
@@ -17,7 +16,6 @@ import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsCom
 })
 export class AdminComponent {
   private readonly catalogHelper = inject(CatalogHelper);
-  private readonly route = inject(ActivatedRoute);
   private readonly settingsApiService = inject(SettingsApiService);
   private readonly categoryApiService = inject(CategoryApiService);
   readonly categories = signal<Category[]>([]);
@@ -25,9 +23,7 @@ export class AdminComponent {
   readonly isCatalogLoading = signal(false);
   readonly catalogError = signal('');
   readonly currency = signal('');
-  readonly categoryProductOptions = signal<CategoryProductOption[]>(
-    (this.route.snapshot.data['categoryProductOptions'] as CategoryProductOption[] | undefined) ?? []
-  );
+  readonly categoryProductOptions = signal<CategoryProductOption[]>([]);
 
   readonly activeTab = signal<AdminTab>('items');
   readonly editableCategories = computed(() =>
@@ -40,6 +36,7 @@ export class AdminComponent {
     });
 
     this.reloadCatalog();
+    this.reloadCategoryOptions();
   }
 
   onCategoryChanged(): void {
@@ -56,9 +53,6 @@ export class AdminComponent {
       next: (response) => {
         this.categoryProductOptions.set(response.data ?? []);
       },
-      error: () => {
-        // Keep previously loaded options if refresh fails.
-      }
     });
   }
 }

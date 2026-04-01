@@ -1,6 +1,7 @@
-<button type="button"
-        [disabled]="disabled()"
+<button [type]="type()"
+        [disabled]="isDisabled()"
         class="inline-flex items-center justify-center font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+        [ngClass]="className()"
         [class.w-full]="fullWidth()"
         [class.rounded-lg]="rounded() === 'default'"
         [class.rounded-full]="rounded() === 'full'"
@@ -14,20 +15,26 @@
         [class.py-3]="size() === 'lg'"
         [class.text-base]="size() === 'lg'"
         [class.bg-orange-500]="variant() === 'primary'"
-        [class.text-white]="variant() === 'primary' || variant() === 'secondary'"
-        [class.hover:bg-orange-600]="variant() === 'primary' && !disabled()"
+        [class.text-white]="variant() === 'primary' || variant() === 'secondary' || variant() === 'danger'"
+        [class.hover:bg-orange-600]="variant() === 'primary' && !isDisabled()"
         [class.bg-stone-900]="variant() === 'secondary'"
-        [class.hover:bg-stone-800]="variant() === 'secondary' && !disabled()"
+        [class.hover:bg-stone-800]="variant() === 'secondary' && !isDisabled()"
         [class.border]="variant() === 'outline'"
         [class.border-stone-200]="variant() === 'outline'"
         [class.bg-white]="variant() === 'outline'"
         [class.text-stone-700]="variant() === 'outline'"
-        [class.hover:border-orange-200]="variant() === 'outline' && !disabled()"
-        [class.hover:bg-orange-50]="variant() === 'outline' && !disabled()"
-        [class.hover:text-orange-600]="variant() === 'outline' && !disabled()"
+        [class.hover:border-orange-200]="variant() === 'outline' && !isDisabled()"
+        [class.hover:bg-orange-50]="variant() === 'outline' && !isDisabled()"
+        [class.hover:text-orange-600]="variant() === 'outline' && !isDisabled()"
         [class.bg-transparent]="variant() === 'ghost'"
         [class.text-stone-600]="variant() === 'ghost'"
-        [class.hover:bg-stone-100]="variant() === 'ghost' && !disabled()"
-        [class.hover:text-stone-900]="variant() === 'ghost' && !disabled()">
-  <ng-content></ng-content>
+        [class.hover:bg-stone-100]="variant() === 'ghost' && !isDisabled()"
+        [class.hover:text-stone-900]="variant() === 'ghost' && !isDisabled()"
+        [class.bg-red-600]="variant() === 'danger'"
+        [class.hover:bg-red-700]="variant() === 'danger' && !isDisabled()">
+  @if (loading()) {
+    <ui-loader [label]="loadingLabel()" [tone]="loaderTone()"></ui-loader>
+  } @else {
+    <ng-content></ng-content>
+  }
 </button>

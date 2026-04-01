@@ -48,7 +48,7 @@
           }
         </button>
 
-        <a routerLink="/account"
+        <a [routerLink]="userService.isAuthenticated() ? '/profile' : '/account'"
            routerLinkActive="border-stone-800 bg-stone-800 shadow-md"
            #accActive="routerLinkActive"
            class="flex min-w-0 items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 sm:px-4 sm:py-2 sm:text-base">
@@ -118,7 +118,7 @@
   }
 
   @if (isMobile) {
-    <a routerLink="/account" routerLinkActive="bg-stone-800 text-white" (click)="closeMobileMenu()"
+    <a [routerLink]="userService.isAuthenticated() ? '/profile' : '/account'" routerLinkActive="bg-stone-800 text-white" (click)="closeMobileMenu()"
        class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-orange-50 hover:text-orange-600">
       <span>{{ userService.isAuthenticated() ? ('ui.nav.profile' | t) : ('ui.nav.login' | t) }}</span>
       <span class="flex items-center gap-2">

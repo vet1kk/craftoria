@@ -37,6 +37,7 @@ export const uaTranslations = {
     products: {
       loading: 'Завантажуємо актуальне меню...',
       errorTitle: 'Не вдалося отримати каталог',
+      emptyCatalog: 'Наразі позиції меню відсутні.',
       emptyCategory: 'У цій категорії поки немає позицій.',
       catalogLoadError: 'Не вдалося завантажити каталог.',
       itemLoadError: 'Не вдалося завантажити товар.',
@@ -173,11 +174,12 @@ export const uaTranslations = {
     },
     admin: {
       title: 'Панель адміністратора',
-      loadingCatalog: 'Завантажуємо каталог з API...',
+      loadingCatalog: 'Завантажуємо каталог...',
       loadError: 'Не вдалося завантажити дані для адмін-панелі.',
       tabItems: 'Меню',
       tabCategories: 'Категорії',
       itemsTitle: 'Позиції меню',
+      itemsEmpty: 'Позицій меню поки немає.',
       categoriesTitle: 'Категорії',
       categoriesEmpty: 'Категорій поки немає.',
       categoryImage: 'зображення категорії',

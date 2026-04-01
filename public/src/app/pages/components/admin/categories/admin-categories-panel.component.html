@@ -1,22 +1,23 @@
 <div class="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm">
   <div class="flex flex-col items-start gap-2 border-b border-stone-100 bg-stone-50 p-6 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-lg font-bold text-stone-700">{{ 'ui.admin.categoriesTitle' | t }}</h2>
-    <button type="button"
-            [disabled]="isBusy()"
-            (click)="openCreateModal()"
-            class="inline-flex min-w-24 items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60">
-      @if (isBusy() && isCreateModalOpen()) {
-        <span class="inline-flex items-center gap-2">
-          <span class="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-          {{ busyActionLabel() }}
-        </span>
-      } @else {
-        {{ 'ui.admin.categoryCreateAction' | t }}
-      }
-    </button>
+    <ui-button type="button"
+               variant="secondary"
+               rounded="full"
+               [disabled]="isBusy()"
+               (click)="openCreateModal()">
+      {{ 'ui.admin.categoryCreateAction' | t }}
+    </ui-button>
   </div>
 
-  @if (categories().length === 0) {
+  @if (isLoading() && categories().length === 0) {
+    <div class="p-4">
+      <ui-skeleton [containerClass]="'border-0 bg-transparent p-0 shadow-none'"
+                   [pulseClass]="'animate-pulse space-y-4'"
+                   [groups]="categoriesSkeletonGroups">
+      </ui-skeleton>
+    </div>
+  } @else if (categories().length === 0) {
     <div class="p-6 text-sm text-stone-500">{{ 'ui.admin.categoriesEmpty' | t }}</div>
   } @else {
     <div class="divide-y divide-stone-100">
@@ -24,12 +25,15 @@
         <div class="flex flex-col gap-3 p-4 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex min-w-0 items-center gap-3">
             @if (category.image_url) {
-              <img [src]="category.image_url"
-                   [alt]="category.name"
-                   width="48"
-                   height="48"
-                   loading="lazy"
-                   class="h-10 w-16 rounded-lg border border-stone-200 bg-stone-100 object-cover">
+              <ui-image-preview [src]="category.image_url"
+                                [alt]="category.name"
+                                [width]="48"
+                                [height]="48"
+                                [thumbnailClass]="'h-10 w-16 rounded-lg border border-stone-200 bg-stone-100 object-cover'"
+                                [fullImageClass]="'max-h-[85vh] w-full rounded-2xl object-contain'"
+                                [buttonClass]="'inline-flex overflow-hidden rounded-lg transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500'"
+                                modalMaxWidth="2xl">
+              </ui-image-preview>
             } @else {
               <div class="overflow-hidden rounded-lg border border-stone-200 bg-stone-50/70 p-1">
                 <div class="flex h-10 w-16 items-center justify-center opacity-20">
@@ -43,24 +47,30 @@
             </div>
           </div>
           <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
-            <button type="button"
-                    [disabled]="isBusy()"
-                    class="inline-flex min-w-24 flex-1 items-center justify-center rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100 sm:flex-none"
-                    (click)="openViewModal(category)">
+            <ui-button type="button"
+                       variant="outline"
+                       rounded="full"
+                       [disabled]="isBusy()"
+                       [className]="'min-w-24 flex-1 sm:flex-none'"
+                       (click)="openViewModal(category)">
               {{ 'ui.admin.categoryViewAction' | t }}
-            </button>
-            <button type="button"
-                    [disabled]="isBusy()"
-                    class="inline-flex min-w-24 flex-1 items-center justify-center rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
-                    (click)="openEditModal(category)">
+            </ui-button>
+            <ui-button type="button"
+                       variant="outline"
+                       rounded="full"
+                       [disabled]="isBusy()"
+                       [className]="'min-w-24 flex-1 sm:flex-none'"
+                       (click)="openEditModal(category)">
               {{ 'ui.admin.categoryEditAction' | t }}
-            </button>
-            <button type="button"
-                    [disabled]="isBusy()"
-                    class="inline-flex min-w-24 flex-1 items-center justify-center rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
-                    (click)="openDeleteModal(category)">
+            </ui-button>
+            <ui-button type="button"
+                       variant="danger"
+                       rounded="full"
+                       [disabled]="isBusy()"
+                       [className]="'min-w-24 flex-1 sm:flex-none'"
+                       (click)="openDeleteModal(category)">
               {{ 'ui.admin.categoryDeleteAction' | t }}
-            </button>
+            </ui-button>
           </div>
         </div>
       }
@@ -68,26 +78,21 @@
   }
 </div>
 
-@if (isCreateModalOpen() || isEditModalOpen() || isDeleteModalOpen() || isViewModalOpen()) {
-  <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
-    <button type="button"
-            [disabled]="isBusy()"
-            class="absolute inset-0 bg-stone-950/35"
-            (click)="closeModals()"></button>
+<ui-modal [open]="isCreateModalOpen() || isEditModalOpen() || isDeleteModalOpen() || isViewModalOpen()"
+          [disableClose]="isBusy()"
+          (closeRequested)="closeModals()">
+  @if (isViewModalOpen() && selectedCategory()) {
+    <ng-container [ngTemplateOutlet]="viewModalTemplate"></ng-container>
+  }
 
-    @if (isViewModalOpen() && selectedCategory()) {
-      <ng-container [ngTemplateOutlet]="viewModalTemplate"></ng-container>
-    }
+  @if (((isCreateModalOpen() || isEditModalOpen()) && hasSelection()) || isCreateModalOpen()) {
+    <ng-container [ngTemplateOutlet]="upsertModalTemplate"></ng-container>
+  }
 
-    @if (((isCreateModalOpen() || isEditModalOpen()) && hasSelection()) || isCreateModalOpen()) {
-      <ng-container [ngTemplateOutlet]="upsertModalTemplate"></ng-container>
-    }
-
-    @if (isDeleteModalOpen() && selectedCategory()) {
-      <ng-container [ngTemplateOutlet]="deleteModalTemplate"></ng-container>
-    }
-  </div>
-}
+  @if (isDeleteModalOpen() && selectedCategory()) {
+    <ng-container [ngTemplateOutlet]="deleteModalTemplate"></ng-container>
+  }
+</ui-modal>
 
 <ng-template #viewModalTemplate>
   <section class="relative z-10 w-full max-w-2xl rounded-3xl border border-stone-100 bg-white p-5 shadow-sm sm:p-8">
@@ -103,23 +108,94 @@
       </button>
     </div>
 
-    <div class="mt-5 space-y-4 text-sm text-stone-700">
-      <p><span class="font-semibold">{{ 'ui.admin.categoryNameLabel' | t }}:</span> {{ selectedCategory()!.name }}</p>
-      <p><span class="font-semibold">{{ 'ui.admin.categoryIconLabel' | t }}:</span> {{ selectedCategory()!.icon || '-' }}</p>
-      <p><span class="font-semibold">{{ 'ui.admin.categoryPositionLabel' | t }}:</span> {{ selectedCategory()!.position }}</p>
-      <p>
-        <span class="font-semibold">{{ 'ui.admin.categoryActiveLabel' | t }}:</span>
-        {{ selectedCategory()!.is_active ? ('ui.admin.categoryStatusActive' | t) : ('ui.admin.categoryStatusInactive' | t) }}
-      </p>
+    <div class="mt-5 grid gap-4">
+      <label class="grid gap-1 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categoryNameLabel' | t }}</span>
+        <input type="text"
+               [value]="selectedCategory()!.name"
+               readonly
+               class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-800">
+      </label>
+
+      <label class="grid gap-1 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categorySlugLabel' | t }}</span>
+        <input type="text"
+               [value]="selectedCategory()!.slug"
+               readonly
+               class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-800">
+      </label>
+
+      <label class="grid gap-1 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categoryIconLabel' | t }}</span>
+        <input type="text"
+               [value]="selectedCategory()!.icon || '-'"
+               readonly
+               class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-800">
+      </label>
+
+      <label class="grid gap-1 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categoryPositionLabel' | t }}</span>
+        <input type="number"
+               [value]="selectedCategory()!.position"
+               readonly
+               class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-800">
+      </label>
+
+      <div class="grid gap-2 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categoryImageLabel' | t }}</span>
+        @if (selectedCategory()!.image_url) {
+          <ui-image-preview [src]="selectedCategory()!.image_url!"
+                            [alt]="selectedCategory()!.name"
+                            [width]="160"
+                            [height]="120"
+                            [thumbnailClass]="'h-24 w-40 rounded-2xl border border-stone-200 bg-stone-100 object-cover'"
+                            [fullImageClass]="'max-h-[85vh] w-full rounded-2xl object-contain'"
+                            [buttonClass]="'inline-flex w-fit overflow-hidden rounded-2xl transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500'"
+                            modalMaxWidth="2xl">
+          </ui-image-preview>
+        } @else {
+          <div class="flex h-24 w-40 items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-3xl opacity-40">📸</div>
+        }
+      </div>
+
+      <label class="grid gap-1 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categoryImageLabel' | t }} URL</span>
+        <input type="text"
+               [value]="selectedCategory()!.image_url || '-'"
+               readonly
+               class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-700">
+      </label>
+
+      <label class="grid gap-1 text-sm text-stone-600">
+        <span>{{ 'ui.admin.categoryProductsLabel' | t }}</span>
+        <select multiple
+                size="6"
+                disabled
+                class="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-800">
+          @for (option of productOptions(); track option.id) {
+            @if (option.category_id === selectedCategory()!.id) {
+              <option selected>{{ option.name }}</option>
+            }
+          }
+        </select>
+      </label>
+
+      <label class="inline-flex items-center gap-3 text-sm text-stone-700">
+        <input type="checkbox"
+               [checked]="selectedCategory()!.is_active"
+               disabled
+               class="h-5 w-5 rounded-md border border-orange-300 accent-orange-500">
+        <span>{{ 'ui.admin.categoryActiveLabel' | t }}</span>
+      </label>
     </div>
 
     <div class="mt-6 flex flex-wrap justify-end gap-2">
-      <button type="button" class="rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700" (click)="openEditModal()">
+      <ui-button type="button" variant="outline" rounded="full" (click)="openEditModal()">
         {{ 'ui.admin.categoryEditAction' | t }}
-      </button>
-      <button type="button" class="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-600" (click)="openDeleteModal()">
+      </ui-button>
+      <ui-button type="button" variant="danger" rounded="full" (click)="openDeleteModal()">
         {{ 'ui.admin.categoryDeleteAction' | t }}
-      </button>
+      </ui-button>
     </div>
   </section>
 </ng-template>
@@ -131,8 +207,7 @@
     @if (isBusy()) {
       <div class="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-white/75 backdrop-blur-[1px]">
         <div class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm">
-          <span class="inline-block h-4 w-4 rounded-full border-2 border-stone-300 border-t-stone-700 animate-spin"></span>
-          {{ busyActionLabel() }}
+          <ui-loader [label]="busyActionLabel()" tone="dark"></ui-loader>
         </div>
       </div>
     }
@@ -150,22 +225,38 @@
 
     <div class="mt-5 grid gap-4">
       <ui-form-input [label]="'ui.admin.categoryNameLabel' | t"
+                     [required]="true"
                      [control]="categoryForm.controls.name"
-                     [hasError]="hasStringControlError(categoryForm.controls.name)"
-                     [errorMessage]="getNameError()"
+                     [validationGroup]="formGroupName"
+                     validationKey="name"
+                     [validationMessages]="{
+                       required: ('ui.admin.categoryNameRequired' | t),
+                       maxlength: ('ui.admin.categoryNameMaxLength' | t)
+                     }"
+                     [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t"
                      (inputBlur)="syncSlugFromName()">
       </ui-form-input>
 
       <ui-form-input [label]="'ui.admin.categorySlugLabel' | t"
+                     [required]="true"
                      [control]="categoryForm.controls.slug"
-                     [hasError]="hasStringControlError(categoryForm.controls.slug)"
-                     [errorMessage]="getSlugError()">
+                     [validationGroup]="formGroupName"
+                     validationKey="slug"
+                     [validationMessages]="{
+                       required: ('ui.admin.categorySlugRequired' | t),
+                       maxlength: ('ui.admin.categorySlugMaxLength' | t)
+                     }"
+                     [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
       </ui-form-input>
 
       <ui-form-input [label]="'ui.admin.categoryIconLabel' | t"
                      [control]="categoryForm.controls.icon"
-                     [hasError]="hasStringControlError(categoryForm.controls.icon)"
-                     [errorMessage]="getIconError()">
+                     [validationGroup]="formGroupName"
+                     validationKey="icon"
+                     [validationMessages]="{
+                       maxlength: ('ui.admin.categoryIconMaxLength' | t)
+                     }"
+                     [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
       </ui-form-input>
 
       <label class="grid gap-1 text-sm text-stone-600">
@@ -212,21 +303,17 @@
     </div>
 
     <div class="mt-6 flex flex-wrap justify-end gap-2">
-      <button type="button" class="rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700" (click)="closeModals()">
+      <ui-button type="button" variant="outline" rounded="full" (click)="closeModals()">
         {{ 'ui.admin.categoryCancelAction' | t }}
-      </button>
-      <button type="submit"
-              [disabled]="isCreateModalOpen() ? isCreateSubmitDisabled() : isUpdateSubmitDisabled()"
-              class="rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60">
-        @if (isBusy()) {
-          <span class="inline-flex items-center gap-2">
-            <span class="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-            {{ busyActionLabel() }}
-          </span>
-        } @else {
-          {{ isCreateModalOpen() ? ('ui.admin.categoryCreateAction' | t) : ('ui.admin.categorySaveAction' | t) }}
-        }
-      </button>
+      </ui-button>
+      <ui-button type="submit"
+                 variant="secondary"
+                 rounded="full"
+                 [disabled]="isCreateModalOpen() ? isCreateSubmitDisabled() : isUpdateSubmitDisabled()"
+                 [loading]="isBusy()"
+                 [loadingLabel]="busyActionLabel()">
+        {{ isCreateModalOpen() ? ('ui.admin.categoryCreateAction' | t) : ('ui.admin.categorySaveAction' | t) }}
+      </ui-button>
     </div>
   </form>
 </ng-template>
@@ -236,8 +323,7 @@
     @if (isBusy()) {
       <div class="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-white/75 backdrop-blur-[1px]">
         <div class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm">
-          <span class="inline-block h-4 w-4 rounded-full border-2 border-stone-300 border-t-stone-700 animate-spin"></span>
-          {{ busyActionLabel() }}
+          <ui-loader [label]="busyActionLabel()" tone="dark"></ui-loader>
         </div>
       </div>
     }
@@ -254,25 +340,21 @@
       </div>
     }
     <div class="mt-6 flex flex-wrap justify-end gap-2">
-      <button type="button"
-              [disabled]="isBusy()"
-              class="rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-60"
-              (click)="closeModals()">
+      <ui-button type="button"
+                 variant="outline"
+                 rounded="full"
+                 [disabled]="isBusy()"
+                 (click)="closeModals()">
         {{ 'ui.admin.categoryCancelAction' | t }}
-      </button>
-      <button type="button"
-              [disabled]="isBusy()"
-              class="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-              (click)="confirmDelete()">
-        @if (isBusy()) {
-          <span class="inline-flex items-center gap-2">
-            <span class="inline-block h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-            {{ busyActionLabel() }}
-          </span>
-        } @else {
-          {{ 'ui.admin.categoryDeleteAction' | t }}
-        }
-      </button>
+      </ui-button>
+      <ui-button variant="danger"
+                 rounded="full"
+                 [disabled]="isBusy()"
+                 [loading]="isBusy()"
+                 [loadingLabel]="busyActionLabel()"
+                 (click)="confirmDelete()">
+        {{ 'ui.admin.categoryDeleteAction' | t }}
+      </ui-button>
     </div>
   </section>
 </ng-template>

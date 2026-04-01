@@ -3,16 +3,30 @@
     <h2 class="text-lg font-bold text-stone-700">{{ 'ui.admin.itemsTitle' | t }}</h2>
   </div>
 
-  <div>
+  <div class="p-4" [class.hidden]="!(isLoading() && products().length === 0)">
+    <ui-skeleton [containerClass]="'border-0 bg-transparent p-0 shadow-none'"
+                 [pulseClass]="'animate-pulse space-y-3'"
+                 [groups]="productsSkeletonGroups">
+    </ui-skeleton>
+  </div>
+
+  <div [class.hidden]="isLoading() && products().length === 0">
+    @if (!isLoading() && products().length === 0) {
+      <div class="p-6 text-sm text-stone-500">{{ 'ui.admin.itemsEmpty' | t }}</div>
+    }
+
     @for (product of products(); track product.id) {
       <div class="flex flex-col gap-4 p-4 transition-colors hover:bg-stone-50 sm:flex-row sm:items-center">
         @if (product.featured_image_url) {
-          <img [src]="product.featured_image_url"
-               [alt]="product.name"
-               width="120"
-               height="120"
-               loading="lazy"
-               class="h-12 w-12 rounded-lg bg-stone-200 object-cover">
+          <ui-image-preview [src]="product.featured_image_url"
+                            [alt]="product.name"
+                            [width]="120"
+                            [height]="120"
+                            [thumbnailClass]="'h-12 w-12 rounded-lg bg-stone-200 object-cover'"
+                            [fullImageClass]="'max-h-[85vh] w-full rounded-2xl object-contain'"
+                            [buttonClass]="'inline-flex overflow-hidden rounded-lg transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500'"
+                            modalMaxWidth="2xl">
+          </ui-image-preview>
         } @else {
           <div class="aspect-square overflow-hidden rounded-2xl border-stone-200 bg-stone-50/70 p-2">
             <div class="flex w-16 h-16 items-center justify-center opacity-20">

@@ -10,9 +10,10 @@
 
   <div class="max-w-4xl mx-auto px-4 py-8">
     @if (isCatalogLoading() && products().length === 0) {
-      <div class="py-20 text-center text-stone-400">
-        <p class="text-lg">{{ 'ui.products.loading' | t }}</p>
-      </div>
+      <ui-skeleton [containerClass]="'border-0 bg-transparent p-0 shadow-none'"
+                   [pulseClass]="'animate-pulse'"
+                   [groups]="productCardsSkeletonGroups">
+      </ui-skeleton>
     } @else if (catalogError()) {
       <div class="rounded-3xl border border-red-200 bg-red-50 px-5 py-8 text-center text-red-700">
         <p class="text-lg font-semibold">{{ 'ui.products.errorTitle' | t }}</p>
@@ -25,7 +26,7 @@
       </div>
     } @else if (filteredProducts().length === 0) {
       <div class="text-center py-20 text-stone-400">
-        <p class="text-lg">{{ 'ui.products.emptyCategory' | t }}</p>
+        <p class="text-lg">{{ emptyProductsMessageKey() | t }}</p>
       </div>
     } @else {
       <div class="grid md:grid-cols-3 sm:grid-cols-2 gap-6">
