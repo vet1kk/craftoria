@@ -5,11 +5,27 @@ declare(strict_types=1);
 namespace App\Http\Requests\Product;
 
 use App\Http\Requests\AdminRequest;
+use App\Http\Requests\Concerns\GeneratesUniqueSlug;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 
 class ProductStoreRequest extends AdminRequest
 {
+    use GeneratesUniqueSlug;
+
+    /**
+     * @inheritDoc
+     */
+    protected function prepareForValidation(): void
+    {
+        $name = trim((string)$this->input('name', ''));
+
+        $this->merge([
+            'name' => $name,
+            'slug' => $this->generateUniqueSlug('products', $name),
+        ]);
+    }
+
     /**
      * Get the validation rules for the request.
      *

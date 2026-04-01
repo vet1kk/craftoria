@@ -4,7 +4,7 @@ import { finalize, take } from 'rxjs';
 
 import { Category, Product, ProductUpdatePayload, ProductUpsertPayload, SkeletonGroupConfig } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { ApiErrorHelper, CatalogHelper, extractValidationPayload, FormHelper } from '../../../../helpers';
+import { ApiErrorHelper, extractValidationPayload, FormHelper } from '../../../../helpers';
 import { I18nService, ProductApiService, ToastService, TransitionStateService, ValidationService } from '../../../../services';
 import { ButtonComponent, ImagePreviewComponent, ModalComponent, SkeletonComponent } from '../../../../ui';
 import { AdminProductDeleteModalComponent } from './components/admin-product-delete-modal/admin-product-delete-modal.component';
@@ -58,7 +58,6 @@ export class AdminProductPanelComponent {
   readonly productForm = this.formBuilder.group({
     category_id: this.formBuilder.control('', [Validators.required]),
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
-    slug: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
     sku: this.formBuilder.control('', [Validators.maxLength(255)]),
     description: this.formBuilder.control('', [Validators.required]),
     price: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
@@ -146,7 +145,6 @@ export class AdminProductPanelComponent {
     this.productForm.reset({
       category_id: this.categories()[0]?.id ?? '',
       name: '',
-      slug: '',
       sku: '',
       description: '',
       price: 0,
@@ -180,7 +178,6 @@ export class AdminProductPanelComponent {
     this.productForm.reset({
       category_id: target.category_id,
       name: target.name,
-      slug: target.slug,
       sku: target.sku ?? '',
       description: target.description,
       price: Number(target.price),
@@ -231,14 +228,12 @@ export class AdminProductPanelComponent {
     const formData = FormHelper.objectToFormData({
       ...payload,
       name: payload.name.trim(),
-      slug: payload.slug.trim(),
       sku: payload.sku?.trim() ?? null,
       shelf_life: payload.shelf_life?.trim() ?? null,
       description: payload.description.trim(),
     }, [
       'category_id',
       'name',
-      'slug',
       'sku',
       'description',
       'price',
@@ -293,7 +288,6 @@ export class AdminProductPanelComponent {
       ...payload,
       _method: 'PUT',
       name: payload.name.trim(),
-      slug: payload.slug.trim(),
       sku: payload.sku?.trim() ?? null,
       shelf_life: payload.shelf_life?.trim() ?? null,
       description: payload.description.trim(),
@@ -301,7 +295,6 @@ export class AdminProductPanelComponent {
       '_method',
       'category_id',
       'name',
-      'slug',
       'sku',
       'description',
       'price',
@@ -379,12 +372,6 @@ export class AdminProductPanelComponent {
     return this.categoriesById().get(categoryId) ?? this.i18n.translate('ui.admin.unknownCategory');
   }
 
-  syncSlugFromName(): void {
-    const name = this.productForm.controls.name.value;
-
-    this.productForm.controls.slug.setValue(CatalogHelper.toSlug(name));
-  }
-
   handleImageSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
@@ -419,7 +406,6 @@ export class AdminProductPanelComponent {
 
     return value.category_id !== selectedProduct.category_id
       || value.name.trim() !== selectedProduct.name
-      || value.slug.trim() !== selectedProduct.slug
       || (value.sku?.trim() ? value.sku.trim() : null) !== (selectedProduct.sku ?? null)
       || value.description.trim() !== selectedProduct.description
       || Number(value.price) !== Number(selectedProduct.price)
@@ -438,7 +424,6 @@ export class AdminProductPanelComponent {
     return {
       category_id: formData.category_id,
       name: formData.name.trim(),
-      slug: formData.slug.trim(),
       sku: formData.sku?.trim() ? formData.sku.trim() : null,
       description: formData.description.trim(),
       price: Number(formData.price),

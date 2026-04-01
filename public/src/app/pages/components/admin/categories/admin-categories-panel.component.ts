@@ -12,7 +12,7 @@ import {
   SkeletonGroupConfig
 } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { ApiErrorHelper, CatalogHelper, extractValidationPayload, FormHelper } from '../../../../helpers';
+import { ApiErrorHelper, extractValidationPayload, FormHelper } from '../../../../helpers';
 import { CategoryApiService, I18nService, ToastService, TransitionStateService, ValidationService } from '../../../../services';
 import {
   ButtonComponent,
@@ -60,7 +60,6 @@ export class AdminCategoriesPanelComponent {
   readonly viewProductsControl = this.formBuilder.control<string[]>({ value: [], disabled: true });
   readonly categoryForm = this.formBuilder.group({
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
-    slug: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
     icon: this.formBuilder.control('', [Validators.maxLength(255)]),
     position: this.formBuilder.control(0, [Validators.min(0)]),
     is_active: this.formBuilder.control(true),
@@ -158,7 +157,6 @@ export class AdminCategoriesPanelComponent {
     this.selectedImageName.set('');
     this.categoryForm.reset({
       name: '',
-      slug: '',
       icon: '',
       position: this.categories().length,
       is_active: true,
@@ -189,7 +187,6 @@ export class AdminCategoriesPanelComponent {
     this.selectedImageName.set('');
     this.categoryForm.reset({
       name: target.name,
-      slug: target.slug,
       icon: target.icon ?? '',
       position: target.position,
       is_active: target.is_active,
@@ -237,9 +234,8 @@ export class AdminCategoriesPanelComponent {
     const formData = FormHelper.objectToFormData({
       ...payload,
       name: payload.name.trim(),
-      slug: payload.slug.trim(),
       icon: payload.icon?.trim() ?? null,
-    }, ['name', 'slug', 'icon', 'position', 'is_active', 'image']);
+    }, ['name', 'icon', 'position', 'is_active', 'image']);
 
     this.transition.start('create');
 
@@ -290,9 +286,8 @@ export class AdminCategoriesPanelComponent {
       ...payload,
       _method: 'PUT',
       name: payload.name.trim(),
-      slug: payload.slug.trim(),
       icon: payload.icon?.trim() ?? null,
-    }, ['_method', 'name', 'slug', 'icon', 'position', 'is_active', 'image']);
+    }, ['_method', 'name', 'icon', 'position', 'is_active', 'image']);
 
     this.transition.start('update');
 
@@ -374,14 +369,12 @@ export class AdminCategoriesPanelComponent {
     const hasImageChange = value.image instanceof File;
 
     return value.name.trim() !== selectedCategory.name
-      || value.slug.trim() !== selectedCategory.slug
       || (value.icon?.trim() ? value.icon.trim() : null) !== (selectedCategory.icon ?? null)
       || value.position !== selectedCategory.position
       || value.is_active !== selectedCategory.is_active
       || !this.isSameProductSelection(value.product_ids, selectedCategory.id)
       || hasImageChange;
   }
-
 
   private isSameProductSelection(selectedIds: string[], categoryId: string): boolean {
     const existingIds = this.productOptions()
@@ -392,12 +385,6 @@ export class AdminCategoriesPanelComponent {
     const normalizedSelected = [...selectedIds].sort();
 
     return JSON.stringify(normalizedSelected) === JSON.stringify(existingIds);
-  }
-
-  syncSlugFromName(): void {
-    const name = this.categoryForm.controls.name.value;
-
-    this.categoryForm.controls.slug.setValue(CatalogHelper.toSlug(name));
   }
 
   handleImageSelect(event: Event): void {
@@ -426,7 +413,6 @@ export class AdminCategoriesPanelComponent {
 
     return {
       name: formData.name.trim(),
-      slug: formData.slug.trim(),
       icon: formData.icon?.trim() ? formData.icon.trim() : null,
       position: formData.position,
       is_active: formData.is_active,

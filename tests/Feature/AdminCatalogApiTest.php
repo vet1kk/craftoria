@@ -22,7 +22,6 @@ class AdminCatalogApiTest extends TestCase
 
         $categoryResponse = $this->postJson('/api/categories', [
             'name' => 'Desserts',
-            'slug' => 'desserts',
             'icon' => 'cake',
             'image_url' => 'https://example.com/desserts.jpg',
             'position' => 2,
@@ -34,6 +33,15 @@ class AdminCatalogApiTest extends TestCase
             ->assertJsonPath('data.slug', 'desserts');
 
         $category = Category::query()->where('slug', 'desserts')->firstOrFail();
+
+        $this->postJson('/api/categories', [
+            'name' => 'Desserts',
+            'icon' => 'cake-2',
+            'position' => 6,
+            'is_active' => true,
+        ])
+             ->assertCreated()
+             ->assertJsonPath('data.slug', 'desserts-1');
 
         $ingredientResponse = $this->postJson('/api/ingredients', [
             'name' => 'Chocolate',
@@ -56,7 +64,6 @@ class AdminCatalogApiTest extends TestCase
         $productResponse = $this->postJson('/api/products', [
             'category_id' => $category->getKey(),
             'name' => 'Chocolate Cake',
-            'slug' => 'chocolate-cake',
             'sku' => 'CAKE-001',
             'description' => 'Rich cake.',
             'price' => 420,
@@ -75,10 +82,20 @@ class AdminCatalogApiTest extends TestCase
 
         $product = Product::query()->where('slug', 'chocolate-cake')->firstOrFail();
 
+        $this->postJson('/api/products', [
+            'category_id' => $category->getKey(),
+            'name' => 'Chocolate Cake',
+            'description' => 'Another one.',
+            'price' => 390,
+            'is_active' => true,
+            'is_available' => true,
+        ])
+             ->assertCreated()
+             ->assertJsonPath('data.slug', 'chocolate-cake-1');
+
         $this->putJson("/api/products/{$product->getKey()}", [
             'category_id' => $category->getKey(),
             'name' => 'Chocolate Cake Deluxe',
-            'slug' => 'chocolate-cake-deluxe',
             'sku' => 'CAKE-002',
             'description' => 'Even richer cake.',
             'price' => 480,
@@ -102,7 +119,6 @@ class AdminCatalogApiTest extends TestCase
 
         $this->putJson("/api/categories/{$category->getKey()}", [
             'name' => 'Desserts Updated',
-            'slug' => 'desserts-updated',
             'position' => 5,
             'is_active' => false,
         ])->assertOk();

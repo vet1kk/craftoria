@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests\Category;
 
 use App\Http\Requests\AdminRequest;
+use App\Http\Requests\Concerns\GeneratesUniqueSlug;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 
 class CategoryUpsertRequest extends AdminRequest
 {
+    use GeneratesUniqueSlug;
+
     /**
      * Get the validation rules for the request.
      *
@@ -42,7 +45,12 @@ class CategoryUpsertRequest extends AdminRequest
      */
     protected function prepareForValidation(): void
     {
+        $name = trim((string)$this->input('name', ''));
+        $categoryId = $this->route('category')?->getKey();
+
         $this->merge([
+            'name' => $name,
+            'slug' => $this->generateUniqueSlug('categories', $name, $categoryId),
             'is_active' => $this->boolean('is_active'),
             'position' => $this->integer('position'),
         ]);

@@ -42,19 +42,6 @@
                      required: ('ui.admin.productNameRequired' | t),
                      maxlength: ('ui.admin.productNameMaxLength' | t)
                    }"
-                     [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t"
-                     (inputBlur)="slugSyncRequested.emit()">
-      </ui-form-input>
-
-      <ui-form-input [label]="'ui.admin.productSlugLabel' | t"
-                     [required]="true"
-                     [control]="controls(form)['slug']"
-                     [validationGroup]="validationGroup()"
-                     validationKey="slug"
-                     [validationMessages]="{
-                     required: ('ui.admin.productSlugRequired' | t),
-                     maxlength: ('ui.admin.productSlugMaxLength' | t)
-                   }"
                      [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
       </ui-form-input>
 

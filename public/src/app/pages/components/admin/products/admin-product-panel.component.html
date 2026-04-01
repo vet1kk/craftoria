@@ -113,7 +113,6 @@
                                     [isUpdateSubmitDisabled]="isUpdateSubmitDisabled()"
                                     (closeRequested)="closeModals()"
                                     (submitRequested)="isCreateModalOpen() ? submitCreate() : submitUpdate()"
-                                    (slugSyncRequested)="syncSlugFromName()"
                                     (imageSelect)="handleImageSelect($event)">
     </app-admin-product-upsert-modal>
   }

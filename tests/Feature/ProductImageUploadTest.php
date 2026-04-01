@@ -28,7 +28,6 @@ class ProductImageUploadTest extends TestCase
             'category_id' => $category->id,
             'name' => 'Uploaded Cake',
             'description' => 'A delicious cake.',
-            'slug' => 'uploaded-cake',
             'sku' => 'UPL-001',
             'price' => 500,
             'featured_image' => $image,
@@ -51,7 +50,6 @@ class ProductImageUploadTest extends TestCase
             'category_id' => $category->id,
             'name' => 'Uploaded Cake',
             'description' => 'A delicious cake.',
-            'slug' => 'uploaded-cake',
             'sku' => 'UPL-001',
             'price' => 500,
             'featured_image' => $image,
@@ -69,7 +67,6 @@ class ProductImageUploadTest extends TestCase
         $image1 = UploadedFile::fake()->image('first.png');
         $this->actingAs($admin, 'api')->postJson('/api/products', [
             'name' => 'Cake',
-            'slug' => 'cake',
             'description' => 'A delicious cake.',
             'category_id' => $category->id,
             'price' => 100,

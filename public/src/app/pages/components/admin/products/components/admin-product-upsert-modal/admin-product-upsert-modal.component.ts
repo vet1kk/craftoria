@@ -26,7 +26,6 @@ export class AdminProductUpsertModalComponent {
 
   readonly closeRequested = output<void>();
   readonly submitRequested = output<void>();
-  readonly slugSyncRequested = output<void>();
   readonly imageSelect = output<Event>();
 
   readonly categoryOptions = computed<SelectOption[]>(() => this.categories().map((category) => ({

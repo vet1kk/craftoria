@@ -226,19 +226,6 @@
                        required: ('ui.admin.categoryNameRequired' | t),
                        maxlength: ('ui.admin.categoryNameMaxLength' | t)
                      }"
-                     [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t"
-                     (inputBlur)="syncSlugFromName()">
-      </ui-form-input>
-
-      <ui-form-input [label]="'ui.admin.categorySlugLabel' | t"
-                     [required]="true"
-                     [control]="categoryForm.controls.slug"
-                     [validationGroup]="formGroupName"
-                     validationKey="slug"
-                     [validationMessages]="{
-                       required: ('ui.admin.categorySlugRequired' | t),
-                       maxlength: ('ui.admin.categorySlugMaxLength' | t)
-                     }"
                      [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
       </ui-form-input>
 

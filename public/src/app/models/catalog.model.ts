@@ -10,7 +10,6 @@ export interface Category {
 
 export interface CategoryUpsertPayload {
   name: string;
-  slug: string;
   icon: string | null;
   position: number;
   is_active: boolean;
@@ -90,6 +89,25 @@ export interface Product {
   nutrition_totals: NutritionFacts;
   created_at?: string | null;
   updated_at?: string | null;
+}
+
+export interface ProductUpsertPayload {
+  category_id: string;
+  name: string;
+  sku: string | null;
+  description: string;
+  price: number;
+  featured_image: File | null;
+  shelf_life: string | null;
+  position: number;
+  stock_quantity: number;
+  reorder_level: number;
+  is_active: boolean;
+  is_available: boolean;
+}
+
+export interface ProductUpdatePayload extends ProductUpsertPayload {
+  id: string;
 }
 
 export interface Metadata {
