@@ -166,19 +166,12 @@
                class="w-full rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-stone-700">
       </label>
 
-      <label class="grid gap-1 text-sm text-stone-600">
-        <span>{{ 'ui.admin.categoryProductsLabel' | t }}</span>
-        <select multiple
-                size="6"
-                disabled
-                class="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-800">
-          @for (option of productOptions(); track option.id) {
-            @if (option.category_id === selectedCategory()!.id) {
-              <option selected>{{ option.name }}</option>
-            }
-          }
-        </select>
-      </label>
+      <ui-form-select [label]="'ui.admin.categoryProductsLabel' | t"
+                      [control]="viewProductsControl"
+                      [options]="allProductOptions()"
+                      [multiple]="true"
+                      [size]="6">
+      </ui-form-select>
 
       <label class="inline-flex items-center gap-3 text-sm text-stone-700">
         <input type="checkbox"
@@ -274,19 +267,12 @@
         }
       </label>
 
-      <label class="grid gap-1 text-sm text-stone-600">
-        <span>{{ 'ui.admin.categoryProductsLabel' | t }}</span>
-        <select multiple
-                size="6"
-                (change)="onProductSelectionChange($event)"
-                class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
-          @for (option of productOptions(); track option.id) {
-            <option [value]="option.id" [selected]="isProductSelected(option.id)">
-              {{ option.name }}
-            </option>
-          }
-        </select>
-      </label>
+      <ui-form-select [label]="'ui.admin.categoryProductsLabel' | t"
+                      [control]="categoryForm.controls.product_ids"
+                      [options]="allProductOptions()"
+                      [multiple]="true"
+                      [size]="6">
+      </ui-form-select>
 
       <label class="inline-flex items-center gap-3 text-sm text-stone-700">
         <input type="checkbox"

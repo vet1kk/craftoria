@@ -3,13 +3,21 @@ import { ChangeDetectionStrategy, Component, computed, EventEmitter, inject, inp
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, of, switchMap, take } from 'rxjs';
 
-import { Category, CategoryProductOption, CategoryUpdatePayload, CategoryUpsertPayload, SkeletonGroupConfig } from '../../../../models';
+import {
+  Category,
+  CategoryProductOption,
+  CategoryUpdatePayload,
+  CategoryUpsertPayload,
+  SelectOption,
+  SkeletonGroupConfig
+} from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 import { ApiErrorHelper, CatalogHelper, extractValidationPayload, FormHelper } from '../../../../helpers';
 import { CategoryApiService, I18nService, ToastService, TransitionStateService, ValidationService } from '../../../../services';
 import {
   ButtonComponent,
   FormInputComponent,
+  FormSelectComponent,
   ImagePreviewComponent,
   LoaderComponent,
   ModalComponent,
@@ -19,7 +27,7 @@ import {
 @Component({
   selector: 'app-admin-categories-panel',
   standalone: true,
-  imports: [TranslatePipe, ReactiveFormsModule, FormInputComponent, NgTemplateOutlet, ModalComponent, LoaderComponent, ButtonComponent, SkeletonComponent, ImagePreviewComponent],
+  imports: [TranslatePipe, ReactiveFormsModule, FormInputComponent, FormSelectComponent, NgTemplateOutlet, ModalComponent, LoaderComponent, ButtonComponent, SkeletonComponent, ImagePreviewComponent],
   templateUrl: './admin-categories-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -49,6 +57,7 @@ export class AdminCategoriesPanelComponent {
   readonly isBusy = this.transition.isBusy;
   readonly busyAction = this.transition.action;
   readonly actionError = this.transition.error;
+  readonly viewProductsControl = this.formBuilder.control<string[]>({ value: [], disabled: true });
   readonly categoryForm = this.formBuilder.group({
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
     slug: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
@@ -60,6 +69,10 @@ export class AdminCategoriesPanelComponent {
   });
 
   readonly hasSelection = computed(() => this.selectedCategory() !== null);
+  readonly allProductOptions = computed<SelectOption[]>(() => this.productOptions().map((option) => ({
+    value: option.id,
+    label: option.name
+  })));
   readonly categoriesSkeletonGroups: SkeletonGroupConfig[] = [
     {
       lines: [
@@ -157,6 +170,10 @@ export class AdminCategoriesPanelComponent {
 
   openViewModal(category: Category): void {
     this.selectedCategory.set(category);
+    const selectedIds = this.productOptions()
+      .filter((option) => option.category_id === category.id)
+      .map((option) => option.id);
+    this.viewProductsControl.setValue(selectedIds);
     this.isViewModalOpen.set(true);
   }
 
@@ -365,17 +382,6 @@ export class AdminCategoriesPanelComponent {
       || hasImageChange;
   }
 
-  onProductSelectionChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const selectedIds = Array.from(select.selectedOptions).map((option) => option.value);
-
-    this.categoryForm.controls.product_ids.setValue(selectedIds);
-    this.categoryForm.controls.product_ids.markAsDirty();
-  }
-
-  isProductSelected(productId: string): boolean {
-    return this.categoryForm.controls.product_ids.value.includes(productId);
-  }
 
   private isSameProductSelection(selectedIds: string[], categoryId: string): boolean {
     const existingIds = this.productOptions()

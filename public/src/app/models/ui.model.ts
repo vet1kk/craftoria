@@ -34,3 +34,10 @@ export type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export type InputType = 'text' | 'email' | 'password' | 'tel' | 'number';
+export type SelectValue = string | number;
+
+export interface SelectOption {
+  value: SelectValue;
+  label: string;
+  disabled?: boolean;
+}

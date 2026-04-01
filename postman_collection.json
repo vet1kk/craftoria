@@ -1,32 +1,12 @@
 {
   "info": {
     "name": "Craftoria API",
-    "description": "API collection for Craftoria application. For protected routes, first call 'Get Session' to get CSRF token, then 'Login' to authenticate. Postman will automatically store cookies.",
+    "description": "API collection for Craftoria. Auth uses JWT bearer tokens. Run Login or Register first to save {{jwt_token}} automatically.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
     "type": "noauth"
   },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          ""
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          ""
-        ]
-      }
-    }
-  ],
   "item": [
     {
       "name": "Health",
@@ -35,69 +15,17 @@
           "name": "Health Check (Root)",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                ""
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/"
           }
         },
         {
           "name": "Health Check",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/health",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "health"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Settings",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/settings",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "settings"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Auth",
-      "description": "Authentication workflow: 1) Get Session (to initialize cookies), 2) Login/Register (authenticates and sets session cookie). Cookies are stored automatically by Postman.",
-      "item": [
-        {
-          "name": "Get Session",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Session initialized - cookies stored automatically"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "header": [
@@ -106,16 +34,44 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{base_url}}/session",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "session"
-              ]
-            },
-            "description": "Initialize session and get CSRF token. Call this first before login/register."
+            "url": "{{base_url}}/health"
+          }
+        },
+        {
+          "name": "Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "JWT authentication flow",
+      "item": [
+        {
+          "name": "Session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "disabled": true
+              }
+            ],
+            "url": "{{base_url}}/session"
           }
         },
         {
@@ -126,7 +82,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// User registered and authenticated - session cookie stored"
+                  "const json = pm.response.json();",
+                  "const token = json?.data?.access_token;",
+                  "if (token) {",
+                  "  pm.collectionVariables.set('jwt_token', token);",
+                  "}",
+                  "const userId = json?.data?.user?.id;",
+                  "if (userId) {",
+                  "  pm.collectionVariables.set('user_id', userId);",
+                  "}"
                 ]
               }
             }
@@ -145,18 +109,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+380501234567\",\n  \"password\": \"password123\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "register"
-              ]
-            },
-            "description": "Register new user and authenticate. Session cookie will be stored automatically."
+            "url": "{{base_url}}/register"
           }
         },
         {
@@ -167,7 +122,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// User authenticated - session cookie stored"
+                  "const json = pm.response.json();",
+                  "const token = json?.data?.access_token;",
+                  "if (token) {",
+                  "  pm.collectionVariables.set('jwt_token', token);",
+                  "}"
                 ]
               }
             }
@@ -188,16 +147,39 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "login"
-              ]
-            },
-            "description": "Login and authenticate. Session cookie will be stored automatically."
+            "url": "{{base_url}}/login"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const token = json?.data?.access_token;",
+                  "if (token) {",
+                  "  pm.collectionVariables.set('jwt_token', token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/refresh"
           }
         },
         {
@@ -208,25 +190,19 @@
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
-            "url": {
-              "raw": "{{base_url}}/logout",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "logout"
-              ]
-            },
-            "description": "Logout and destroy session. Requires authentication."
+            "url": "{{base_url}}/logout"
           }
         }
       ]
     },
     {
       "name": "Profile",
-      "description": "User profile endpoints. Requires authentication - login first.",
       "item": [
         {
           "name": "Get Profile",
@@ -236,18 +212,13 @@
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
-            "url": {
-              "raw": "{{base_url}}/profile",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "profile"
-              ]
-            },
-            "description": "Get authenticated user profile. Requires authentication."
+            "url": "{{base_url}}/profile"
           }
         },
         {
@@ -262,22 +233,34 @@
               {
                 "key": "Accept",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\"\n}"
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"phone\": \"+380501112233\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/profile",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "profile"
-              ]
-            },
-            "description": "Update authenticated user profile. Requires authentication."
+            "url": "{{base_url}}/profile"
+          }
+        },
+        {
+          "name": "Get Profile Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/profile/orders"
           }
         }
       ]
@@ -289,39 +272,43 @@
           "name": "List Categories",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/categories",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "categories"
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/categories"
           }
         },
         {
-          "name": "Get Category",
+          "name": "Get Category by Slug",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/categories/:slug",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "categories",
-                ":slug"
-              ],
-              "variable": [
-                {
-                  "key": "slug",
-                  "value": "beverages"
-                }
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/categories/{{category_slug}}"
+          }
+        },
+        {
+          "name": "Category Product Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/categories/options"
           }
         },
         {
@@ -332,21 +319,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Beverages\",\n  \"description\": \"Hot and cold drinks\"\n}"
+              "raw": "{\n  \"name\": \"Beverages\",\n  \"slug\": \"beverages\",\n  \"icon\": \"cup\",\n  \"position\": 0,\n  \"is_active\": true\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/categories",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "categories"
-              ]
-            }
+            "url": "{{base_url}}/categories"
           }
         },
         {
@@ -357,28 +344,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Hot Beverages\",\n  \"description\": \"Hot drinks only\"\n}"
+              "raw": "{\n  \"name\": \"Hot Beverages\",\n  \"slug\": \"hot-beverages\",\n  \"is_active\": true\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/categories/:category",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "categories",
-                ":category"
-              ],
-              "variable": [
-                {
-                  "key": "category",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/categories/{{category_id}}"
           }
         },
         {
@@ -389,51 +369,63 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Hot Beverages\"\n}"
+              "raw": "{\n  \"icon\": \"mug-hot\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/categories/:category",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "categories",
-                ":category"
-              ],
-              "variable": [
-                {
-                  "key": "category",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/categories/{{category_id}}"
+          }
+        },
+        {
+          "name": "Assign Products to Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_ids\": [\n    \"{{product_id}}\"\n  ]\n}"
+            },
+            "url": "{{base_url}}/categories/{{category_id}}/products"
           }
         },
         {
           "name": "Delete Category",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/categories/:category",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "categories",
-                ":category"
-              ],
-              "variable": [
-                {
-                  "key": "category",
-                  "value": "1"
-                }
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/categories/{{category_id}}"
           }
         }
       ]
@@ -445,39 +437,26 @@
           "name": "List Products",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/products"
           }
         },
         {
-          "name": "Get Product",
+          "name": "Get Product by Slug",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/:slug",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":slug"
-              ],
-              "variable": [
-                {
-                  "key": "slug",
-                  "value": "cappuccino"
-                }
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/products/{{product_slug}}"
           }
         },
         {
@@ -488,21 +467,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Cappuccino\",\n  \"description\": \"Classic Italian coffee\",\n  \"price\": 4.50,\n  \"category_id\": 1\n}"
+              "raw": "{\n  \"category_id\": \"{{category_id}}\",\n  \"name\": \"Cappuccino\",\n  \"slug\": \"cappuccino\",\n  \"sku\": \"CAP-001\",\n  \"description\": \"Classic Italian coffee\",\n  \"price\": 4.5,\n  \"shelf_life\": \"24h\",\n  \"position\": 0,\n  \"stock_quantity\": 20,\n  \"reorder_level\": 5,\n  \"is_active\": true,\n  \"is_available\": true\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/products",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
+            "url": "{{base_url}}/products"
           }
         },
         {
@@ -513,28 +492,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Cappuccino Grande\",\n  \"description\": \"Large Italian coffee\",\n  \"price\": 5.50,\n  \"category_id\": 1\n}"
+              "raw": "{\n  \"category_id\": \"{{category_id}}\",\n  \"name\": \"Cappuccino Grande\",\n  \"slug\": \"cappuccino-grande\",\n  \"description\": \"Large coffee\",\n  \"price\": 5.5,\n  \"is_available\": true\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/products/:product",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/products/{{product_id}}"
           }
         },
         {
@@ -545,51 +517,38 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"price\": 5.99\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/products/:product",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/products/{{product_id}}"
           }
         },
         {
           "name": "Delete Product",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/:product",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                }
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/products/{{product_id}}"
           }
         }
       ]
@@ -601,39 +560,34 @@
           "name": "List Ingredients",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/ingredients",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ingredients"
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/ingredients"
           }
         },
         {
           "name": "Get Ingredient",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/ingredients/:ingredient",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ingredients",
-                ":ingredient"
-              ],
-              "variable": [
-                {
-                  "key": "ingredient",
-                  "value": "1"
-                }
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/ingredients/{{ingredient_id}}"
           }
         },
         {
@@ -644,21 +598,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Espresso\",\n  \"unit\": \"ml\"\n}"
+              "raw": "{\n  \"name\": \"Espresso\",\n  \"slug\": \"espresso\",\n  \"unit\": \"ml\",\n  \"calories\": 2,\n  \"is_active\": true\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/ingredients",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ingredients"
-              ]
-            }
+            "url": "{{base_url}}/ingredients"
           }
         },
         {
@@ -669,28 +623,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Double Espresso\",\n  \"unit\": \"ml\"\n}"
+              "raw": "{\n  \"name\": \"Double Espresso\",\n  \"slug\": \"double-espresso\",\n  \"unit\": \"ml\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/ingredients/:ingredient",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ingredients",
-                ":ingredient"
-              ],
-              "variable": [
-                {
-                  "key": "ingredient",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/ingredients/{{ingredient_id}}"
           }
         },
         {
@@ -701,261 +648,38 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"unit\": \"shot\"\n}"
+              "raw": "{\n  \"is_active\": false\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/ingredients/:ingredient",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ingredients",
-                ":ingredient"
-              ],
-              "variable": [
-                {
-                  "key": "ingredient",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/ingredients/{{ingredient_id}}"
           }
         },
         {
           "name": "Delete Ingredient",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/ingredients/:ingredient",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "ingredients",
-                ":ingredient"
-              ],
-              "variable": [
-                {
-                  "key": "ingredient",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Product Ingredients",
-      "item": [
-        {
-          "name": "Add Ingredient to Product",
-          "request": {
-            "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
+                "key": "Accept",
                 "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ingredient_id\": 1,\n  \"quantity\": 30\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/products/:product/ingredients",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product",
-                "ingredients"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Update Product Ingredient",
-          "request": {
-            "method": "PUT",
-            "header": [
+              },
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 60\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/products/:product/ingredients/:product_ingredient",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product",
-                "ingredients",
-                ":product_ingredient"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                },
-                {
-                  "key": "product_ingredient",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Remove Ingredient from Product",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/:product/ingredients/:product_ingredient",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product",
-                "ingredients",
-                ":product_ingredient"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                },
-                {
-                  "key": "product_ingredient",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Product Metadata",
-      "item": [
-        {
-          "name": "Add Metadata to Product",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"key\": \"calories\",\n  \"value\": \"150\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/products/:product/metadata",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product",
-                "metadata"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Update Product Metadata",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"key\": \"calories\",\n  \"value\": \"180\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/products/:product/metadata/:metadata",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product",
-                "metadata",
-                ":metadata"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                },
-                {
-                  "key": "metadata",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Delete Product Metadata",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/:product/metadata/:metadata",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "products",
-                ":product",
-                "metadata",
-                ":metadata"
-              ],
-              "variable": [
-                {
-                  "key": "product",
-                  "value": "1"
-                },
-                {
-                  "key": "metadata",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/ingredients/{{ingredient_id}}"
           }
         }
       ]
@@ -964,67 +688,58 @@
       "name": "Orders",
       "item": [
         {
-          "name": "List Orders",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/orders",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Order",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/orders/:order",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders",
-                ":order"
-              ],
-              "variable": [
-                {
-                  "key": "order",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Create Order",
+          "name": "Create Order (Public)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_name\": \"John Doe\",\n  \"customer_email\": \"john@example.com\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2\n    }\n  ]\n}"
+              "raw": "{\n  \"customer_name\": \"John Doe\",\n  \"customer_email\": \"john@example.com\",\n  \"customer_phone\": \"+380501234567\",\n  \"fulfillment_type\": \"pickup\",\n  \"payment_method\": \"cash\",\n  \"currency\": \"UAH\",\n  \"customer_notes\": \"Call me before pickup\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/orders",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders"
-              ]
-            }
+            "url": "{{base_url}}/orders"
+          }
+        },
+        {
+          "name": "List Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/orders"
+          }
+        },
+        {
+          "name": "Get Order (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/orders/{{order_id}}"
           }
         },
         {
@@ -1035,28 +750,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"completed\"\n}"
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"payment_status\": \"paid\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/orders/:order",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders",
-                ":order"
-              ],
-              "variable": [
-                {
-                  "key": "order",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/orders/{{order_id}}"
           }
         },
         {
@@ -1067,28 +775,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"cancelled\"\n}"
+              "raw": "{\n  \"status\": \"cancelled\",\n  \"cancelled_reason\": \"Customer request\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/orders/:order",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders",
-                ":order"
-              ],
-              "variable": [
-                {
-                  "key": "order",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/orders/{{order_id}}"
           }
         }
       ]
@@ -1104,29 +805,21 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_id\": 2,\n  \"quantity\": 1\n}"
+              "raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"quantity\": 1,\n  \"notes\": \"No sugar\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/orders/:order/items",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders",
-                ":order",
-                "items"
-              ],
-              "variable": [
-                {
-                  "key": "order",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/orders/{{order_id}}/items"
           }
         },
         {
@@ -1137,63 +830,182 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"quantity\": 3\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/orders/:order/items/:order_item",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders",
-                ":order",
-                "items",
-                ":order_item"
-              ],
-              "variable": [
-                {
-                  "key": "order",
-                  "value": "1"
-                },
-                {
-                  "key": "order_item",
-                  "value": "1"
-                }
-              ]
-            }
+            "url": "{{base_url}}/orders/{{order_id}}/items/{{order_item_id}}"
           }
         },
         {
           "name": "Remove Item from Order",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/orders/:order/items/:order_item",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "orders",
-                ":order",
-                "items",
-                ":order_item"
-              ],
-              "variable": [
-                {
-                  "key": "order",
-                  "value": "1"
-                },
-                {
-                  "key": "order_item",
-                  "value": "1"
-                }
-              ]
-            }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/orders/{{order_id}}/items/{{order_item_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product Ingredients",
+      "item": [
+        {
+          "name": "Add Ingredient to Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ingredient_id\": \"{{ingredient_id}}\",\n  \"quantity\": 30,\n  \"position\": 0\n}"
+            },
+            "url": "{{base_url}}/products/{{product_id}}/ingredients"
+          }
+        },
+        {
+          "name": "Update Product Ingredient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 60\n}"
+            },
+            "url": "{{base_url}}/products/{{product_id}}/ingredients/{{product_ingredient_id}}"
+          }
+        },
+        {
+          "name": "Remove Ingredient from Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/products/{{product_id}}/ingredients/{{product_ingredient_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product Metadata",
+      "item": [
+        {
+          "name": "Add Metadata to Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"calories\",\n  \"value\": \"150\"\n}"
+            },
+            "url": "{{base_url}}/products/{{product_id}}/metadata"
+          }
+        },
+        {
+          "name": "Update Product Metadata",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"180\"\n}"
+            },
+            "url": "{{base_url}}/products/{{product_id}}/metadata/{{metadata_id}}"
+          }
+        },
+        {
+          "name": "Delete Product Metadata",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": "{{base_url}}/products/{{product_id}}/metadata/{{metadata_id}}"
           }
         }
       ]
@@ -1209,22 +1021,17 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_name\": \"product_viewed\",\n  \"properties\": {\n    \"product_id\": 1,\n    \"product_name\": \"Cappuccino\"\n  }\n}"
+              "raw": "{\n  \"session_id\": \"web-session-001\",\n  \"name\": \"product_viewed\",\n  \"url\": \"https://craftoria.local/products/cappuccino\",\n  \"properties\": {\n    \"product_id\": \"{{product_id}}\",\n    \"source\": \"catalog\"\n  },\n  \"occurred_at\": \"2026-04-01T10:00:00Z\"\n}"
             },
-            "url": {
-              "raw": "{{base_url}}/analytics/events",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "analytics",
-                "events"
-              ]
-            }
+            "url": "{{base_url}}/analytics/events"
           }
         }
       ]
@@ -1233,7 +1040,62 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8000/api",
+      "value": "http://localhost:8009/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "00000000-0000-0000-0000-000000000001",
+      "type": "string"
+    },
+    {
+      "key": "category_slug",
+      "value": "beverages",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "00000000-0000-0000-0000-000000000002",
+      "type": "string"
+    },
+    {
+      "key": "product_slug",
+      "value": "cappuccino",
+      "type": "string"
+    },
+    {
+      "key": "ingredient_id",
+      "value": "00000000-0000-0000-0000-000000000003",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "00000000-0000-0000-0000-000000000004",
+      "type": "string"
+    },
+    {
+      "key": "order_item_id",
+      "value": "00000000-0000-0000-0000-000000000005",
+      "type": "string"
+    },
+    {
+      "key": "product_ingredient_id",
+      "value": "00000000-0000-0000-0000-000000000006",
+      "type": "string"
+    },
+    {
+      "key": "metadata_id",
+      "value": "00000000-0000-0000-0000-000000000007",
       "type": "string"
     }
   ]
