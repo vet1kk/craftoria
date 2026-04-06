@@ -33,7 +33,7 @@
   <label class="grid gap-2 text-sm text-stone-600">
     <span>{{ 'ui.admin.categoryImageLabel' | t }}</span>
     <input type="file" accept="image/*" (change)="imageSelected.emit($event)"
-           class="rounded-xl border border-dashed border-stone-300 px-3 py-2 text-sm text-stone-600">
+           class="w-full min-w-0 rounded-xl border border-dashed border-stone-300 px-3 py-2 text-sm text-stone-600">
     @if (selectedImageName()) {
       <span class="text-xs text-stone-500">{{ selectedImageName() }}</span>
     }

@@ -5,11 +5,12 @@ import { ProductHelper } from '../../../../helpers';
 import { Product } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 import { I18nService } from '../../../../services';
+import { ImagePreviewComponent } from '../../../../ui';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, ImagePreviewComponent],
   templateUrl: './product.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
