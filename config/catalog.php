@@ -12,6 +12,11 @@ return [
             'position' => -1,
             'is_active' => true,
             'is_system' => true,
+            'translations' => [
+                'uk' => [
+                    'name' => 'Усі',
+                ],
+            ],
         ],
     ],
     'translation_targets' => [

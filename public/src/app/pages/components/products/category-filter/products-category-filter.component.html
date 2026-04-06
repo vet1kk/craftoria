@@ -33,7 +33,7 @@
             @if (category.image_url) {
               <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
             } @else {
-              <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs"> 📦</div>
+              <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs"> {{ category.icon ?? '📦' }}</div>
             }
           </div>
 
