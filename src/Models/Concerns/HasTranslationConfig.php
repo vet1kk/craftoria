@@ -7,32 +7,6 @@ namespace App\Models\Concerns;
 trait HasTranslationConfig
 {
     /**
-     * Resolve the translation prefix used for lang-file lookups.
-     */
-    public function translationPrefix(): ?string
-    {
-        return property_exists($this, 'translationPrefix') ? $this->translationPrefix : null;
-    }
-
-    /**
-     * Set the translation prefix used for lang-file lookups.
-     */
-    public function setTranslationPrefix(string $prefix): self
-    {
-        $this->translationPrefix = $prefix;
-
-        return $this;
-    }
-
-    /**
-     * Resolve the attribute used to derive the translation lookup key.
-     */
-    public function translationKeyField(): string
-    {
-        return property_exists($this, 'translationKeyField') ? $this->translationKeyField : 'slug';
-    }
-
-    /**
      * Resolve the translated fields for the serialized resource payload.
      *
      * @return array<int, string>
@@ -52,7 +26,7 @@ trait HasTranslationConfig
         return property_exists($this, 'translationFieldMap') ? $this->translationFieldMap : [];
     }
 
-    /**
+    /**¬
      * Resolve the full translation config for the model resource payload.
      *
      * @return array<string, mixed>
@@ -60,11 +34,8 @@ trait HasTranslationConfig
     public function translationConfig(): array
     {
         return [
-            'prefix' => $this->translationPrefix(),
-            'key' => $this->translationKeyField(),
             'fields' => $this->translatableFields(),
             'field_map' => $this->translationFieldMap(),
-            'use_model_lookup' => true,
         ];
     }
 }

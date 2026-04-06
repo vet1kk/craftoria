@@ -15,7 +15,7 @@ class CategoryProductsAssignRequest extends AdminRequest
     public function rules(): array
     {
         return [
-            'product_ids' => ['required', 'array'],
+            'product_ids' => ['present', 'array'],
             'product_ids.*' => [
                 'uuid',
                 Rule::exists('products', 'id')->whereNull('deleted_at'),

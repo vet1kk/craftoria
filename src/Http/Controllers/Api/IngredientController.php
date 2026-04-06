@@ -14,7 +14,9 @@ use Illuminate\Http\Response;
 
 class IngredientController extends Controller
 {
-    public function __construct(private readonly IngredientService $ingredientService)
+    public function __construct(
+        private readonly IngredientService $ingredientService,
+    )
     {
     }
 

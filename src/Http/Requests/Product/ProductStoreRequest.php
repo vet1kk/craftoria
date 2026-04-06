@@ -19,10 +19,12 @@ class ProductStoreRequest extends AdminRequest
     protected function prepareForValidation(): void
     {
         $name = trim((string)$this->input('name', ''));
+        $categoryId = $this->input('category_id');
 
         $this->merge([
             'name' => $name,
             'slug' => $this->generateUniqueSlug('products', $name),
+            'category_id' => $categoryId === '' ? null : $categoryId,
         ]);
     }
 
@@ -35,9 +37,11 @@ class ProductStoreRequest extends AdminRequest
     {
         return [
             'category_id' => [
-                'required',
+                'nullable',
                 'uuid',
-                Rule::exists('categories', 'id')->whereNull('deleted_at'),
+                Rule::exists('categories', 'id')
+                    ->whereNull('deleted_at')
+                    ->where('is_system', 0),
             ],
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
@@ -58,7 +62,7 @@ class ProductStoreRequest extends AdminRequest
                 'nullable',
                 File::image()->max(10 * 1024),
             ],
-            'shelf_life' => ['nullable', 'string', 'max:255'],
+            'shelf_life' => ['nullable', 'integer', 'min:0'],
             'position' => ['nullable', 'integer', 'min:0'],
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
             'reorder_level' => ['nullable', 'integer', 'min:0'],

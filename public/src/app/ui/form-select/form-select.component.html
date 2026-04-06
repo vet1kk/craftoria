@@ -21,13 +21,19 @@
             [class.focus:border-red-400]="resolvedHasError()"
             [class.focus:ring-red-100]="resolvedHasError()">
       @if (!multiple() && placeholder()) {
-        <option value="">{{ placeholder() }}</option>
+        <option [ngValue]="null">{{ placeholder() }}</option>
       }
 
       @for (option of options(); track option.value) {
-        <option [value]="option.value" [disabled]="option.disabled ?? false">
-          {{ option.label }}
-        </option>
+        @if (multiple()) {
+          <option [value]="option.value" [disabled]="option.disabled ?? false">
+            {{ option.label }}
+          </option>
+        } @else {
+          <option [ngValue]="option.value" [disabled]="option.disabled ?? false">
+            {{ option.label }}
+          </option>
+        }
       }
     </select>
   </app-verifiable-input>

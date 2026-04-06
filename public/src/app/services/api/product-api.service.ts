@@ -28,6 +28,13 @@ export class ProductApiService {
     return this.apiService.post<Product>(`/products/${productId}`, payload);
   }
 
+  updateTranslations(productId: string, locale: string, fields: Record<string, string | null>): Observable<ApiResponse<Product>> {
+    return this.apiService.put<Product>(`/products/${productId}/translations`, {
+      locale,
+      fields,
+    });
+  }
+
   delete(productId: string): Observable<ApiResponse<null>> {
     return this.apiService.delete<null>(`/products/${productId}`);
   }

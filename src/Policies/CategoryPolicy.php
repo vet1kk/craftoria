@@ -52,7 +52,7 @@ class CategoryPolicy
      */
     public function update(User $user, Category $category): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() && !$category->is_system;
     }
 
     /**
@@ -64,6 +64,6 @@ class CategoryPolicy
      */
     public function delete(User $user, Category $category): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() && !$category->is_system;
     }
 }

@@ -11,21 +11,22 @@ class DatabaseSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_seeds_dummy_data_for_all_domain_models(): void
+    public function test_it_seeds_only_system_user_and_system_categories(): void
     {
         $this->seed();
 
-        $this->assertDatabaseCount('users', 13);
-        $this->assertDatabaseCount('categories', 7);
-        $this->assertDatabaseCount('ingredients', 24);
-        $this->assertDatabaseCount('orders', 18);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseHas('users', [
+            'email' => 'admin@craftoria',
+            'role' => 'admin',
+            'is_system' => true,
+        ]);
 
-        $this->assertDatabaseCount('products', 30);
-        $this->assertGreaterThan(0, \App\Models\ProductMetadata::query()->count());
-        $this->assertGreaterThan(0, \App\Models\ProductImage::query()->count());
-        $this->assertGreaterThan(0, \App\Models\ProductIngredient::query()->count());
-        $this->assertGreaterThan(0, \App\Models\OrderItem::query()->count());
-        $this->assertGreaterThan(0, \App\Models\AnalyticsEvent::query()->count());
-        $this->assertGreaterThan(0, \App\Models\AuditLog::query()->count());
+        $this->assertDatabaseHas('categories', [
+            'slug' => 'all',
+            'name' => 'All',
+            'is_system' => true,
+            'is_active' => true,
+        ]);
     }
 }

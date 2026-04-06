@@ -173,6 +173,18 @@
                       [size]="6">
       </ui-form-select>
 
+      <div class="flex justify-end">
+        <ui-button type="button"
+                   variant="secondary"
+                   rounded="full"
+                   [loading]="isBusy() && busyAction() === 'assign'"
+                   [loadingLabel]="busyActionLabel()"
+                   [disabled]="isViewProductsSaveDisabled()"
+                   (click)="saveCategoryProducts()">
+          {{ 'ui.admin.categorySaveAction' | t }}
+        </ui-button>
+      </div>
+
       <label class="inline-flex items-center gap-3 text-sm text-stone-700">
         <input type="checkbox"
                [checked]="selectedCategory()!.is_active"
@@ -224,6 +236,16 @@
                      validationKey="name"
                      [validationMessages]="{
                        required: ('ui.admin.categoryNameRequired' | t),
+                       maxlength: ('ui.admin.categoryNameMaxLength' | t)
+                     }"
+                     [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+      </ui-form-input>
+
+      <ui-form-input [label]="('ui.admin.categoryNameLabel' | t) + ' (UK)'"
+                     [control]="categoryForm.controls.name_uk"
+                     [validationGroup]="formGroupName"
+                     validationKey="translations.uk.name"
+                     [validationMessages]="{
                        maxlength: ('ui.admin.categoryNameMaxLength' | t)
                      }"
                      [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">

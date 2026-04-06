@@ -6,8 +6,8 @@ namespace App\Models;
 
 use App\Helpers\FileUpload;
 use App\Models\Builders\ProductBuilder;
+use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Concerns\HasTranslationConfig;
-use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Collection;
 
 /**
  * @method static \App\Models\Builders\ProductBuilder query()
@@ -27,14 +26,14 @@ use Illuminate\Support\Collection;
  * @mixin \App\Models\Builders\ProductBuilder
  *
  * @property string $id
- * @property string $category_id
+ * @property string|null $category_id
  * @property string $name
  * @property string $slug
  * @property string|null $sku
  * @property string $description
  * @property string $price
  * @property string|null $featured_image_url
- * @property string|null $shelf_life
+ * @property int|null $shelf_life
  * @property int $position
  * @property int $stock_quantity
  * @property int $reorder_level
@@ -43,7 +42,7 @@ use Illuminate\Support\Collection;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Category $category
+ * @property-read \App\Models\Category|null $category
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductMetadata> $metadata
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductImage> $images
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $product_ingredients
@@ -52,18 +51,16 @@ use Illuminate\Support\Collection;
  */
 class Product extends Model
 {
+    use HasCatalogTranslations;
     use HasFactory;
     use HasTranslationConfig;
-    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
-
-    protected ?string $translationPrefix = 'catalog.products';
 
     /**
      * @var array<int, string>
      */
-    protected array $translatableFields = ['name', 'description', 'shelf_life'];
+    protected array $translatableFields = ['name', 'description'];
 
     protected $fillable = [
         'category_id',
@@ -108,6 +105,7 @@ class Product extends Model
         return [
             'price' => 'decimal:2',
             'position' => 'integer',
+            'shelf_life' => 'integer',
             'stock_quantity' => 'integer',
             'reorder_level' => 'integer',
             'is_active' => 'boolean',
@@ -122,7 +120,7 @@ class Product extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class)->with('translations');
     }
 
     /**
@@ -226,24 +224,4 @@ class Product extends Model
         return $this->load(['category', 'images', 'metadata', 'ingredients']);
     }
 
-    /**
-     * Update the translation prefix for the metadata relation.
-     *
-     * @return mixed
-     */
-    public function getMetadataAttribute(): mixed
-    {
-        $metadata = $this->getRelationValue('metadata');
-        if ($metadata instanceof Collection && $metadata->isNotEmpty()) {
-            $prefix = "products.$this->slug.metadata";
-
-            $metadata->each(function ($item) use ($prefix) {
-                if (method_exists($item, 'setTranslationPrefix')) {
-                    $item->setTranslationPrefix($prefix);
-                }
-            });
-        }
-
-        return $metadata;
-    }
 }

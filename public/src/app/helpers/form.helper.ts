@@ -13,35 +13,43 @@ export class FormHelper {
         return;
       }
 
-      const value = object[key];
-
-      if (value === null && !nulls) {
-        return;
-      }
-
-      if (Array.isArray(value)) {
-        value.forEach((item, index) => {
-          let currentItem = item;
-
-          if (typeof currentItem === 'object' && currentItem !== null && 'file' in currentItem) {
-            currentItem = currentItem.file;
-          }
-
-          formData.append(`${key}[${index}]`, FormHelper.normalizeFormValue(currentItem));
-        });
-
-        return;
-      }
-
-      if (typeof value === 'object' && value !== null && !(value instanceof File)) {
-        formData.append(key, JSON.stringify(value));
-        return;
-      }
-
-      formData.append(key, FormHelper.normalizeFormValue(value));
+      FormHelper.appendFormDataValue(formData, key, object[key], nulls);
     });
 
     return formData;
+  }
+
+  private static appendFormDataValue(formData: FormData, key: string, value: any, nulls: boolean): void {
+    if (value === null || value === undefined) {
+      if (nulls) {
+        formData.append(key, '');
+      }
+
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        FormHelper.appendFormDataValue(formData, `${key}[${index}]`, item, nulls);
+      });
+
+      return;
+    }
+
+    if (typeof value === 'object' && !(value instanceof File)) {
+      if ('file' in value && value.file instanceof File) {
+        formData.append(key, value.file);
+        return;
+      }
+
+      Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+        FormHelper.appendFormDataValue(formData, `${key}[${nestedKey}]`, nestedValue, nulls);
+      });
+
+      return;
+    }
+
+    formData.append(key, FormHelper.normalizeFormValue(value));
   }
 
   private static normalizeFormValue(value: any): any {

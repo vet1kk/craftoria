@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, EventEmitter, inject, input, Output, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize, take } from 'rxjs';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize, of, switchMap, take } from 'rxjs';
 
 import { Category, Product, ProductUpdatePayload, ProductUpsertPayload, SkeletonGroupConfig } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
@@ -31,7 +31,7 @@ import { AdminProductViewModalComponent } from './components/admin-product-view-
 export class AdminProductPanelComponent {
   readonly formGroupName = 'adminProductUpsert';
 
-  private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly formBuilder = inject(FormBuilder);
   private readonly i18n = inject(I18nService);
   private readonly productApiService = inject(ProductApiService);
   private readonly apiErrorHelper = inject(ApiErrorHelper);
@@ -56,12 +56,14 @@ export class AdminProductPanelComponent {
   readonly busyAction = this.transition.action;
   readonly actionError = this.transition.error;
   readonly productForm = this.formBuilder.group({
-    category_id: this.formBuilder.control('', [Validators.required]),
+    category_id: this.formBuilder.control<string | null>(null),
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
+    name_uk: this.formBuilder.control('', [Validators.maxLength(255)]),
     sku: this.formBuilder.control('', [Validators.maxLength(255)]),
     description: this.formBuilder.control('', [Validators.required]),
+    description_uk: this.formBuilder.control(''),
     price: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
-    shelf_life: this.formBuilder.control('', [Validators.maxLength(255)]),
+    shelf_life: this.formBuilder.control(''),
     position: this.formBuilder.control(0, [Validators.min(0)]),
     stock_quantity: this.formBuilder.control(0, [Validators.min(0)]),
     reorder_level: this.formBuilder.control(0, [Validators.min(0)]),
@@ -143,10 +145,12 @@ export class AdminProductPanelComponent {
     this.selectedImageName.set('');
 
     this.productForm.reset({
-      category_id: this.categories()[0]?.id ?? '',
+      category_id: null,
       name: '',
+      name_uk: '',
       sku: '',
       description: '',
+      description_uk: '',
       price: 0,
       shelf_life: '',
       position: this.products().length,
@@ -176,12 +180,14 @@ export class AdminProductPanelComponent {
     this.selectedProduct.set(target);
     this.selectedImageName.set('');
     this.productForm.reset({
-      category_id: target.category_id,
+      category_id: target.category_id ?? null,
       name: target.name,
+      name_uk: target.translations?.['uk']?.name ?? '',
       sku: target.sku ?? '',
       description: target.description,
+      description_uk: target.translations?.['uk']?.description ?? '',
       price: Number(target.price),
-      shelf_life: target.shelf_life ?? '',
+      shelf_life: target.shelf_life !== null && target.shelf_life !== undefined ? String(target.shelf_life) : '',
       position: target.position,
       stock_quantity: target.stock_quantity,
       reorder_level: target.reorder_level,
@@ -229,7 +235,7 @@ export class AdminProductPanelComponent {
       ...payload,
       name: payload.name.trim(),
       sku: payload.sku?.trim() ?? null,
-      shelf_life: payload.shelf_life?.trim() ?? null,
+      shelf_life: payload.shelf_life,
       description: payload.description.trim(),
     }, [
       'category_id',
@@ -246,9 +252,18 @@ export class AdminProductPanelComponent {
       'is_available'
     ]);
 
+    const translationFields = payload.translations?.['uk'] ?? null;
+
     this.transition.start('create');
 
     this.productApiService.create(formData).pipe(
+      switchMap((response) => {
+        if (!translationFields) {
+          return of(response);
+        }
+
+        return this.productApiService.updateTranslations(response.data.id, 'uk', translationFields);
+      }),
       take(1),
       finalize(() => {
         this.transition.finish();
@@ -289,7 +304,7 @@ export class AdminProductPanelComponent {
       _method: 'PUT',
       name: payload.name.trim(),
       sku: payload.sku?.trim() ?? null,
-      shelf_life: payload.shelf_life?.trim() ?? null,
+      shelf_life: payload.shelf_life,
       description: payload.description.trim(),
     }, [
       '_method',
@@ -307,9 +322,18 @@ export class AdminProductPanelComponent {
       'is_available'
     ]);
 
+    const translationFields = payload.translations?.['uk'] ?? null;
+
     this.transition.start('update');
 
     this.productApiService.update(payload.id, formData).pipe(
+      switchMap(() => {
+        if (!translationFields) {
+          return of(null);
+        }
+
+        return this.productApiService.updateTranslations(payload.id, 'uk', translationFields);
+      }),
       take(1),
       finalize(() => {
         this.transition.finish();
@@ -368,7 +392,11 @@ export class AdminProductPanelComponent {
     return this.isBusy() || this.productForm.invalid || !this.hasUpdateChanges();
   }
 
-  getCategoryName(categoryId: string): string {
+  getCategoryName(categoryId: string | null): string {
+    if (!categoryId) {
+      return this.i18n.translate('ui.admin.unassignedCategory');
+    }
+
     return this.categoriesById().get(categoryId) ?? this.i18n.translate('ui.admin.unknownCategory');
   }
 
@@ -401,20 +429,28 @@ export class AdminProductPanelComponent {
     }
 
     const value = this.productForm.getRawValue();
+    const name = (value.name ?? '').trim();
+    const nameUk = value.name_uk?.trim() ? value.name_uk.trim() : null;
+    const description = (value.description ?? '').trim();
+    const descriptionUk = value.description_uk?.trim() ? value.description_uk.trim() : null;
+    const sku = value.sku?.trim() ? value.sku.trim() : null;
+    const shelfLife = value.shelf_life !== '' ? Number(value.shelf_life) : null;
 
     const hasImageChange = value.featured_image instanceof File;
 
     return value.category_id !== selectedProduct.category_id
-      || value.name.trim() !== selectedProduct.name
-      || (value.sku?.trim() ? value.sku.trim() : null) !== (selectedProduct.sku ?? null)
-      || value.description.trim() !== selectedProduct.description
+      || name !== selectedProduct.name
+      || nameUk !== (selectedProduct.translations?.['uk']?.name ?? null)
+      || sku !== (selectedProduct.sku ?? null)
+      || description !== selectedProduct.description
+      || descriptionUk !== (selectedProduct.translations?.['uk']?.description ?? null)
       || Number(value.price) !== Number(selectedProduct.price)
-      || (value.shelf_life?.trim() ? value.shelf_life.trim() : null) !== (selectedProduct.shelf_life ?? null)
-      || value.position !== selectedProduct.position
-      || value.stock_quantity !== selectedProduct.stock_quantity
-      || value.reorder_level !== selectedProduct.reorder_level
-      || value.is_active !== selectedProduct.is_active
-      || value.is_available !== selectedProduct.is_available
+      || shelfLife !== (selectedProduct.shelf_life ?? null)
+      || Number(value.position ?? 0) !== selectedProduct.position
+      || Number(value.stock_quantity ?? 0) !== selectedProduct.stock_quantity
+      || Number(value.reorder_level ?? 0) !== selectedProduct.reorder_level
+      || Boolean(value.is_active) !== selectedProduct.is_active
+      || Boolean(value.is_available) !== selectedProduct.is_available
       || hasImageChange;
   }
 
@@ -423,19 +459,23 @@ export class AdminProductPanelComponent {
 
     return {
       category_id: formData.category_id,
-      name: formData.name.trim(),
+      name: (formData.name ?? '').trim(),
+      translations: {
+        uk: {
+          name: formData.name_uk?.trim() ? formData.name_uk.trim() : null,
+          description: formData.description_uk?.trim() ? formData.description_uk.trim() : null,
+        },
+      },
       sku: formData.sku?.trim() ? formData.sku.trim() : null,
-      description: formData.description.trim(),
+      description: (formData.description ?? '').trim(),
       price: Number(formData.price),
       featured_image: formData.featured_image,
-      shelf_life: formData.shelf_life?.trim() ? formData.shelf_life.trim() : null,
-      position: formData.position,
-      stock_quantity: formData.stock_quantity,
-      reorder_level: formData.reorder_level,
-      is_active: formData.is_active,
-      is_available: formData.is_available
+      shelf_life: formData.shelf_life !== '' ? Number(formData.shelf_life) : null,
+      position: Number(formData.position ?? 0),
+      stock_quantity: Number(formData.stock_quantity ?? 0),
+      reorder_level: Number(formData.reorder_level ?? 0),
+      is_active: Boolean(formData.is_active),
+      is_available: Boolean(formData.is_available)
     };
   }
 }
-
-

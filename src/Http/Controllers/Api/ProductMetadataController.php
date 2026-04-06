@@ -14,7 +14,9 @@ use App\Services\ProductMetadataService;
 
 class ProductMetadataController extends Controller
 {
-    public function __construct(private readonly ProductMetadataService $productMetadataService)
+    public function __construct(
+        private readonly ProductMetadataService $productMetadataService,
+    )
     {
     }
 

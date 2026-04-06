@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ProductIngredientController;
 use App\Http\Controllers\Api\ProductMetadataController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Api\TranslationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HealthController::class);
@@ -68,6 +69,9 @@ Route::middleware('auth:api')->group(function (): void {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::patch('/orders/{order}', [OrderController::class, 'update']);
+
+    Route::put('/translations/{type}/{id}', [TranslationController::class, 'upsert'])
+         ->name('translations.upsert');
 
     Route::scopeBindings()->group(function (): void {
         Route::post('/orders/{order}/items', [OrderItemController::class, 'store'])->name('orders.items.store');

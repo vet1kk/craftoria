@@ -225,6 +225,7 @@ export const uaTranslations = {
       categoryImage: 'зображення категорії',
       outOfStock: 'Немає в наявності',
       unknownCategory: 'Невідомо',
+      unassignedCategory: 'Без категорії',
       categoryViewTitle: 'Деталі категорії',
       categoryCreateTitle: 'Створити категорію',
       categoryEditTitle: 'Редагувати категорію',

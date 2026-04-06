@@ -6,10 +6,13 @@ export interface Category {
   image_url?: string | null;
   position: number;
   is_active: boolean;
+  is_system: boolean;
+  translations?: Record<string, { name?: string | null }>;
 }
 
 export interface CategoryUpsertPayload {
   name: string;
+  translations?: Record<string, { name?: string | null }>;
   icon: string | null;
   position: number;
   is_active: boolean;
@@ -57,22 +60,23 @@ export interface Ingredient {
   product?: Product;
   image_url?: string | null;
   nutrition_totals?: NutritionFacts;
+  translations?: Record<string, { name?: string | null }>;
 }
 
 export interface PackageDetails {
-  [key: string]: string | undefined;
+  [key: string]: string | number | undefined;
 
   packaging?: string;
   contents?: string;
   storage?: string;
-  shelf_life?: string;
+  shelf_life?: number;
 }
 
 export interface Product {
   id: string;
   slug: string;
   sku: string;
-  category_id: string;
+  category_id: string | null;
   name: string;
   description: string;
   price: number;
@@ -80,7 +84,7 @@ export interface Product {
   images: ProductImage[];
   metadata: Metadata[];
   ingredients: Ingredient[];
-  shelf_life?: string | undefined;
+  shelf_life?: number | undefined;
   position: number;
   stock_quantity: number;
   reorder_level: number;
@@ -89,16 +93,18 @@ export interface Product {
   nutrition_totals: NutritionFacts;
   created_at?: string | null;
   updated_at?: string | null;
+  translations?: Record<string, { name?: string | null; description?: string | null }>;
 }
 
 export interface ProductUpsertPayload {
-  category_id: string;
+  category_id: string | null;
   name: string;
+  translations?: Record<string, { name?: string | null; description?: string | null }>;
   sku: string | null;
   description: string;
   price: number;
   featured_image: File | null;
-  shelf_life: string | null;
+  shelf_life: number | null;
   position: number;
   stock_quantity: number;
   reorder_level: number;
@@ -115,6 +121,7 @@ export interface Metadata {
   product_id: string;
   type: string;
   value: string;
+  translations?: Record<string, { value?: string | null }>;
   created_at?: string | null;
   updated_at?: string | null;
 }

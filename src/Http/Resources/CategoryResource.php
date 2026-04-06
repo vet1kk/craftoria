@@ -30,6 +30,7 @@ class CategoryResource extends JsonResource
             'image_url' => FileUpload::publicUrl($this->image_url),
             'position' => $this->position,
             'is_active' => $this->is_active,
+            'is_system' => $this->is_system,
             'created_at' => $this->created_at?->toAtomString(),
             'updated_at' => $this->updated_at?->toAtomString(),
         ]);

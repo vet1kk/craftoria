@@ -49,6 +49,7 @@ class ProductService
     {
         $product->update($validated);
 
+
         return $product->refresh();
     }
 

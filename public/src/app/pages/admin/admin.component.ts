@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
 import { CatalogHelper } from '../../helpers';
 import { AdminTab, Category, CategoryProductOption, Product } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { CategoryApiService, SettingsApiService } from '../../services';
+import { CategoryApiService, SettingsApiService, UserService } from '../../services';
 import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsComponent } from '../components';
 
 @Component({
@@ -16,6 +17,8 @@ import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsCom
 })
 export class AdminComponent {
   private readonly catalogHelper = inject(CatalogHelper);
+  private readonly router = inject(Router);
+  private readonly userService = inject(UserService);
   private readonly settingsApiService = inject(SettingsApiService);
   private readonly categoryApiService = inject(CategoryApiService);
   readonly categories = signal<Category[]>([]);
@@ -25,10 +28,14 @@ export class AdminComponent {
   readonly catalogError = signal('');
   readonly currency = signal('');
   readonly categoryProductOptions = signal<CategoryProductOption[]>([]);
+  private readonly isRedirecting = signal(false);
 
   readonly activeTab = signal<AdminTab>('items');
+  readonly assignableCategories = computed(() =>
+    this.categories().filter((category) => !category.is_system)
+  );
   readonly editableCategories = computed(() =>
-    this.categories().filter((category) => category.slug !== 'all')
+    this.assignableCategories()
   );
 
   constructor() {
@@ -43,6 +50,19 @@ export class AdminComponent {
       if (this.isRefreshing() && !this.isCatalogLoading()) {
         this.isRefreshing.set(false);
       }
+    });
+
+    effect(() => {
+      if (this.isRedirecting()) {
+        return;
+      }
+
+      if (this.userService.isAdmin()) {
+        return;
+      }
+
+      this.isRedirecting.set(true);
+      void this.router.navigate(['/products'], { replaceUrl: true });
     });
   }
 

@@ -53,13 +53,14 @@ export class AdminCategoriesPanelComponent {
   readonly isDeleteModalOpen = signal(false);
   readonly isViewModalOpen = signal(false);
   readonly selectedImageName = signal('');
-  readonly transition = this.transitionStateService.create<'create' | 'update' | 'delete'>();
+  readonly transition = this.transitionStateService.create<'create' | 'update' | 'delete' | 'assign'>();
   readonly isBusy = this.transition.isBusy;
   readonly busyAction = this.transition.action;
   readonly actionError = this.transition.error;
-  readonly viewProductsControl = this.formBuilder.control<string[]>({ value: [], disabled: true });
+  readonly viewProductsControl = this.formBuilder.control<string[]>([]);
   readonly categoryForm = this.formBuilder.group({
     name: this.formBuilder.control('', [Validators.required, Validators.maxLength(255)]),
+    name_uk: this.formBuilder.control('', [Validators.maxLength(255)]),
     icon: this.formBuilder.control('', [Validators.maxLength(255)]),
     position: this.formBuilder.control(0, [Validators.min(0)]),
     is_active: this.formBuilder.control(true),
@@ -157,6 +158,7 @@ export class AdminCategoriesPanelComponent {
     this.selectedImageName.set('');
     this.categoryForm.reset({
       name: '',
+      name_uk: '',
       icon: '',
       position: this.categories().length,
       is_active: true,
@@ -187,6 +189,7 @@ export class AdminCategoriesPanelComponent {
     this.selectedImageName.set('');
     this.categoryForm.reset({
       name: target.name,
+      name_uk: target.translations?.['uk']?.name ?? '',
       icon: target.icon ?? '',
       position: target.position,
       is_active: target.is_active,
@@ -237,15 +240,31 @@ export class AdminCategoriesPanelComponent {
       icon: payload.icon?.trim() ?? null,
     }, ['name', 'icon', 'position', 'is_active', 'image']);
 
+    const translationFields = payload.translations?.['uk'] ?? null;
+
     this.transition.start('create');
 
     this.categoryApiService.create(formData).pipe(
       switchMap((response) => {
-        if (payload.product_ids.length === 0) {
-          return of(null);
+        const categoryId = response.data.id;
+
+        if (!translationFields) {
+          if (payload.product_ids.length === 0) {
+            return of(null);
+          }
+
+          return this.categoryApiService.assignProducts(categoryId, payload.product_ids);
         }
 
-        return this.categoryApiService.assignProducts(response.data.id, payload.product_ids);
+        return this.categoryApiService.updateTranslations(categoryId, 'uk', translationFields).pipe(
+          switchMap(() => {
+            if (payload.product_ids.length === 0) {
+              return of(null);
+            }
+
+            return this.categoryApiService.assignProducts(categoryId, payload.product_ids);
+          })
+        );
       }),
       take(1),
       finalize(() => {
@@ -289,15 +308,29 @@ export class AdminCategoriesPanelComponent {
       icon: payload.icon?.trim() ?? null,
     }, ['_method', 'name', 'icon', 'position', 'is_active', 'image']);
 
+    const translationFields = payload.translations?.['uk'] ?? null;
+
     this.transition.start('update');
 
     this.categoryApiService.update(payload.id, formData).pipe(
       switchMap(() => {
-        if (payload.product_ids.length === 0) {
-          return of(null);
+        if (!translationFields) {
+          if (payload.product_ids.length === 0) {
+            return of(null);
+          }
+
+          return this.categoryApiService.assignProducts(payload.id, payload.product_ids);
         }
 
-        return this.categoryApiService.assignProducts(payload.id, payload.product_ids);
+        return this.categoryApiService.updateTranslations(payload.id, 'uk', translationFields).pipe(
+          switchMap(() => {
+            if (payload.product_ids.length === 0) {
+              return of(null);
+            }
+
+            return this.categoryApiService.assignProducts(payload.id, payload.product_ids);
+          })
+        );
       }),
       take(1),
       finalize(() => {
@@ -357,6 +390,45 @@ export class AdminCategoriesPanelComponent {
     return this.isBusy() || this.categoryForm.invalid || !this.hasUpdateChanges();
   }
 
+  isViewProductsSaveDisabled(): boolean {
+    const selectedCategory = this.selectedCategory();
+
+    if (!selectedCategory) {
+      return true;
+    }
+
+    return this.isBusy() || this.isSameProductSelection(this.viewProductsControl.value ?? [], selectedCategory.id);
+  }
+
+  saveCategoryProducts(): void {
+    const selectedCategory = this.selectedCategory();
+
+    if (!selectedCategory || this.isBusy()) {
+      return;
+    }
+
+    const productIds = this.viewProductsControl.value ?? [];
+
+    this.transition.start('assign');
+
+    this.categoryApiService.assignProducts(selectedCategory.id, productIds).pipe(
+      take(1),
+      finalize(() => {
+        this.transition.finish();
+      })
+    ).subscribe({
+      next: () => {
+        this.toastService.success(this.i18n.translate('ui.admin.categoryUpdateSuccess'));
+        this.categoryChanged.emit();
+      },
+      error: (error: unknown) => {
+        const message = this.apiErrorHelper.extractApiErrorMessage(error, this.i18n.translate('ui.admin.categoryUpdateError'));
+        this.transition.fail(message);
+        this.toastService.error(message);
+      }
+    });
+  }
+
   private hasUpdateChanges(): boolean {
     const selectedCategory = this.selectedCategory();
 
@@ -369,6 +441,7 @@ export class AdminCategoriesPanelComponent {
     const hasImageChange = value.image instanceof File;
 
     return value.name.trim() !== selectedCategory.name
+      || (value.name_uk?.trim() ? value.name_uk.trim() : null) !== (selectedCategory.translations?.['uk']?.name ?? null)
       || (value.icon?.trim() ? value.icon.trim() : null) !== (selectedCategory.icon ?? null)
       || value.position !== selectedCategory.position
       || value.is_active !== selectedCategory.is_active
@@ -403,6 +476,8 @@ export class AdminCategoriesPanelComponent {
         return this.i18n.translate('ui.admin.categorySaveAction');
       case 'delete':
         return this.i18n.translate('ui.admin.categoryDeleteAction');
+      case 'assign':
+        return this.i18n.translate('ui.admin.categorySaveAction');
       default:
         return this.i18n.translate('ui.admin.loadingCatalog');
     }
@@ -413,6 +488,11 @@ export class AdminCategoriesPanelComponent {
 
     return {
       name: formData.name.trim(),
+      translations: {
+        uk: {
+          name: formData.name_uk?.trim() ? formData.name_uk.trim() : null,
+        }
+      },
       icon: formData.icon?.trim() ? formData.icon.trim() : null,
       position: formData.position,
       is_active: formData.is_active,

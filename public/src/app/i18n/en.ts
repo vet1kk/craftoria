@@ -225,6 +225,7 @@ export const enTranslations = {
       categoryImage: 'category image',
       outOfStock: 'Out of stock',
       unknownCategory: 'Unknown',
+      unassignedCategory: 'Unassigned',
       categoryViewTitle: 'Category details',
       categoryCreateTitle: 'Create category',
       categoryEditTitle: 'Edit category',

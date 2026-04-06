@@ -4,26 +4,8 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Lang;
-
 trait ResolvesTranslatedValue
 {
-    /**
-     * Resolve a lang-file value and fall back to the stored attribute when absent.
-     */
-    protected function translated(?string $key, ?string $fallback = null): ?string
-    {
-        if ($key === null || $key === '') {
-            return $fallback;
-        }
-
-        if (!Lang::has($key) && !Lang::has($key, config('app.fallback_locale'))) {
-            return $fallback;
-        }
-
-        return (string)__($key);
-    }
-
     /**
      * Apply model-driven translations to a serialized resource payload.
      *
@@ -36,7 +18,23 @@ trait ResolvesTranslatedValue
             return $payload;
         }
 
-        return $this->translatePayloadForModel($payload, $this->resource);
+        $translatedPayload = $this->translatePayloadForModel($payload, $this->resource);
+
+        if (array_key_exists('translations', $translatedPayload) || !method_exists($this->resource, 'translationsForFields')) {
+            return $translatedPayload;
+        }
+
+        /** @var array<string, mixed> $config */
+        $config = $this->resource->translationConfig();
+        $fields = $this->resolveTranslationFields($config);
+
+        if ($fields === []) {
+            return $translatedPayload;
+        }
+
+        $translatedPayload['translations'] = $this->resource->translationsForFields($fields);
+
+        return $translatedPayload;
     }
 
     /**
@@ -51,112 +49,35 @@ trait ResolvesTranslatedValue
 
         /** @var array<string, mixed> $config */
         $config = $model->translationConfig();
-        $translationKey = $this->resolveTranslationKey($payload, $config, $model);
-        $prefix = $this->resolveTranslationPrefix($config);
+        if (!method_exists($model, 'translatedValue')) {
+            return $payload;
+        }
 
-        if ($translationKey !== null && $prefix !== null) {
-            /** @var array<string, string> $fieldMap */
-            $fieldMap = is_array($config['field_map'] ?? null) ? $config['field_map'] : [];
+        /** @var array<string, string> $fieldMap */
+        $fieldMap = is_array($config['field_map'] ?? null) ? $config['field_map'] : [];
 
-            foreach ($config['fields'] ?? [] as $field) {
-                if (!is_string($field) || !array_key_exists($field, $payload)) {
-                    continue;
-                }
-
-                $fallback = $this->scalarToString($payload[$field]);
-
-                if ($fallback === null) {
-                    continue;
-                }
-
-                $translationField = $fieldMap[$field] ?? $field;
-                $translationKeyPath = "{$prefix}.{$translationKey}";
-
-                if ($translationField !== '') {
-                    $translationKeyPath .= ".{$translationField}";
-                }
-
-                $payload[$field] = $this->translated($translationKeyPath, $fallback);
+        foreach ($config['fields'] ?? [] as $field) {
+            if (!is_string($field) || !array_key_exists($field, $payload)) {
+                continue;
             }
+
+            $fallback = $this->scalarToString($payload[$field]);
+
+            if ($fallback === null) {
+                continue;
+            }
+
+            $translationField = $fieldMap[$field] ?? $field;
+            $dbField = $translationField !== '' ? $translationField : $field;
+            $dbValue = $model->translatedValue($dbField);
+
+            // Keep default DB value when a locale-specific override does not exist.
+            $payload[$field] = (is_string($dbValue) && $dbValue !== '') ? $dbValue : $fallback;
         }
 
         return $payload;
     }
 
-    /**
-     * @param array<string, mixed> $payload
-     * @param array<string, mixed> $config
-     */
-    private function resolveTranslationKey(array $payload, array $config, ?object $model): ?string
-    {
-        $keyField = $config['key'] ?? null;
-
-        if (!is_string($keyField) || $keyField === '') {
-            return null;
-        }
-
-        $fallback = $this->resolvePayloadValue($payload, $keyField)
-            ?? $this->resolveModelValue($model, $keyField)
-            ?? null;
-
-        if ($fallback === null || $fallback === '') {
-            return null;
-        }
-
-        if (($config['use_model_lookup'] ?? false) === true && $model !== null && method_exists($model, 'translationLookupKey')) {
-            return $model->translationLookupKey($fallback);
-        }
-
-        return $fallback;
-    }
-
-    /**
-     * @param array<string, mixed> $config
-     */
-    private function resolveTranslationPrefix(array $config): ?string
-    {
-        $prefix = $config['prefix'] ?? null;
-
-        if (!is_string($prefix) || $prefix === '') {
-            return null;
-        }
-
-        return $prefix;
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     */
-    private function resolvePayloadValue(array $payload, string $key): ?string
-    {
-        if (!array_key_exists($key, $payload)) {
-            return null;
-        }
-
-        return $this->scalarToString($payload[$key]);
-    }
-
-    /**
-     * @param object|null $model
-     * @param string $key
-     * @return string|null
-     */
-    private function resolveModelValue(?object $model, string $key): ?string
-    {
-        if ($model === null) {
-            return null;
-        }
-
-        if (method_exists($model, 'getAttribute')) {
-            return $this->scalarToString($model->getAttribute($key));
-        }
-
-        if (isset($model->{$key})) {
-            return $this->scalarToString($model->{$key});
-        }
-
-        return null;
-    }
 
     /**
      * @param mixed $value
@@ -173,5 +94,27 @@ trait ResolvesTranslatedValue
         }
 
         return (string)$value;
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     * @return array<int, string>
+     */
+    private function resolveTranslationFields(array $config): array
+    {
+        /** @var array<string, string> $fieldMap */
+        $fieldMap = is_array($config['field_map'] ?? null) ? $config['field_map'] : [];
+        $fields = [];
+
+        foreach ($config['fields'] ?? [] as $field) {
+            if (!is_string($field) || $field === '') {
+                continue;
+            }
+
+            $mappedField = $fieldMap[$field] ?? $field;
+            $fields[] = $mappedField !== '' ? $mappedField : $field;
+        }
+
+        return array_values(array_unique($fields));
     }
 }

@@ -17,7 +17,7 @@
     @if (activeTab() === 'items') {
       <app-admin-product-panel [products]="products()"
                                [isLoading]="isCatalogLoading()"
-                               [categories]="categories()"
+                               [categories]="assignableCategories()"
                                [currency]="currency()">
       </app-admin-product-panel>
     }

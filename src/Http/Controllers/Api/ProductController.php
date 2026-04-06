@@ -15,7 +15,9 @@ use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
-    public function __construct(private readonly ProductService $productService)
+    public function __construct(
+        private readonly ProductService $productService,
+    )
     {
     }
 

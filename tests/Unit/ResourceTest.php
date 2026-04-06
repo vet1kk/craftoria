@@ -56,19 +56,46 @@ class ResourceTest extends TestCase
             'name' => 'Burgers',
             'slug' => 'burgers',
         ]);
+        $category->translations()->create([
+            'locale' => 'uk',
+            'field' => 'name',
+            'value' => 'Бургери',
+        ]);
         $ingredient = Ingredient::factory()->create([
             'name' => 'Beef',
             'slug' => 'beef',
+        ]);
+        $ingredient->translations()->create([
+            'locale' => 'uk',
+            'field' => 'name',
+            'value' => 'Яловичина',
         ]);
         $product = Product::factory()->for($category)->create([
             'name' => 'Classic Burger',
             'slug' => 'classic-burger',
             'description' => 'A solid burger.',
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ]);
-        $product->metadata()->create([
+        $product->translations()->createMany([
+            [
+                'locale' => 'uk',
+                'field' => 'name',
+                'value' => 'Класичний бургер',
+            ],
+            [
+                'locale' => 'uk',
+                'field' => 'description',
+                'value' => 'Надійний бургер на щодень.',
+            ],
+        ]);
+        $metadata = $product->metadata()->create([
             'type' => 'serving_details',
             'value' => 'Serve warm.',
+        ]);
+        $metadata->translations()->create([
+            'locale' => 'uk',
+            'field' => 'value',
+            'value' => 'Подавати теплим.',
         ]);
         $product->productIngredients()->create([
             'ingredient_id' => $ingredient->getKey(),
@@ -78,8 +105,9 @@ class ResourceTest extends TestCase
 
         $categoryPayload = (new CategoryResource($category))->toArray(new Request());
         $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request());
+        App::setLocale('uk');
         $productPayload = (new ProductResource($product->fresh()->load([
-            'metadata',
+            'metadata.translations',
             'ingredients'
         ])))->toArray(new Request());
 
@@ -89,7 +117,7 @@ class ResourceTest extends TestCase
         $this->assertSame('Надійний бургер на щодень.', $productPayload['description']);
         $this->assertSame('Serve warm.', $productPayload['metadata'][0]['value']);
         $this->assertSame('Beef', $productPayload['ingredients'][0]['name']);
-        $this->assertSame('48 hours', $productPayload['shelf_life']);
+        $this->assertSame(48, $productPayload['shelf_life']);
     }
 
     public function test_product_resource_returns_nested_relations_and_nutrition_totals(): void

@@ -53,8 +53,13 @@ class CategoryService
     {
         $ids = array_values($productIds);
 
+        Product::where('category_id', $category->id)
+               ->whereNotIn('id', $ids)
+               ->update(['category_id' => null]);
+
         if ($ids) {
             Product::whereIn('id', $ids)
+                ->whereNull('deleted_at')
                    ->update(['category_id' => $category->id]);
         }
 

@@ -68,7 +68,7 @@ class AdminCatalogApiTest extends TestCase
             'description' => 'Rich cake.',
             'price' => 420,
             'featured_image_url' => 'https://example.com/cake.jpg',
-            'shelf_life' => '48h',
+            'shelf_life' => 48,
             'position' => 3,
             'stock_quantity' => 12,
             'reorder_level' => 2,
@@ -257,6 +257,118 @@ class AdminCatalogApiTest extends TestCase
         $this->assertDatabaseHas('products', [
             'id' => $otherProduct->getKey(),
             'is_active' => true,
+        ]);
+    }
+
+    public function test_admin_can_create_products_without_category_and_reassign_them_later(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'api');
+
+        $category = Category::factory()->create();
+
+        $createResponse = $this->postJson('/api/products', [
+            'name' => 'Standalone Product',
+            'description' => 'Created without category.',
+            'price' => 199,
+            'is_active' => true,
+            'is_available' => true,
+        ]);
+
+        $createResponse
+            ->assertCreated()
+            ->assertJsonPath('data.category_id', null);
+
+        $productId = (string)$createResponse->json('data.id');
+
+        $this->putJson("/api/categories/{$category->getKey()}/products", [
+            'product_ids' => [$productId],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $productId,
+            'category_id' => $category->getKey(),
+        ]);
+
+        $this->putJson("/api/categories/{$category->getKey()}/products", [
+            'product_ids' => [],
+        ])->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $productId,
+            'category_id' => null,
+        ]);
+    }
+
+    public function test_admin_cannot_mutate_system_categories(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'api');
+
+        $systemCategory = Category::factory()->create([
+            'slug' => 'all',
+            'is_system' => true,
+        ]);
+
+        $product = Product::factory()->create(['category_id' => null]);
+
+        $this->putJson("/api/categories/{$systemCategory->getKey()}", [
+            'name' => 'All Updated',
+            'position' => 0,
+            'is_active' => true,
+        ])->assertForbidden();
+
+        $this->putJson("/api/categories/{$systemCategory->getKey()}/products", [
+            'product_ids' => [$product->getKey()],
+        ])->assertForbidden();
+
+        $this->deleteJson("/api/categories/{$systemCategory->getKey()}")->assertForbidden();
+    }
+
+    public function test_product_store_rejects_system_category_id(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'api');
+
+        $systemCategory = Category::factory()->create([
+            'slug' => 'all',
+            'is_system' => true,
+        ]);
+
+        $this->postJson('/api/products', [
+            'category_id' => $systemCategory->getKey(),
+            'name' => 'Blocked Product',
+            'description' => 'Should not be assigned to system category.',
+            'price' => 99,
+            'is_active' => true,
+            'is_available' => true,
+        ])
+             ->assertUnprocessable()
+             ->assertJsonValidationErrors(['category_id']);
+    }
+
+    public function test_product_update_rejects_system_category_id(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'api');
+
+        $regularCategory = Category::factory()->create(['is_system' => false]);
+        $systemCategory = Category::factory()->create([
+            'slug' => 'all',
+            'is_system' => true,
+        ]);
+
+        $product = Product::factory()->for($regularCategory)->create();
+
+        $this->putJson("/api/products/{$product->getKey()}", [
+            'category_id' => $systemCategory->getKey(),
+        ])
+             ->assertUnprocessable()
+             ->assertJsonValidationErrors(['category_id']);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'category_id' => $regularCategory->getKey(),
         ]);
     }
 }
