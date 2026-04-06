@@ -152,7 +152,7 @@ export const enTranslations = {
     profile: {
       roleAdmin: 'Administrator',
       roleClient: 'Client',
-      syncHint: 'Profile and order history are synced with the Laravel API in real time.',
+      syncHint: 'Your profile and order history stay up to date automatically across your sessions.',
       ordersLabel: 'Orders',
       emailLabel: 'Email',
       phoneLabel: 'Phone',
@@ -161,7 +161,7 @@ export const enTranslations = {
     },
     orders: {
       title: 'Order history',
-      hint: 'Test orders that simulate data that will later come from the backend API.',
+      hint: 'Your latest orders appear here. Use Repeat order to quickly add the same items to your cart.',
       repeatOrder: 'Repeat order',
       noOrders: 'No orders yet.',
       status: {

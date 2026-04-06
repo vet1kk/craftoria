@@ -5,7 +5,7 @@ import { take } from 'rxjs';
 import { CatalogHelper } from '../../helpers';
 import { AdminTab, Category, CategoryProductOption, Product } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { CategoryApiService, SettingsApiService, UserService } from '../../services';
+import { CategoryApiService, I18nService, SettingsApiService, UserService } from '../../services';
 import { AdminCategoriesPanelComponent, AdminProductPanelComponent, AdminTabsComponent } from '../components';
 
 @Component({
@@ -21,6 +21,7 @@ export class AdminComponent {
   private readonly userService = inject(UserService);
   private readonly settingsApiService = inject(SettingsApiService);
   private readonly categoryApiService = inject(CategoryApiService);
+  private readonly i18n = inject(I18nService);
   readonly categories = signal<Category[]>([]);
   readonly products = signal<Product[]>([]);
   readonly isCatalogLoading = signal(false);
@@ -29,6 +30,7 @@ export class AdminComponent {
   readonly currency = signal('');
   readonly categoryProductOptions = signal<CategoryProductOption[]>([]);
   private readonly isRedirecting = signal(false);
+  private lastLoadedLocale: string | null = null;
 
   readonly activeTab = signal<AdminTab>('items');
   readonly assignableCategories = computed(() =>
@@ -63,6 +65,17 @@ export class AdminComponent {
 
       this.isRedirecting.set(true);
       void this.router.navigate(['/products'], { replaceUrl: true });
+    });
+
+    effect(() => {
+      const locale = this.i18n.locale();
+      const shouldForceReload = this.lastLoadedLocale !== null && this.lastLoadedLocale !== locale;
+      this.lastLoadedLocale = locale;
+
+      if (shouldForceReload) {
+        this.reloadCatalog();
+        this.reloadCategoryOptions();
+      }
     });
   }
 
