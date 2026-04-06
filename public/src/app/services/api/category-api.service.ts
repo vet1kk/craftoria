@@ -28,11 +28,12 @@ export class CategoryApiService {
     return this.apiService.post<Category>(`/categories/${categoryId}`, payload);
   }
 
-  updateTranslations(categoryId: string, locale: string, fields: Record<string, string | null>): Observable<ApiResponse<Category>> {
-    return this.apiService.put<Category>(`/categories/${categoryId}/translations`, {
-      locale,
-      fields,
-    });
+  updateTranslations(
+    categoryId: string,
+    locale: string,
+    fields: Record<string, string | null>
+  ): Observable<ApiResponse<{ type: string; id: string }>> {
+    return this.apiService.put<{ type: string; id: string }>(`/translations/categories/${categoryId}`, { locale, fields });
   }
 
   assignProducts(categoryId: string, productIds: string[]): Observable<ApiResponse<Category>> {

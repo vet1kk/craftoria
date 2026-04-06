@@ -28,11 +28,12 @@ export class ProductApiService {
     return this.apiService.post<Product>(`/products/${productId}`, payload);
   }
 
-  updateTranslations(productId: string, locale: string, fields: Record<string, string | null>): Observable<ApiResponse<Product>> {
-    return this.apiService.put<Product>(`/products/${productId}/translations`, {
-      locale,
-      fields,
-    });
+  updateTranslations(
+    productId: string,
+    locale: string,
+    fields: Record<string, string | null>
+  ): Observable<ApiResponse<{ type: string; id: string }>> {
+    return this.apiService.put<{ type: string; id: string }>(`/translations/products/${productId}`, { locale, fields });
   }
 
   delete(productId: string): Observable<ApiResponse<null>> {
