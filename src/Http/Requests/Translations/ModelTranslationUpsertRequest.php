@@ -32,7 +32,7 @@ class ModelTranslationUpsertRequest extends AdminRequest
     /**
      * Merge route params into validation payload.
      */
-    protected function validationData(): array
+    public function validationData(): array
     {
         return array_merge($this->all(), [
             'type' => (string)$this->route('type'),
