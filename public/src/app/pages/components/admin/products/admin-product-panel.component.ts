@@ -211,8 +211,8 @@ export class AdminProductPanelComponent {
     this.isDeleteModalOpen.set(true);
   }
 
-  closeModals(): void {
-    if (this.isBusy()) {
+  closeModals(force = false): void {
+    if (this.isBusy() && !force) {
       return;
     }
 
@@ -271,7 +271,7 @@ export class AdminProductPanelComponent {
     ).subscribe({
       next: () => {
         this.toastService.success(this.i18n.translate('ui.admin.productCreateSuccess'));
-        this.closeModals();
+        this.closeModals(true);
         this.productChanged.emit();
       },
       error: (error: unknown) => {
@@ -341,7 +341,7 @@ export class AdminProductPanelComponent {
     ).subscribe({
       next: () => {
         this.toastService.success(this.i18n.translate('ui.admin.productUpdateSuccess'));
-        this.closeModals();
+        this.closeModals(true);
         this.productChanged.emit();
       },
       error: (error: unknown) => {
@@ -373,7 +373,7 @@ export class AdminProductPanelComponent {
     ).subscribe({
       next: () => {
         this.toastService.success(this.i18n.translate('ui.admin.productDeleteSuccess'));
-        this.closeModals();
+        this.closeModals(true);
         this.productChanged.emit();
       },
       error: (error: unknown) => {

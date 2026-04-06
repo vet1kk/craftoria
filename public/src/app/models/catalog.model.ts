@@ -12,16 +12,10 @@ export interface Category {
 
 export interface CategoryUpsertPayload {
   name: string;
-  translations?: Record<string, { name?: string | null }>;
   icon: string | null;
   position: number;
   is_active: boolean;
   image: File | null;
-  product_ids: string[];
-}
-
-export interface CategoryUpdatePayload extends CategoryUpsertPayload {
-  id: string;
 }
 
 export interface CategoryProductOption {

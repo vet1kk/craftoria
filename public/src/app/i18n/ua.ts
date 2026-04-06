@@ -241,7 +241,8 @@ export const uaTranslations = {
       categoryIconMaxLength: 'Іконка категорії має містити не більше 255 символів.',
       categoryPositionLabel: 'Позиція',
       categoryImageLabel: 'Зображення',
-      categoryProductsLabel: 'Товари',
+      categoryProductsLabel: 'Оберіть товари',
+      categoryProductsEmptyTip: 'Порада: спочатку створіть товари або зніміть з них категорію, щоб додати їх сюди.',
       categoryActiveLabel: 'Активна',
       categoryStatusActive: 'Активна',
       categoryStatusInactive: 'Неактивна',
@@ -256,7 +257,13 @@ export const uaTranslations = {
       categoryUpdateSuccess: 'Категорію оновлено.',
       categoryUpdateError: 'Не вдалося оновити категорію.',
       categoryDeleteSuccess: 'Категорію видалено.',
-      categoryDeleteError: 'Не вдалося видалити категорію.'
+      categoryDeleteError: 'Не вдалося видалити категорію.',
+      emptyState: {
+        noCategoryAssigned: 'Категорію не призначено.',
+        categoryAssignTip: 'Порада: відкрийте Редагувати та оберіть один тег категорії.',
+        noProductsAssigned: 'Поки що немає призначених товарів.',
+        productsAssignTip: 'Порада: відкрийте Редагувати та оберіть теги товарів для цієї категорії.'
+      }
     },
     footer: {
       copyright: '© 2026 Craftoria de la Victoria. Усі права захищено.',

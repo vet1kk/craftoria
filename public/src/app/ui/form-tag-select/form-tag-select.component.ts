@@ -1,27 +1,26 @@
 import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
-import { SelectOption } from '../../models';
+import { SelectOption, SelectValue } from '../../models';
 import { ValidationService } from '../../services';
-import { VerifiableInputComponent } from '../verifiable-input';
 
 @Component({
-  selector: 'ui-form-select',
+  selector: 'ui-form-tag-select',
   standalone: true,
-  imports: [ReactiveFormsModule, VerifiableInputComponent],
-  templateUrl: './form-select.component.html',
+  imports: [ReactiveFormsModule],
+  templateUrl: './form-tag-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormSelectComponent {
+export class FormTagSelectComponent {
   private readonly validationService = inject(ValidationService);
 
   readonly label = input.required<string>();
+  readonly showLabel = input(true);
   readonly required = input(false);
-  readonly control = input.required<FormControl<string | string[] | number | null>>();
+  readonly control = input.required<FormControl<SelectValue | SelectValue[] | null>>();
   readonly options = input<SelectOption[]>([]);
-  readonly placeholder = input('');
   readonly multiple = input(false);
-  readonly size = input(6);
+  readonly emptyOptionLabel = input('');
   readonly hasError = input(false);
   readonly errorMessage = input<string | null>(null);
   readonly validationGroup = input<string | null>(null);
@@ -29,8 +28,8 @@ export class FormSelectComponent {
   readonly validationMessages = input<Record<string, string>>({});
   readonly fallbackErrorMessage = input('Invalid value');
 
-  readonly selectionBlur = output<void>();
   readonly selectionChange = output<void>();
+  readonly selectionBlur = output<void>();
 
   resolvedHasError(): boolean {
     if (this.hasError()) {
@@ -70,14 +69,52 @@ export class FormSelectComponent {
     );
   }
 
-  onSelectionChange(event: Event): void {
-    if (this.multiple()) {
-      const target = event.target as HTMLSelectElement;
-      const selectedValues = Array.from(target.selectedOptions).map((option) => option.value);
+  isSelected(value: SelectValue): boolean {
+    const current = this.control().value;
 
-      this.control().setValue(selectedValues);
+    if (this.multiple()) {
+      return Array.isArray(current) && current.some((item) => String(item) === String(value));
     }
 
+    return current !== null && !Array.isArray(current) && String(current) === String(value);
+  }
+
+  select(value: SelectValue): void {
+    if (this.multiple()) {
+      const currentValue = this.control().value;
+      const current: SelectValue[] = Array.isArray(currentValue) ? currentValue : [];
+      const next = this.isSelected(value)
+        ? current.filter((item) => String(item) !== String(value))
+        : [...current, value];
+
+      this.control().setValue(next);
+      this.control().markAsDirty();
+      this.onSelectionChange();
+      return;
+    }
+
+    this.control().setValue(this.isSelected(value) ? null : value);
+    this.control().markAsDirty();
+    this.onSelectionChange();
+  }
+
+  selectEmpty(): void {
+    this.control().setValue(this.multiple() ? [] : null);
+    this.control().markAsDirty();
+    this.onSelectionChange();
+  }
+
+  isEmptySelected(): boolean {
+    const current = this.control().value;
+
+    if (this.multiple()) {
+      return Array.isArray(current) && current.length === 0;
+    }
+
+    return current === null || current === '';
+  }
+
+  onSelectionChange(): void {
     const group = this.validationGroup();
     const key = this.validationKey();
 

@@ -3,12 +3,12 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { Category, SelectOption } from '../../../../../../models';
 import { TranslatePipe } from '../../../../../../pipes/translate.pipe';
-import { ButtonComponent, FormInputComponent, FormSelectComponent, LoaderComponent } from '../../../../../../ui';
+import { ButtonComponent, FormInputComponent, FormTagSelectComponent, LoaderComponent } from '../../../../../../ui';
 
 @Component({
   selector: 'app-admin-product-upsert-modal',
   standalone: true,
-  imports: [TranslatePipe, ReactiveFormsModule, FormInputComponent, FormSelectComponent, LoaderComponent, ButtonComponent],
+  imports: [TranslatePipe, ReactiveFormsModule, FormInputComponent, FormTagSelectComponent, LoaderComponent, ButtonComponent],
   templateUrl: './admin-product-upsert-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -37,8 +37,3 @@ export class AdminProductUpsertModalComponent {
     return form.controls as Record<string, any>;
   }
 }
-
-
-
-
-

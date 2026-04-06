@@ -1,0 +1,39 @@
+<section class="relative z-10 w-full max-w-2xl rounded-3xl border border-stone-100 bg-white p-5 shadow-sm sm:p-8">
+  @if (isBusy()) {
+    <div class="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-white/75 backdrop-blur-[1px]">
+      <div class="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm">
+        <ui-loader [label]="busyActionLabel()" tone="dark"></ui-loader>
+      </div>
+    </div>
+  }
+
+  <h3 class="text-xl font-bold text-stone-800">{{ 'ui.admin.categoryDeleteTitle' | t }}</h3>
+  <p class="mt-3 text-sm text-stone-600">
+    {{ 'ui.admin.categoryDeleteConfirm' | t }}
+    <span class="font-semibold text-stone-800">{{ category().name }}</span>?
+  </p>
+
+  @if (actionError()) {
+    <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ actionError() }}
+    </div>
+  }
+
+  <div class="mt-6 flex flex-wrap justify-end gap-2">
+    <ui-button type="button"
+               variant="outline"
+               rounded="full"
+               [disabled]="isBusy()"
+               (click)="closeRequested.emit()">
+      {{ 'ui.admin.categoryCancelAction' | t }}
+    </ui-button>
+    <ui-button variant="danger"
+               rounded="full"
+               [disabled]="isBusy()"
+               [loading]="isBusy()"
+               [loadingLabel]="busyActionLabel()"
+               (click)="confirmDelete()">
+      {{ 'ui.admin.categoryDeleteAction' | t }}
+    </ui-button>
+  </div>
+</section>

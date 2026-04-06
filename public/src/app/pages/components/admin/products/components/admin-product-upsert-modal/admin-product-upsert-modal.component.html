@@ -22,15 +22,15 @@
     </div>
 
     <div class="mt-5 grid gap-4">
-      <ui-form-select [label]="'ui.admin.productCategoryPlaceholder' | t"
-                      [control]="controls(form)['category_id']"
-                      [options]="categoryOptions()"
-                      [placeholder]="'ui.admin.productCategoryPlaceholder' | t"
-                      [validationGroup]="validationGroup()"
-                      validationKey="category_id"
-                      [validationMessages]="{}"
-                      [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
-      </ui-form-select>
+
+      <ui-form-tag-select [label]="'ui.admin.productCategoryPlaceholder' | t"
+                          [control]="controls(form)['category_id']"
+                          [options]="categoryOptions()"
+                          [validationGroup]="validationGroup()"
+                          validationKey="category_id"
+                          [validationMessages]="{}"
+                          [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+      </ui-form-tag-select>
 
       <ui-form-input [label]="'ui.admin.productNameLabel' | t"
                      [required]="true"

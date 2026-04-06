@@ -241,7 +241,8 @@ export const enTranslations = {
       categoryIconMaxLength: 'Category icon must be no more than 255 characters.',
       categoryPositionLabel: 'Position',
       categoryImageLabel: 'Image',
-      categoryProductsLabel: 'Products',
+      categoryProductsLabel: 'Select products',
+      categoryProductsEmptyTip: 'Tip: create or unassign products first so they can be added to this category.',
       categoryActiveLabel: 'Active',
       categoryStatusActive: 'Active',
       categoryStatusInactive: 'Inactive',
@@ -256,7 +257,13 @@ export const enTranslations = {
       categoryUpdateSuccess: 'Category has been updated.',
       categoryUpdateError: 'Failed to update category.',
       categoryDeleteSuccess: 'Category has been deleted.',
-      categoryDeleteError: 'Failed to delete category.'
+      categoryDeleteError: 'Failed to delete category.',
+      emptyState: {
+        noCategoryAssigned: 'No category assigned.',
+        categoryAssignTip: 'Tip: open Edit and choose one category tag.',
+        noProductsAssigned: 'No products assigned yet.',
+        productsAssignTip: 'Tip: open Edit and select product tags for this category.'
+      }
     },
     footer: {
       copyright: '© 2026 Craftoria de la Victoria. All rights reserved.',

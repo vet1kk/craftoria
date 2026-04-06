@@ -2,6 +2,7 @@ export * from './badge';
 export * from './button';
 export * from './form-input';
 export * from './form-select';
+export * from './form-tag-select';
 export * from './image-preview';
 export * from './loader';
 export * from './modal';
