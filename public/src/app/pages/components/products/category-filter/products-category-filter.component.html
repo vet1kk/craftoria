@@ -1,54 +1,88 @@
 <div class="sticky top-0 z-20 w-full border-b border-stone-100 bg-white/90 backdrop-blur-md">
-  <div class="mx-auto max-w-7xl px-4 py-3">
+  <div class="mx-auto max-w-7xl px-4 py-2">
 
-    <div class="flex items-center justify-between md:hidden gap-4">
-      <div class="flex items-center gap-3 flex-wrap">
-        <span class="text-xs font-black uppercase tracking-widest text-stone-400">{{ 'ui.products.selectedCategory' | t }}</span>
-        <span class="text-sm font-bold text-orange-600">{{ activeCategoryName() }}</span>
-      </div>
+    <div class="mt-2 overflow-x-auto rounded-xl p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div class="flex min-w-max items-center gap-2">
+        @for (category of categories(); track category.id) {
+          <button type="button"
+                  (click)="selectCategory(category.slug)"
+                  class="group relative inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
+                  [class]="isSelected(category.slug)
+                    ? 'border-orange-400 bg-white text-orange-800 shadow-sm ring-1 ring-orange-200'
+                    : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
+            <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white">
+              @if (category.image_url) {
+                <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
+              } @else {
+                <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs">{{ category.icon ?? '📦' }}</div>
+              }
+            </div>
 
-      <button type="button"
-              (click)="isMenuOpen.set(!isMenuOpen())"
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-50 border border-stone-200 text-stone-600 active:bg-stone-100">
-        @if (!isMenuOpen()) {
-          <span class="text-xl">☰</span>
-        } @else {
-          <span class="text-xl">✕</span>
-        }
-      </button>
-    </div>
+            <span class="text-xs font-semibold tracking-tight md:text-sm">
+              {{ category.name }}
+            </span>
 
-    <div [class.hidden]="!isMenuOpen()"
-         class="mt-4 flex flex-col gap-2 md:mt-0 md:flex md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-3">
-
-      @for (category of categories(); track category.id) {
-        <button type="button"
-                (click)="selectCategory(category.slug)"
-                class="group relative flex items-center gap-3 rounded-2xl border p-2 pr-4 transition-all md:rounded-xl md:px-4 md:py-2"
-                [class]="isSelected(category.slug)
-                  ? 'border-orange-500 bg-orange-50 text-orange-900 shadow-sm'
-                  : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
-
-          <div class="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white md:h-6 md:w-6">
-            @if (category.image_url) {
-              <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
-            } @else {
-              <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs"> {{ category.icon ?? '📦' }}</div>
-            }
-          </div>
-
-          <span class="text-sm font-bold tracking-tight md:font-semibold">
-            {{ category.name }}
-          </span>
-
-          @if (isSelected(category.slug)) {
-            <span class="absolute -right-1 -top-1 flex h-3 w-3">
+            @if (isSelected(category.slug)) {
+              <span class="absolute -right-1 -top-1 flex h-3 w-3">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
             </span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="mt-2 mr-auto w-full max-w-2xl border-t border-stone-100 pt-1.5">
+      <div class="flex flex-col gap-1.5">
+        <label>
+          <input type="search"
+                 [value]="searchQuery()"
+                 (input)="onSearchInput($event)"
+                 [placeholder]="'ui.products.searchPlaceholder' | t"
+                 [attr.aria-label]="'ui.products.searchLabel' | t"
+                 class="h-8 w-full rounded-lg border border-stone-200 bg-white px-3 text-xs text-stone-800 transition-colors focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-100">
+        </label>
+
+        <div class="flex gap-1.5">
+          <label class="min-w-0 flex-1">
+            <select [value]="availabilityFilter()"
+                    (change)="onAvailabilityChange($event)"
+                    [attr.aria-label]="'ui.products.availabilityLabel' | t"
+                    class="h-8 w-full rounded-lg border border-stone-200 bg-white px-2.5 text-xs text-stone-800 transition-colors focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-100">
+              <option value="all">{{ 'ui.products.availabilityAll' | t }}</option>
+              <option value="available">{{ 'ui.products.availabilityInStock' | t }}</option>
+              <option value="unavailable">{{ 'ui.products.availabilityOutOfStock' | t }}</option>
+            </select>
+          </label>
+
+          <label class="min-w-0 flex-1">
+            <select [value]="sortBy()"
+                    (change)="onSortChange($event)"
+                    [attr.aria-label]="'ui.products.sortLabel' | t"
+                    class="h-8 w-full rounded-lg border border-stone-200 bg-white px-2.5 text-xs text-stone-800 transition-colors focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-100">
+              <option value="position">{{ 'ui.products.sortByPosition' | t }}</option>
+              <option value="nameAsc">{{ 'ui.products.sortByName' | t }}</option>
+              <option value="priceAsc">{{ 'ui.products.sortByPriceAsc' | t }}</option>
+              <option value="priceDesc">{{ 'ui.products.sortByPriceDesc' | t }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-0.5">
+          <p class="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-600">
+            {{ resultsCount() }} {{ 'ui.products.resultsLabel' | t }}
+          </p>
+
+          @if (hasActiveControls()) {
+            <button type="button"
+                    class="rounded-full border border-stone-200 px-2 py-0.5 text-[10px] font-semibold text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+                    (click)="resetAll()">
+              {{ 'ui.actions.clearFilters' | t }}
+            </button>
           }
-        </button>
-      }
+        </div>
+      </div>
     </div>
   </div>
 </div>

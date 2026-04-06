@@ -23,7 +23,8 @@ export const enTranslations = {
       retry: 'Try again',
       checkout: 'Place order',
       refresh: 'Refresh',
-      refreshing: 'Refreshing...'
+      refreshing: 'Refreshing...',
+      clearFilters: 'Clear filters'
     },
     cart: {
       title: 'Your order',
@@ -41,9 +42,24 @@ export const enTranslations = {
       errorTitle: 'Unable to load the catalog',
       emptyCatalog: 'No menu items are available right now.',
       emptyCategory: 'There are no items in this category yet.',
+      emptyFiltered: 'No products match your current filters.',
       catalogLoadError: 'Failed to load the catalog.',
       itemLoadError: 'Failed to load the item.',
       selectedCategory: 'Selected category:',
+      searchLabel: 'Search products',
+      searchPlaceholder: 'Search by name or description',
+      availabilityLabel: 'Availability',
+      availabilityAll: 'All',
+      availabilityInStock: 'In stock',
+      availabilityOutOfStock: 'Out of stock',
+      sortLabel: 'Sort',
+      sortByPosition: 'Menu order',
+      sortByName: 'Name (A-Z)',
+      sortByPriceAsc: 'Price: low to high',
+      sortByPriceDesc: 'Price: high to low',
+      resultsLabel: 'results',
+      filtersAction: 'Filters',
+      filtersTitle: 'Filter products'
     },
     data: {
       descriptionPlaceholder: 'Description will be added soon.',

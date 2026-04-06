@@ -1,55 +1,31 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { Category } from '../../../../models';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
 
 type AvailabilityFilter = 'all' | 'available' | 'unavailable';
 type ProductSort = 'position' | 'priceAsc' | 'priceDesc' | 'nameAsc';
 
 @Component({
-  selector: 'app-products-category-filter',
+  selector: 'app-products-list-controls',
   standalone: true,
-  templateUrl: './products-category-filter.component.html',
-  imports: [
-    TranslatePipe
-  ],
+  templateUrl: './products-list-controls.component.html',
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductsCategoryFilterComponent {
-  readonly categories = input.required<Category[]>();
-  readonly selectedSlugs = input<string[]>(['all']);
+export class ProductsListControlsComponent {
   readonly searchQuery = input('');
   readonly availabilityFilter = input<AvailabilityFilter>('all');
   readonly sortBy = input<ProductSort>('position');
   readonly resultsCount = input(0);
 
-  readonly categoryChange = output<string>();
   readonly searchQueryChange = output<string>();
   readonly availabilityFilterChange = output<AvailabilityFilter>();
   readonly sortByChange = output<ProductSort>();
-
-  isMenuOpen = signal(false);
-
-  activeCategoryName = computed(() => {
-    const firstSlug = this.selectedSlugs()[0];
-    const match = this.categories().find((category) => category.slug === firstSlug);
-
-    return match ? match.name : '';
-  });
   readonly hasActiveControls = computed(() => {
     return this.searchQuery().trim().length > 0
       || this.availabilityFilter() !== 'all'
-      || this.sortBy() !== 'position'
-      || (this.selectedSlugs()[0] ?? 'all') !== 'all';
+      || this.sortBy() !== 'position';
   });
-
-  isSelected(slug: string): boolean {
-    return this.selectedSlugs().includes(slug);
-  }
-
-  selectCategory(slug: string): void {
-    this.categoryChange.emit(slug);
-    this.isMenuOpen.set(false);
-  }
 
   onSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement | null)?.value ?? '';
@@ -73,8 +49,7 @@ export class ProductsCategoryFilterComponent {
     }
   }
 
-  resetAll(): void {
-    this.categoryChange.emit('all');
+  resetControls(): void {
     this.searchQueryChange.emit('');
     this.availabilityFilterChange.emit('all');
     this.sortByChange.emit('position');

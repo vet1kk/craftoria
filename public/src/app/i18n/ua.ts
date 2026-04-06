@@ -23,7 +23,8 @@ export const uaTranslations = {
       retry: 'Спробувати ще раз',
       checkout: 'Оформити замовлення',
       refresh: 'Оновити',
-      refreshing: 'Оновлюємо...'
+      refreshing: 'Оновлюємо...',
+      clearFilters: 'Скинути фільтри'
     },
     cart: {
       title: 'Ваше замовлення',
@@ -41,9 +42,24 @@ export const uaTranslations = {
       errorTitle: 'Не вдалося отримати каталог',
       emptyCatalog: 'Наразі позиції меню відсутні.',
       emptyCategory: 'У цій категорії поки немає позицій.',
+      emptyFiltered: 'За поточними фільтрами товари не знайдено.',
       catalogLoadError: 'Не вдалося завантажити каталог.',
       itemLoadError: 'Не вдалося завантажити товар.',
       selectedCategory: 'Вибрана категорія:',
+      searchLabel: 'Пошук товарів',
+      searchPlaceholder: 'Пошук за назвою або описом',
+      availabilityLabel: 'Наявність',
+      availabilityAll: 'Усі',
+      availabilityInStock: 'В наявності',
+      availabilityOutOfStock: 'Немає в наявності',
+      sortLabel: 'Сортування',
+      sortByPosition: 'Порядок меню',
+      sortByName: 'Назва (А-Я)',
+      sortByPriceAsc: 'Ціна: від меншої',
+      sortByPriceDesc: 'Ціна: від більшої',
+      resultsLabel: 'результатів',
+      filtersAction: 'Фільтри',
+      filtersTitle: 'Фільтрувати товари'
     },
     data: {
       descriptionPlaceholder: 'Опис буде додано найближчим часом.',
