@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property string $slug
  * @property string $unit
- * @property int $calories
+ * @property string $calories
  * @property string $proteins
  * @property string $fats
  * @property string $carbs
@@ -73,7 +73,7 @@ class Ingredient extends Model
     protected function casts(): array
     {
         return [
-            'calories' => 'integer',
+            'calories' => 'decimal:2',
             'proteins' => 'decimal:2',
             'fats' => 'decimal:2',
             'carbs' => 'decimal:2',

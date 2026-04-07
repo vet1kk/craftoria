@@ -31,7 +31,7 @@ class ResourceTest extends TestCase
             'image_url' => 'https://example.com/cat.jpg',
         ]);
         $ingredient = Ingredient::factory()->create([
-            'calories' => 123,
+            'calories' => 123.45,
             'proteins' => 10.5,
             'fats' => 2.4,
             'carbs' => 18.7,
@@ -43,7 +43,7 @@ class ResourceTest extends TestCase
 
         $this->assertSame('cake', $categoryPayload['icon']);
         $this->assertSame('https://example.com/cat.jpg', $categoryPayload['image_url']);
-        $this->assertSame(123, $ingredientPayload['nutrition_totals']['calories']);
+        $this->assertSame(123.45, $ingredientPayload['nutrition_totals']['calories']);
         $this->assertSame(10.5, $ingredientPayload['nutrition_totals']['proteins']);
         $this->assertSame(14.2, $ingredientPayload['cost_amount']);
     }
@@ -124,7 +124,7 @@ class ResourceTest extends TestCase
     {
         $category = Category::factory()->create();
         $ingredient = Ingredient::factory()->create([
-            'calories' => 200,
+            'calories' => 2.25,
             'proteins' => 10,
             'fats' => 5,
             'carbs' => 20,
@@ -143,7 +143,7 @@ class ResourceTest extends TestCase
 
         $this->assertSame('https://example.com/p1.jpg', $payload['images'][0]['image_url']);
         $this->assertSame('serving_details', $payload['metadata'][0]['type']);
-        $this->assertSame(10000, $payload['nutrition_totals']['calories']);
+        $this->assertSame(112.5, $payload['nutrition_totals']['calories']);
         $this->assertSame(500.0, $payload['nutrition_totals']['proteins']);
     }
 

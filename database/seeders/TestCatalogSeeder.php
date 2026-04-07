@@ -434,7 +434,7 @@ class TestCatalogSeeder extends Seeder
         $ingredientsBySlug = [];
 
         foreach (self::INGREDIENTS as $ingredientData) {
-            $ingredient = Ingredient::query()->updateOrCreate(
+            $ingredient = Ingredient::updateOrCreate(
                 ['slug' => (string)$ingredientData['slug']],
                 Arr::except($ingredientData, ['slug', 'translations'])
             );
@@ -493,7 +493,7 @@ class TestCatalogSeeder extends Seeder
                 continue;
             }
 
-            $metadata = ProductMetadata::query()->updateOrCreate(
+            $metadata = ProductMetadata::updateOrCreate(
                 [
                     'product_id' => $product->id,
                     'type' => $type,

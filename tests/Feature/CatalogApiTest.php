@@ -50,7 +50,7 @@ class CatalogApiTest extends TestCase
             'name' => 'Beef',
             'slug' => 'beef',
             'unit' => 'g',
-            'calories' => 250,
+            'calories' => 2.50,
             'proteins' => 26,
             'fats' => 18,
             'carbs' => 0,

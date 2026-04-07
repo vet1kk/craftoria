@@ -11,7 +11,7 @@
     </div>
     <div class="flex flex-col items-end">
       <span class="text-2xl font-black text-orange-600">
-        {{ nutrition().calories }}
+        {{ nutrition().calories | number: '1.1-1' }}
       </span>
       <span class="text-[10px] font-bold uppercase tracking-widest text-stone-400">
         {{ 'ui.itemDetail.kcal' | t }}

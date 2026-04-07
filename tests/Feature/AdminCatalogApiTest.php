@@ -47,7 +47,7 @@ class AdminCatalogApiTest extends TestCase
             'name' => 'Chocolate',
             'slug' => 'chocolate',
             'unit' => 'g',
-            'calories' => 540,
+            'calories' => 5.40,
             'proteins' => 7.8,
             'fats' => 31.0,
             'carbs' => 57.0,

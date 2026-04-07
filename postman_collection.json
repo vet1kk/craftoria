@@ -610,7 +610,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Espresso\",\n  \"slug\": \"espresso\",\n  \"unit\": \"ml\",\n  \"calories\": 2,\n  \"is_active\": true\n}"
+              "raw": "{\n  \"name\": \"Espresso\",\n  \"slug\": \"espresso\",\n  \"unit\": \"ml\",\n  \"calories\": 2.35,\n  \"is_active\": true\n}"
             },
             "url": "{{base_url}}/ingredients"
           }

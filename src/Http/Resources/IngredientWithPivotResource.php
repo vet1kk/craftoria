@@ -30,10 +30,10 @@ class IngredientWithPivotResource extends JsonResource
             'position' => $this->pivot?->position,
             'image_url' => $this->pivot?->image_url,
             'nutrition_totals' => [
-                'calories' => $this->calories * (float)$this->pivot?->quantity,
-                'proteins' => (float)$this->proteins * (float)$this->pivot?->quantity,
-                'fats' => (float)$this->fats * (float)$this->pivot?->quantity,
-                'carbs' => (float)$this->carbs * (float)$this->pivot?->quantity,
+                'calories' => round((float)$this->calories * (float)$this->pivot?->quantity, 2),
+                'proteins' => round((float)$this->proteins * (float)$this->pivot?->quantity, 2),
+                'fats' => round((float)$this->fats * (float)$this->pivot?->quantity, 2),
+                'carbs' => round((float)$this->carbs * (float)$this->pivot?->quantity, 2),
             ],
         ]);
     }
