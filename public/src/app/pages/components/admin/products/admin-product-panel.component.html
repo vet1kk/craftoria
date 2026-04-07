@@ -4,7 +4,6 @@
     <ui-button type="button"
                variant="secondary"
                rounded="full"
-               [disabled]="isBusy()"
                (click)="openCreateModal()">
       {{ 'ui.admin.productCreateAction' | t }}
     </ui-button>
@@ -60,7 +59,6 @@
           <ui-button type="button"
                      variant="outline"
                      rounded="full"
-                     [disabled]="isBusy()"
                      [className]="'min-w-24 flex-1 sm:flex-none'"
                      (click)="openViewModal(product)">
             {{ 'ui.admin.productViewAction' | t }}
@@ -68,7 +66,6 @@
           <ui-button type="button"
                      variant="outline"
                      rounded="full"
-                     [disabled]="isBusy()"
                      [className]="'min-w-24 flex-1 sm:flex-none'"
                      (click)="openEditModal(product)">
             {{ 'ui.admin.productEditAction' | t }}
@@ -76,7 +73,6 @@
           <ui-button type="button"
                      variant="danger"
                      rounded="full"
-                     [disabled]="isBusy()"
                      [className]="'min-w-24 flex-1 sm:flex-none'"
                      (click)="openDeleteModal(product)">
             {{ 'ui.admin.productDeleteAction' | t }}
@@ -88,42 +84,37 @@
 </div>
 
 <ui-modal [open]="isCreateModalOpen() || isEditModalOpen() || isDeleteModalOpen() || isViewModalOpen()"
-          [disableClose]="isBusy()"
+          [disableClose]="false"
           (closeRequested)="closeModals()">
   @if (isViewModalOpen() && selectedProduct()) {
     <app-admin-product-view-modal [product]="selectedProduct()!"
                                   [categoryName]="selectedProductCategoryName()"
-                                  [isBusy]="isBusy()"
                                   (closeRequested)="closeModals()"
                                   (editRequested)="openEditModal()"
                                   (deleteRequested)="openDeleteModal()">
     </app-admin-product-view-modal>
   }
 
-  @if (isCreateModalOpen() || (isEditModalOpen() && selectedProduct())) {
-    <app-admin-product-upsert-modal [isCreate]="isCreateModalOpen()"
-                                    [formGroup]="productForm"
-                                    [validationGroup]="formGroupName"
+  @if (isCreateModalOpen()) {
+    <app-admin-product-create-modal [defaultPosition]="products().length"
                                     [categories]="categories()"
-                                    [selectedImageName]="selectedImageName()"
-                                    [isBusy]="isBusy()"
-                                    [actionError]="actionError()"
-                                    [busyActionLabel]="busyActionLabel()"
-                                    [isCreateSubmitDisabled]="isCreateSubmitDisabled()"
-                                    [isUpdateSubmitDisabled]="isUpdateSubmitDisabled()"
                                     (closeRequested)="closeModals()"
-                                    (submitRequested)="isCreateModalOpen() ? submitCreate() : submitUpdate()"
-                                    (imageSelect)="handleImageSelect($event)">
-    </app-admin-product-upsert-modal>
+                                    (completed)="onModalCompleted()">
+    </app-admin-product-create-modal>
+  }
+
+  @if (isEditModalOpen() && hasSelection()) {
+    <app-admin-product-update-modal [product]="selectedProduct()!"
+                                    [categories]="categories()"
+                                    (closeRequested)="closeModals()"
+                                    (completed)="onModalCompleted()">
+    </app-admin-product-update-modal>
   }
 
   @if (isDeleteModalOpen() && selectedProduct()) {
-    <app-admin-product-delete-modal [productName]="selectedProduct()!.name"
-                                    [isBusy]="isBusy()"
-                                    [actionError]="actionError()"
-                                    [busyActionLabel]="busyActionLabel()"
+    <app-admin-product-delete-modal [product]="selectedProduct()!"
                                     (closeRequested)="closeModals()"
-                                    (deleteRequested)="confirmDelete()">
+                                    (completed)="onModalCompleted()">
     </app-admin-product-delete-modal>
   }
 </ui-modal>

@@ -18,7 +18,8 @@
       <app-admin-product-panel [products]="products()"
                                [isLoading]="isCatalogLoading()"
                                [categories]="assignableCategories()"
-                               [currency]="currency()">
+                               [currency]="currency()"
+                               (productChanged)="onCategoryChanged()">
       </app-admin-product-panel>
     }
 

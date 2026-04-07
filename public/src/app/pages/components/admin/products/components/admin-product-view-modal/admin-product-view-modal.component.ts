@@ -14,11 +14,8 @@ import { ButtonComponent, ImagePreviewComponent } from '../../../../../../ui';
 export class AdminProductViewModalComponent {
   readonly product = input.required<Product>();
   readonly categoryName = input.required<string>();
-  readonly isBusy = input(false);
 
   readonly closeRequested = output<void>();
   readonly editRequested = output<void>();
   readonly deleteRequested = output<void>();
 }
-
-

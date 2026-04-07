@@ -10,7 +10,7 @@
   <h3 class="text-xl font-bold text-stone-800">{{ 'ui.admin.productDeleteTitle' | t }}</h3>
   <p class="mt-3 text-sm text-stone-600">
     {{ 'ui.admin.productDeleteConfirm' | t }}
-    <span class="font-semibold text-stone-800">{{ productName() }}</span>?
+    <span class="font-semibold text-stone-800">{{ product().name }}</span>?
   </p>
 
   @if (actionError()) {
@@ -32,11 +32,8 @@
                [disabled]="isBusy()"
                [loading]="isBusy()"
                [loadingLabel]="busyActionLabel()"
-               (click)="deleteRequested.emit()">
+               (click)="confirmDelete()">
       {{ 'ui.admin.productDeleteAction' | t }}
     </ui-button>
   </div>
 </section>
-
-
-
