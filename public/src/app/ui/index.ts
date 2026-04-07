@@ -1,5 +1,6 @@
 export * from './badge';
 export * from './button';
+export * from './dropdown';
 export * from './form-input';
 export * from './form-select';
 export * from './form-tag-select';

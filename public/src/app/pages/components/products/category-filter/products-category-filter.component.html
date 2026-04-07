@@ -19,10 +19,6 @@
                     : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
             <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-stone-100 bg-stone-50 text-xs">#</span>
             <span class="text-xs font-semibold tracking-tight md:text-sm">{{ 'ui.products.allCategoriesTab' | t }}</span>
-
-            @if (isSelected('all')) {
-              <span class="pointer-events-none absolute bottom-0 left-2 right-2 h-1 translate-y-2 rounded-full bg-stone-900"></span>
-            }
           </button>
 
           @for (category of visibleCategories(); track category.id) {
@@ -41,10 +37,6 @@
               </div>
 
               <span class="text-xs font-semibold tracking-tight md:text-sm">{{ category.name }}</span>
-
-              @if (isSelected(category.slug)) {
-                <span class="pointer-events-none absolute bottom-0 left-2 right-2 h-1 translate-y-2 rounded-full bg-stone-900"></span>
-              }
             </button>
           }
         </div>
@@ -58,19 +50,18 @@
       </button>
     </div>
 
-    <div class="mt-3 flex items-center justify-between gap-3">
+    <div class="mt-3 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm font-medium text-stone-500">{{ resultsCount() }} {{ 'ui.products.resultsLabel' | t }}</p>
-
       <label class="flex items-center gap-3 text-sm text-stone-600">
         <span class="font-medium">{{ 'ui.products.sortLabel' | t }}</span>
-        <select [value]="sortBy()"
-                (change)="onSortChange($event)"
-                class="h-11 rounded-md border border-stone-200 bg-white px-4 text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200">
-          <option value="position">{{ 'ui.products.sortByPosition' | t }}</option>
-          <option value="nameAsc">{{ 'ui.products.sortByName' | t }}</option>
-          <option value="priceAsc">{{ 'ui.products.sortByPriceAsc' | t }}</option>
-          <option value="priceDesc">{{ 'ui.products.sortByPriceDesc' | t }}</option>
-        </select>
+        <ui-dropdown ariaLabelKey="ui.products.sortLabel"
+                     [selectedValue]="sortBy()"
+                     [selectedLabelKey]="selectedSortLabelKey()"
+                     [options]="sortOptions"
+                     buttonClassName="h-11 w-full rounded-md border border-stone-200 bg-white px-4 text-left text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                     menuClassName="absolute right-0 z-20 mt-1 w-full overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                     (valueChange)="selectSort($event)">
+        </ui-dropdown>
       </label>
     </div>
   </div>

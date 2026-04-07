@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { Category } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
+import { DropdownComponent, DropdownOption } from '../../../../ui';
 import { ProductsListControlsComponent } from '../list-controls';
 
 type AvailabilityFilter = 'all' | 'available' | 'unavailable';
@@ -12,6 +13,7 @@ type ProductSort = 'position' | 'priceAsc' | 'priceDesc' | 'nameAsc';
   templateUrl: './products-category-filter.component.html',
   imports: [
     TranslatePipe,
+    DropdownComponent,
     ProductsListControlsComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -23,6 +25,12 @@ export class ProductsCategoryFilterComponent {
   readonly availabilityFilter = input<AvailabilityFilter>('all');
   readonly sortBy = input<ProductSort>('position');
   readonly resultsCount = input(0);
+  readonly sortOptions: ReadonlyArray<DropdownOption> = [
+    { value: 'position', labelKey: 'ui.products.sortByPosition' },
+    { value: 'nameAsc', labelKey: 'ui.products.sortByName' },
+    { value: 'priceAsc', labelKey: 'ui.products.sortByPriceAsc' },
+    { value: 'priceDesc', labelKey: 'ui.products.sortByPriceDesc' }
+  ];
 
   readonly categoryChange = output<string>();
   readonly searchQueryChange = output<string>();
@@ -35,6 +43,11 @@ export class ProductsCategoryFilterComponent {
       || this.sortBy() !== 'position'
       || !this.isSelected('all');
   });
+  readonly selectedSortLabelKey = computed(() => {
+    const selected = this.sortOptions.find((option) => option.value === this.sortBy());
+
+    return selected?.labelKey ?? 'ui.products.sortByPosition';
+  });
 
   isSelected(slug: string): boolean {
     return this.selectedSlugs().includes(slug);
@@ -44,9 +57,7 @@ export class ProductsCategoryFilterComponent {
     this.categoryChange.emit(slug);
   }
 
-  onSortChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement | null)?.value;
-
+  selectSort(value: string): void {
     if (value === 'position' || value === 'priceAsc' || value === 'priceDesc' || value === 'nameAsc') {
       this.sortByChange.emit(value);
     }
