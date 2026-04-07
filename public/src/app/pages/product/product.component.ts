@@ -2,7 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map, take } from 'rxjs';
+import { forkJoin, map, take } from 'rxjs';
 
 import { ApiErrorHelper, ProductHelper } from '../../helpers';
 import { Category, Metadata, PackageDetails, Product, ProductImage } from '../../models';
@@ -105,10 +105,6 @@ export class ProductComponent {
       this.currency.set(response.data.currency);
     });
 
-    this.categoryApiService.listing().pipe(take(1)).subscribe((response) => {
-      this.categories.set(response.data ?? []);
-    });
-
     this.fetchProduct();
 
     effect(() => {
@@ -126,6 +122,7 @@ export class ProductComponent {
     const slug = this.productSlug();
     this.loadError.set('');
     this.product = undefined;
+    this.categories.set([]);
 
     if (!slug) {
       this.isLoading.set(false);
@@ -134,8 +131,12 @@ export class ProductComponent {
 
     this.isLoading.set(true);
 
-    this.productApiService.item(slug).pipe(take(1)).subscribe({
-      next: (product) => {
+    forkJoin({
+      product: this.productApiService.item(slug),
+      categories: this.categoryApiService.listing()
+    }).pipe(take(1)).subscribe({
+      next: ({ product, categories }) => {
+        this.categories.set(categories.data ?? []);
         this.product = product.data;
         this.isLoading.set(false);
         if (!product.data) {

@@ -73,8 +73,8 @@ export class AdminComponent {
       this.lastLoadedLocale = locale;
 
       if (shouldForceReload) {
-        this.reloadCatalog();
-        this.reloadCategoryOptions();
+        this.reloadCatalog(true);
+        this.reloadCategoryOptions(true);
       }
     });
   }
@@ -103,11 +103,20 @@ export class AdminComponent {
     this.refreshPage();
   }
 
-  private reloadCatalog(): void {
+  private reloadCatalog(resetState: boolean = false): void {
+    if (resetState) {
+      this.categories.set([]);
+      this.products.set([]);
+    }
+
     this.catalogHelper.loadCatalogIntoState(this.categories, this.products, this.isCatalogLoading, this.catalogError);
   }
 
-  private reloadCategoryOptions(): void {
+  private reloadCategoryOptions(resetState: boolean = false): void {
+    if (resetState) {
+      this.categoryProductOptions.set([]);
+    }
+
     this.categoryApiService.options().pipe(take(1)).subscribe({
       next: (response) => {
         this.categoryProductOptions.set(response.data ?? []);

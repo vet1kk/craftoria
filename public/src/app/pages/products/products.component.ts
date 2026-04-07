@@ -162,7 +162,7 @@ export class ProductsComponent {
       this.lastLoadedLocale = locale;
 
       if (shouldForceReload) {
-        this.loadCatalog();
+        this.loadCatalog(true);
       }
     });
 
@@ -200,7 +200,12 @@ export class ProductsComponent {
     });
   }
 
-  loadCatalog(): void {
+  loadCatalog(resetState: boolean = false): void {
+    if (resetState) {
+      this.categories.set([]);
+      this.products.set([]);
+    }
+
     this.catalogHelper.loadCatalogIntoState(this.categories, this.products, this.isCatalogLoading, this.catalogError);
   }
 
