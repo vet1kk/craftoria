@@ -31,6 +31,12 @@ export class ProductsCategoryFilterComponent {
     { value: 'priceAsc', labelKey: 'ui.products.sortByPriceAsc' },
     { value: 'priceDesc', labelKey: 'ui.products.sortByPriceDesc' }
   ];
+  readonly categoryOptions = computed<ReadonlyArray<DropdownOption>>(() => {
+    return this.categories().map((category) => ({
+      value: category.slug,
+      labelKey: category.name
+    }));
+  });
 
   readonly categoryChange = output<string>();
   readonly searchQueryChange = output<string>();
@@ -46,6 +52,12 @@ export class ProductsCategoryFilterComponent {
     const selected = this.sortOptions.find((option) => option.value === this.sortBy());
 
     return selected?.labelKey ?? 'ui.products.sortByPosition';
+  });
+  readonly selectedCategorySlug = computed(() => this.selectedSlugs()[0] ?? 'all');
+  readonly selectedCategoryLabelKey = computed(() => {
+    const selected = this.categories().find((category) => category.slug === this.selectedCategorySlug());
+
+    return selected?.name ?? this.categories()[0]?.name ?? 'ui.products.allCategoriesTab';
   });
 
   isSelected(slug: string): boolean {

@@ -8,36 +8,52 @@
                                 (availabilityFilterChange)="availabilityFilterChange.emit($event)">
     </app-products-list-controls>
 
-    <div class="mt-4 flex items-center justify-between gap-3 border-b border-stone-300 pb-2">
-      <div class="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div class="flex min-w-max items-end gap-2">
-          @for (category of categories(); track category.id) {
-            <button type="button"
-                    (click)="selectCategory(category.slug)"
-                    class="group relative mb-0 inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
-                    [class]="isSelected(category.slug)
+    <div class="mt-4 border-b border-stone-300 pb-2">
+      <div class="mb-3 md:hidden">
+        <span class="mb-1 block text-sm font-medium text-stone-500">{{ 'ui.products.selectedCategory' | t }}</span>
+        <ui-dropdown ariaLabelKey="ui.products.filtersTitle"
+                     [selectedValue]="selectedCategorySlug()"
+                     [selectedLabelKey]="selectedCategoryLabelKey()"
+                     [options]="categoryOptions()"
+                     buttonClassName="h-11 w-full rounded-md border border-stone-200 bg-white px-4 text-left text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                     menuClassName="absolute left-0 right-0 z-20 mt-1 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                     (valueChange)="selectCategory($event)">
+        </ui-dropdown>
+      </div>
+
+      <div class="hidden items-center justify-between gap-3 md:flex">
+        <div class="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div class="flex min-w-max items-end gap-2">
+            @for (category of categories(); track category.id) {
+              <button type="button"
+                      (click)="selectCategory(category.slug)"
+                      class="group relative mb-0 inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
+                      [class]="isSelected(category.slug)
                       ? 'border-orange-400 bg-white text-orange-800 shadow-sm ring-1 ring-orange-200'
                       : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
-              <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white">
-                @if (category.image_url) {
-                  <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
-                } @else {
-                  <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs">{{ category.icon ?? '📦' }}</div>
-                }
-              </div>
+                <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white">
+                  @if (category.image_url) {
+                    <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
+                  } @else {
+                    <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs">{{ category.icon ?? '📦' }}</div>
+                  }
+                </div>
 
-              <span class="text-xs font-semibold tracking-tight md:text-sm">{{ category.name }}</span>
-            </button>
-          }
+                <span class="text-xs font-semibold tracking-tight md:text-sm">{{ category.name }}</span>
+              </button>
+            }
+          </div>
         </div>
       </div>
 
-      <button type="button"
-              class="pb-2 text-sm font-medium text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-default disabled:opacity-40"
-              [disabled]="!hasActiveFilters()"
-              (click)="resetAllFilters()">
-        {{ 'ui.actions.clearFilters' | t }}
-      </button>
+      <div class="flex justify-end">
+        <button type="button"
+                class="pb-2 text-sm font-medium text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-default disabled:opacity-40"
+                [disabled]="!hasActiveFilters()"
+                (click)="resetAllFilters()">
+          {{ 'ui.actions.clearFilters' | t }}
+        </button>
+      </div>
     </div>
 
     <div class="mt-3 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
