@@ -57,6 +57,7 @@ export const uaTranslations = {
       sortByName: 'Назва (А-Я)',
       sortByPriceAsc: 'Ціна: від меншої',
       sortByPriceDesc: 'Ціна: від більшої',
+      allCategoriesTab: 'Усі',
       resultsLabel: 'результатів',
       filtersAction: 'Фільтри',
       filtersTitle: 'Фільтрувати товари'

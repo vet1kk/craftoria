@@ -57,6 +57,7 @@ export const enTranslations = {
       sortByName: 'Name (A-Z)',
       sortByPriceAsc: 'Price: low to high',
       sortByPriceDesc: 'Price: high to low',
+      allCategoriesTab: 'All',
       resultsLabel: 'results',
       filtersAction: 'Filters',
       filtersTitle: 'Filter products'

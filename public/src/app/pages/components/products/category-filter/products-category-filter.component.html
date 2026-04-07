@@ -1,88 +1,77 @@
-<div class="sticky top-0 z-20 w-full border-b border-stone-100 bg-white/90 backdrop-blur-md">
-  <div class="mx-auto max-w-7xl px-4 py-2">
+<div class="w-full border-b border-stone-100 bg-white/95">
+  <div class="mx-auto max-w-7xl px-4 py-3">
+    <h3 class="text-2xl font-black leading-none text-stone-900">{{ 'ui.products.filtersTitle' | t }}</h3>
 
-    <div class="mt-2 overflow-x-auto rounded-xl p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div class="flex min-w-max items-center gap-2">
-        @for (category of categories(); track category.id) {
+    <app-products-list-controls [searchQuery]="searchQuery()"
+                                [availabilityFilter]="availabilityFilter()"
+                                (searchQueryChange)="searchQueryChange.emit($event)"
+                                (availabilityFilterChange)="availabilityFilterChange.emit($event)">
+    </app-products-list-controls>
+
+    <div class="mt-4 flex items-center justify-between gap-3 border-b border-stone-300 pb-2">
+      <div class="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="flex min-w-max items-end gap-2">
           <button type="button"
-                  (click)="selectCategory(category.slug)"
-                  class="group relative inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
-                  [class]="isSelected(category.slug)
+                  (click)="selectCategory('all')"
+                  class="group relative mb-0 inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
+                  [class]="isSelected('all')
                     ? 'border-orange-400 bg-white text-orange-800 shadow-sm ring-1 ring-orange-200'
                     : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
-            <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white">
-              @if (category.image_url) {
-                <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
-              } @else {
-                <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs">{{ category.icon ?? '📦' }}</div>
-              }
-            </div>
+            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-stone-100 bg-stone-50 text-xs">#</span>
+            <span class="text-xs font-semibold tracking-tight md:text-sm">{{ 'ui.products.allCategoriesTab' | t }}</span>
 
-            <span class="text-xs font-semibold tracking-tight md:text-sm">
-              {{ category.name }}
-            </span>
-
-            @if (isSelected(category.slug)) {
-              <span class="absolute -right-1 -top-1 flex h-3 w-3">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-            </span>
+            @if (isSelected('all')) {
+              <span class="pointer-events-none absolute bottom-0 left-2 right-2 h-1 translate-y-2 rounded-full bg-stone-900"></span>
             }
           </button>
-        }
-      </div>
-    </div>
 
-    <div class="mt-2 mr-auto w-full max-w-2xl border-t border-stone-100 pt-1.5">
-      <div class="flex flex-col gap-1.5">
-        <label>
-          <input type="search"
-                 [value]="searchQuery()"
-                 (input)="onSearchInput($event)"
-                 [placeholder]="'ui.products.searchPlaceholder' | t"
-                 [attr.aria-label]="'ui.products.searchLabel' | t"
-                 class="h-8 w-full rounded-lg border border-stone-200 bg-white px-3 text-xs text-stone-800 transition-colors focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-100">
-        </label>
-
-        <div class="flex gap-1.5">
-          <label class="min-w-0 flex-1">
-            <select [value]="availabilityFilter()"
-                    (change)="onAvailabilityChange($event)"
-                    [attr.aria-label]="'ui.products.availabilityLabel' | t"
-                    class="h-8 w-full rounded-lg border border-stone-200 bg-white px-2.5 text-xs text-stone-800 transition-colors focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-100">
-              <option value="all">{{ 'ui.products.availabilityAll' | t }}</option>
-              <option value="available">{{ 'ui.products.availabilityInStock' | t }}</option>
-              <option value="unavailable">{{ 'ui.products.availabilityOutOfStock' | t }}</option>
-            </select>
-          </label>
-
-          <label class="min-w-0 flex-1">
-            <select [value]="sortBy()"
-                    (change)="onSortChange($event)"
-                    [attr.aria-label]="'ui.products.sortLabel' | t"
-                    class="h-8 w-full rounded-lg border border-stone-200 bg-white px-2.5 text-xs text-stone-800 transition-colors focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-100">
-              <option value="position">{{ 'ui.products.sortByPosition' | t }}</option>
-              <option value="nameAsc">{{ 'ui.products.sortByName' | t }}</option>
-              <option value="priceAsc">{{ 'ui.products.sortByPriceAsc' | t }}</option>
-              <option value="priceDesc">{{ 'ui.products.sortByPriceDesc' | t }}</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="flex items-center justify-between gap-2 pt-0.5">
-          <p class="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-600">
-            {{ resultsCount() }} {{ 'ui.products.resultsLabel' | t }}
-          </p>
-
-          @if (hasActiveControls()) {
+          @for (category of visibleCategories(); track category.id) {
             <button type="button"
-                    class="rounded-full border border-stone-200 px-2 py-0.5 text-[10px] font-semibold text-stone-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600"
-                    (click)="resetAll()">
-              {{ 'ui.actions.clearFilters' | t }}
+                    (click)="selectCategory(category.slug)"
+                    class="group relative mb-0 inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
+                    [class]="isSelected(category.slug)
+                      ? 'border-orange-400 bg-white text-orange-800 shadow-sm ring-1 ring-orange-200'
+                      : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
+              <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white">
+                @if (category.image_url) {
+                  <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
+                } @else {
+                  <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs">{{ category.icon ?? '📦' }}</div>
+                }
+              </div>
+
+              <span class="text-xs font-semibold tracking-tight md:text-sm">{{ category.name }}</span>
+
+              @if (isSelected(category.slug)) {
+                <span class="pointer-events-none absolute bottom-0 left-2 right-2 h-1 translate-y-2 rounded-full bg-stone-900"></span>
+              }
             </button>
           }
         </div>
       </div>
+
+      <button type="button"
+              class="pb-2 text-sm font-medium text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-default disabled:opacity-40"
+              [disabled]="!hasActiveFilters()"
+              (click)="resetAllFilters()">
+        {{ 'ui.actions.clearFilters' | t }}
+      </button>
+    </div>
+
+    <div class="mt-3 flex items-center justify-between gap-3">
+      <p class="text-sm font-medium text-stone-500">{{ resultsCount() }} {{ 'ui.products.resultsLabel' | t }}</p>
+
+      <label class="flex items-center gap-3 text-sm text-stone-600">
+        <span class="font-medium">{{ 'ui.products.sortLabel' | t }}</span>
+        <select [value]="sortBy()"
+                (change)="onSortChange($event)"
+                class="h-11 rounded-md border border-stone-200 bg-white px-4 text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200">
+          <option value="position">{{ 'ui.products.sortByPosition' | t }}</option>
+          <option value="nameAsc">{{ 'ui.products.sortByName' | t }}</option>
+          <option value="priceAsc">{{ 'ui.products.sortByPriceAsc' | t }}</option>
+          <option value="priceDesc">{{ 'ui.products.sortByPriceDesc' | t }}</option>
+        </select>
+      </label>
     </div>
   </div>
 </div>
