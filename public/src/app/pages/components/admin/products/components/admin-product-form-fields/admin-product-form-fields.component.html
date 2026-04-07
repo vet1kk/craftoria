@@ -8,6 +8,10 @@
                       [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
   </ui-form-tag-select>
 
+  @if (categoryOptions().length === 0) {
+    <p class="text-sm text-stone-500">{{ 'ui.admin.productCategoriesEmptyTip' | t }}</p>
+  }
+
   <ui-form-input [label]="'ui.admin.productNameLabel' | t"
                  [required]="true"
                  [control]="$any(productForm().controls['name'])"

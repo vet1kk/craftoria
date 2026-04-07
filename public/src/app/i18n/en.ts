@@ -225,6 +225,7 @@ export const enTranslations = {
       productIsActiveLabel: 'Active',
       productIsAvailableLabel: 'Available',
       productCategoryPlaceholder: 'Select category',
+      productCategoriesEmptyTip: 'Tip: create a category first so this product can be assigned to it.',
       productCategoryRequired: 'Category is required.',
       productCreateAction: 'Create',
       productSaveAction: 'Save changes',

@@ -225,6 +225,7 @@ export const uaTranslations = {
       productIsActiveLabel: 'Активний',
       productIsAvailableLabel: 'Доступний',
       productCategoryPlaceholder: 'Оберіть категорію',
+      productCategoriesEmptyTip: 'Порада: спочатку створіть категорію, щоб можна було призначити до неї цей товар.',
       productCategoryRequired: 'Категорія обов\'язкова.',
       productCreateAction: 'Створити',
       productSaveAction: 'Зберегти зміни',
