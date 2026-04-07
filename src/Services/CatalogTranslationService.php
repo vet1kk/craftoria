@@ -14,7 +14,7 @@ class CatalogTranslationService
      */
     public function upsertLocaleFields(Model $model, string $locale, array $fields, array $allowedFields): void
     {
-        if (!method_exists($model, 'translations') || $locale === '' || $locale === config('app.fallback_locale')) {
+        if ($locale === '' || !method_exists($model, 'translations') || $locale === config('app.fallback_locale')) {
             return;
         }
 

@@ -24,7 +24,7 @@ class IngredientUpsertRequest extends AdminRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('ingredients', 'slug')->ignore($ingredientId)->whereNull('deleted_at')
+                Rule::unique('ingredients', 'slug')->ignore($ingredientId)
             ],
             'unit' => ['required', 'string', Rule::in(['g', 'ml'])],
             'calories' => ['nullable', 'integer', 'min:0'],

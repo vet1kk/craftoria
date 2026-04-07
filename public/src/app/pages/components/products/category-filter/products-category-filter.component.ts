@@ -36,7 +36,6 @@ export class ProductsCategoryFilterComponent {
   readonly searchQueryChange = output<string>();
   readonly availabilityFilterChange = output<AvailabilityFilter>();
   readonly sortByChange = output<ProductSort>();
-  readonly visibleCategories = computed(() => this.categories().filter((category) => category.slug !== 'all'));
   readonly hasActiveFilters = computed(() => {
     return this.searchQuery().trim().length > 0
       || this.availabilityFilter() !== 'all'
