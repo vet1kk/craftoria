@@ -2,12 +2,11 @@
         [class]="'relative ' + buttonClass()"
         (click)="open()"
         [attr.aria-label]="alt()">
-  <img [ngSrc]="src()"
+  <img [src]="src()"
        [alt]="alt()"
        [attr.width]="width()"
        [attr.height]="height()"
-       [class]="thumbnailClass()"
-       fill>
+       [class]="thumbnailClass()">
 </button>
 
 <ui-modal [open]="isOpen()"
