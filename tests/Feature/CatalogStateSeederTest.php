@@ -26,7 +26,7 @@ class CatalogStateSeederTest extends TestCase
 
         $this->assertDatabaseHas('categories', [
             'slug' => 'archived-menu',
-            'is_active' => false,
+            'is_active' => true,
             'is_system' => false,
         ]);
 

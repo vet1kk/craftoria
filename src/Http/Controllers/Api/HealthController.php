@@ -17,19 +17,21 @@ class HealthController extends Controller
     public function __invoke(): JsonResponse
     {
         return response()->json([
-            'name' => config('app.name'),
-            'environment' => config('app.env'),
-            'debug' => (bool) config('app.debug'),
-            'framework' => app()->version(),
-            'php' => PHP_VERSION,
-            'api' => 'ready',
-            'database' => [
-                'connection' => config('database.default'),
-                'host' => config('database.connections.pgsql.host'),
-                'port' => config('database.connections.pgsql.port'),
-                'database' => config('database.connections.pgsql.database'),
+            'data' => [
+                'name' => config('app.name'),
+                'environment' => config('app.env'),
+                'debug' => (bool)config('app.debug'),
+                'framework' => app()->version(),
+                'php' => PHP_VERSION,
+                'api' => 'ready',
+                'database' => [
+                    'connection' => config('database.default'),
+                    'host' => config('database.connections.pgsql.host'),
+                    'port' => config('database.connections.pgsql.port'),
+                    'database' => config('database.connections.pgsql.database'),
+                ],
+                'timestamp' => now()->toIso8601String(),
             ],
-            'timestamp' => now()->toIso8601String(),
         ]);
     }
 }

@@ -28,6 +28,10 @@ class AnalyticsEventController extends Controller
             'occurred_at' => $request->validated('occurred_at', now()),
         ]);
 
-        return response()->json(['status' => 'accepted'], 202);
+        return response()->json([
+            'data' => [
+                'status' => 'accepted',
+            ],
+        ], 202);
     }
 }

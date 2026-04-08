@@ -18,35 +18,47 @@ class ProfileAnalyticsHealthApiTest extends TestCase
         $this->getJson('/api/health')
             ->assertOk()
             ->assertJsonStructure([
-                'name',
-                'environment',
-                'debug',
-                'framework',
-                'php',
-                'api',
-                'database' => ['connection', 'host', 'port', 'database'],
-                'timestamp',
+                'data' => [
+                    'name',
+                    'environment',
+                    'debug',
+                    'framework',
+                    'php',
+                    'api',
+                    'database' => ['connection', 'host', 'port', 'database'],
+                    'timestamp',
+                ],
             ])
-            ->assertJsonPath('api', 'ready');
+            ->assertJsonPath('data.api', 'ready');
+
+        $this->getJson('/api/')
+             ->assertOk()
+             ->assertJsonPath('data.api', 'ready');
     }
 
     public function test_analytics_endpoint_accepts_guest_and_authenticated_events(): void
     {
-        $this->postJson('/api/analytics/events', [
-            'session_id' => 'guest-session',
-            'name' => 'page_view',
-            'url' => 'https://example.com',
-            'properties' => ['screen' => 'home'],
-        ])->assertAccepted();
+        $this
+            ->postJson('/api/analytics/events', [
+                'session_id' => 'guest-session',
+                'name' => 'page_view',
+                'url' => 'https://example.com',
+                'properties' => ['screen' => 'home'],
+            ])
+            ->assertAccepted()
+            ->assertJsonPath('data.status', 'accepted');
 
         $user = User::factory()->create();
         $this->actingAs($user, 'api');
 
-        $this->postJson('/api/analytics/events', [
-            'session_id' => 'auth-session',
-            'name' => 'order_started',
-            'url' => 'https://example.com/checkout',
-        ])->assertAccepted();
+        $this
+            ->postJson('/api/analytics/events', [
+                'session_id' => 'auth-session',
+                'name' => 'order_started',
+                'url' => 'https://example.com/checkout',
+            ])
+            ->assertAccepted()
+            ->assertJsonPath('data.status', 'accepted');
 
         $this->assertDatabaseCount('analytics_events', 2);
         $this->assertDatabaseHas('analytics_events', [
@@ -91,17 +103,19 @@ class ProfileAnalyticsHealthApiTest extends TestCase
              ->assertJsonCount(1, 'data')
              ->assertJsonPath('data.0.user_id', $user->getKey());
 
-        $this->putJson('/api/profile', [
-            'name' => 'Updated Self',
-            'email' => 'self@example.test',
-            'phone' => '+380671112255',
-        ])
+        $this
+            ->putJson('/api/profile', [
+                'name' => 'Updated Self',
+                'email' => 'self@example.test',
+                'phone' => '+380671112255',
+            ])
             ->assertOk()
             ->assertJsonPath('data.phone', '+380671112255');
 
-        $this->putJson('/api/profile', [
-            'email' => $otherUser->email,
-        ])
+        $this
+            ->putJson('/api/profile', [
+                'email' => $otherUser->email,
+            ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
     }
