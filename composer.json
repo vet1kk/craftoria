@@ -39,6 +39,7 @@
   "scripts": {
     "deploy": [
       "php artisan migrate --force --isolated --no-interaction",
+      "php artisan db:seed --force --no-interaction",
       "php artisan storage:link --force",
       "php artisan optimize:clear",
       "php artisan config:cache",
