@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 
 import { GallerySlot } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
+import { ImagePreviewComponent } from '../../../../ui/image-preview/image-preview.component';
 
 
 @Component({
   selector: 'app-product-gallery',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, ImagePreviewComponent],
   templateUrl: './product-gallery.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
