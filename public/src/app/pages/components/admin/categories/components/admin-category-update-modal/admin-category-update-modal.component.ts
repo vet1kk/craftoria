@@ -77,7 +77,7 @@ export class AdminCategoryUpdateModalComponent implements OnChanges {
     this.selectedImageName.set('');
     this.validationService.clearGroupErrors(this.formGroupName);
     this.categoryForm.reset({
-      name: category.name,
+      name: category.translations?.['en']?.name ?? category.name ?? '',
       name_uk: category.translations?.['uk']?.name ?? '',
       icon: category.icon ?? '',
       position: category.position,

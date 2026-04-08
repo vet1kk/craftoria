@@ -44,10 +44,10 @@ export class AdminProductModalHelper {
   static resetForUpdate(form: FormGroup, product: Product): void {
     form.reset({
       category_id: product.category_id,
-      name: product.name,
+      name: product.translations?.['en']?.name ?? product.name ?? '',
       name_uk: product.translations?.['uk']?.name ?? '',
       sku: product.sku ?? '',
-      description: product.description,
+      description: product.translations?.['en']?.description ?? product.description,
       description_uk: product.translations?.['uk']?.description ?? '',
       price: product.price,
       featured_image: null,
