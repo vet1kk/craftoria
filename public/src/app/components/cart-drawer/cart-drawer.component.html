@@ -29,9 +29,15 @@
           @for (item of cartService.items(); track item.product.id) {
             <div class="flex gap-3 sm:gap-4">
               @if (item?.product?.featured_image_url) {
-                <img [src]="item.product.featured_image_url"
-                     [alt]="item.product.name"
-                     class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-stone-100 shrink-0">
+                <ui-image-preview [src]="item.product.featured_image_url!"
+                                  [alt]="item.product.name"
+                                  [width]="64"
+                                  [height]="64"
+                                  [thumbnailClass]="'w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover bg-stone-100 shrink-0'"
+                                  [buttonClass]="'w-14 h-14 sm:w-16 sm:h-16 shrink-0 overflow-hidden rounded-lg transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500'"
+                                  [fullImageClass]="'max-h-[85vh] w-full rounded-2xl object-contain'"
+                                  modalMaxWidth="2xl">
+                </ui-image-preview>
               } @else {
                 <div class="aspect-square overflow-hidden rounded-2xl border-stone-200 bg-stone-50/70 border-dashed border p-2">
                   <div class="flex w-15 h-15 items-center justify-center opacity-20">

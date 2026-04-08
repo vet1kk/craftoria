@@ -110,7 +110,7 @@ export class ProductsComponent {
           center: {
             className: 'space-y-3',
             lines: [
-              { widthClass: 'w-full', heightClass: 'h-32', roundedClass: 'rounded-xl', tone: 'muted' },
+              { widthClass: 'w-full', heightClass: 'h-60', roundedClass: 'rounded-xl', tone: 'muted' },
               { widthClass: 'w-2/3', heightClass: 'h-4', tone: 'default' },
               { widthClass: 'w-1/2', heightClass: 'h-3', tone: 'muted' },
               { widthClass: 'w-24', heightClass: 'h-8', roundedClass: 'rounded-full', tone: 'muted' }
@@ -122,7 +122,7 @@ export class ProductsComponent {
           center: {
             className: 'space-y-3',
             lines: [
-              { widthClass: 'w-full', heightClass: 'h-32', roundedClass: 'rounded-xl', tone: 'muted' },
+              { widthClass: 'w-full', heightClass: 'h-60', roundedClass: 'rounded-xl', tone: 'muted' },
               { widthClass: 'w-3/4', heightClass: 'h-4', tone: 'default' },
               { widthClass: 'w-2/5', heightClass: 'h-3', tone: 'muted' },
               { widthClass: 'w-24', heightClass: 'h-8', roundedClass: 'rounded-full', tone: 'muted' }
@@ -134,7 +134,7 @@ export class ProductsComponent {
           center: {
             className: 'space-y-3',
             lines: [
-              { widthClass: 'w-full', heightClass: 'h-32', roundedClass: 'rounded-xl', tone: 'muted' },
+              { widthClass: 'w-full', heightClass: 'h-60', roundedClass: 'rounded-xl', tone: 'muted' },
               { widthClass: 'w-4/5', heightClass: 'h-4', tone: 'default' },
               { widthClass: 'w-1/2', heightClass: 'h-3', tone: 'muted' },
               { widthClass: 'w-24', heightClass: 'h-8', roundedClass: 'rounded-full', tone: 'muted' }

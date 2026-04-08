@@ -16,12 +16,12 @@ import {
   SettingsApiService,
   UserService
 } from '../../services';
-import { ButtonComponent, FormInputComponent } from '../../ui';
+import { ButtonComponent, FormInputComponent, ImagePreviewComponent } from '../../ui';
 
 @Component({
   selector: 'app-cart-drawer',
   standalone: true,
-  imports: [DecimalPipe, TranslatePipe, ReactiveFormsModule, FormInputComponent, ButtonComponent],
+  imports: [DecimalPipe, TranslatePipe, ReactiveFormsModule, FormInputComponent, ButtonComponent, ImagePreviewComponent],
   templateUrl: './cart-drawer.component.html',
   styleUrl: './cart-drawer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
