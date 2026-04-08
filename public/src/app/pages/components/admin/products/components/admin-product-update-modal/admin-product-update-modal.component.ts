@@ -78,10 +78,6 @@ export class AdminProductUpdateModalComponent implements OnChanges {
       const updateData = FormHelper.objectToFormData(changedBaseFields, [], true);
       updateData.append('_method', 'PUT');
 
-      if (!changedBaseFields['name']) {
-        updateData.append('name', payload.name.trim());
-      }
-
       request$ = request$.pipe(
         switchMap(() => this.productApiService.update(product.id, updateData))
       );

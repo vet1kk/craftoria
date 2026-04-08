@@ -58,7 +58,18 @@ export class ProductComponent {
     if (!product) {
       return [];
     }
-    return product.images.map((image: ProductImage) => image.image_url).filter((imageUrl: string) => Boolean(imageUrl));
+    let images: string[] = [];
+
+    if (product.featured_image_url) {
+      images.push(product.featured_image_url);
+    }
+
+    images.push(
+      ...product.images
+        .map((image: ProductImage) => image.image_url)
+        .filter((imageUrl: string) => Boolean(imageUrl))
+    );
+    return images;
   });
 
   readonly nutrition = computed(() => {

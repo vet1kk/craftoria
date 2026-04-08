@@ -62,7 +62,7 @@ class TestCatalogSeeder extends Seeder
             'icon' => '📦',
             'position' => 40,
             'image_url' => null,
-            'is_active' => false,
+            'is_active' => true,
             'is_system' => false,
             'translations' => [
                 'uk' => ['name' => 'Архівне меню'],
@@ -325,10 +325,10 @@ class TestCatalogSeeder extends Seeder
             ],
         ],
         [
-            'slug' => 'legacy-berry-eclair',
-            'name' => 'Legacy Berry Eclair',
+            'slug' => 'berry-eclair',
+            'name' => 'Berry Eclair',
             'sku' => 'CB-DES-001-OLD',
-            'description' => 'Archived recipe kept for regression and admin state checks.',
+            'description' => 'Recipe kept for regression and admin state checks.',
             'price' => 82.00,
             'shelf_life' => 20,
             'position' => 50,
