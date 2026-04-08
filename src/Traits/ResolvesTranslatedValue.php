@@ -14,70 +14,68 @@ trait ResolvesTranslatedValue
      */
     protected function translateResource(array $payload): array
     {
-        if (!is_object($this->resource) || !method_exists($this->resource, 'translationConfig')) {
+        $model = $this->resource;
+
+        if (!$this->isTranslatable($model)) {
             return $payload;
         }
 
-        $translatedPayload = $this->translatePayloadForModel($payload, $this->resource);
-
-        if (array_key_exists('translations', $translatedPayload) || !method_exists($this->resource, 'translationsForFields')) {
-            return $translatedPayload;
-        }
-
-        /** @var array<string, mixed> $config */
-        $config = $this->resource->translationConfig();
-        $fields = $this->resolveTranslationFields($config);
+        $fields = $model->translatableFields();
 
         if ($fields === []) {
-            return $translatedPayload;
+            return $payload;
         }
 
-        $translatedPayload['translations'] = $this->resource->translationsForFields($fields);
+        if (!isset($payload['translations']) && method_exists($model, 'translationsForFields')) {
+            $filtered = array_intersect_key($payload, array_flip($fields));
 
-        return $translatedPayload;
+            $payload['translations'] = $model->translationsForFields($filtered);
+        }
+
+        return $this->applyTranslations($payload, $model, $fields);
     }
 
     /**
+     * Apply DB translations over payload fallback values.
+     *
      * @param array<string, mixed> $payload
+     * @param object $model
+     * @param array<int, string> $fields
      * @return array<string, mixed>
      */
-    protected function translatePayloadForModel(array $payload, object $model): array
+    private function applyTranslations(array $payload, object $model, array $fields): array
     {
-        if (!method_exists($model, 'translationConfig')) {
-            return $payload;
-        }
-
-        /** @var array<string, mixed> $config */
-        $config = $model->translationConfig();
         if (!method_exists($model, 'translatedValue')) {
             return $payload;
         }
 
-        /** @var array<string, string> $fieldMap */
-        $fieldMap = is_array($config['field_map'] ?? null) ? $config['field_map'] : [];
-
-        foreach ($config['fields'] ?? [] as $field) {
-            if (!is_string($field) || !array_key_exists($field, $payload)) {
+        foreach ($fields as $field) {
+            if (!array_key_exists($field, $payload)) {
                 continue;
             }
 
             $fallback = $this->scalarToString($payload[$field]);
-
             if ($fallback === null) {
                 continue;
             }
 
-            $translationField = $fieldMap[$field] ?? $field;
-            $dbField = $translationField !== '' ? $translationField : $field;
-            $dbValue = $model->translatedValue($dbField);
-
-            // Keep default DB value when a locale-specific override does not exist.
-            $payload[$field] = (is_string($dbValue) && $dbValue !== '') ? $dbValue : $fallback;
+            $value = $model->translatedValue($field);
+            $payload[$field] = $value !== null && $value !== '' ? $value : $fallback;
         }
 
         return $payload;
     }
 
+    /**
+     * @param mixed $model
+     * @return bool
+     */
+    private function isTranslatable(mixed $model): bool
+    {
+        return is_object($model)
+            && method_exists($model, 'translatableFields')
+            && method_exists($model, 'translatedValue');
+    }
 
     /**
      * @param mixed $value
@@ -85,36 +83,6 @@ trait ResolvesTranslatedValue
      */
     private function scalarToString(mixed $value): ?string
     {
-        if ($value === null || is_array($value) || is_object($value)) {
-            return null;
-        }
-
-        if (is_bool($value)) {
-            return $value ? '1' : '0';
-        }
-
-        return (string)$value;
-    }
-
-    /**
-     * @param array<string, mixed> $config
-     * @return array<int, string>
-     */
-    private function resolveTranslationFields(array $config): array
-    {
-        /** @var array<string, string> $fieldMap */
-        $fieldMap = is_array($config['field_map'] ?? null) ? $config['field_map'] : [];
-        $fields = [];
-
-        foreach ($config['fields'] ?? [] as $field) {
-            if (!is_string($field) || $field === '') {
-                continue;
-            }
-
-            $mappedField = $fieldMap[$field] ?? $field;
-            $fields[] = $mappedField !== '' ? $mappedField : $field;
-        }
-
-        return array_values(array_unique($fields));
+        return is_scalar($value) ? (is_bool($value) ? ($value ? '1' : '0') : (string)$value) : null;
     }
 }

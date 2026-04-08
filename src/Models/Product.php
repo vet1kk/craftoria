@@ -48,6 +48,7 @@ use Illuminate\Http\UploadedFile;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $product_ingredients
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Ingredient> $ingredients
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $order_items
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class Product extends Model
 {

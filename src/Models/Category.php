@@ -35,6 +35,7 @@ use Illuminate\Http\UploadedFile;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class Category extends Model
 {

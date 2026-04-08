@@ -11,7 +11,15 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 trait HasCatalogTranslations
 {
     /**
+     * Cached translations index:
+     * [locale][field] => value
+     */
+    private ?array $translationsIndex = null;
+
+    /**
      * Automatically eager-load translations on base model queries.
+     *
+     * @return void
      */
     public static function bootHasCatalogTranslations(): void
     {
@@ -21,7 +29,8 @@ trait HasCatalogTranslations
     }
 
     /**
-     * Scope query with translations relation.
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWithTranslations(Builder $query): Builder
     {
@@ -29,11 +38,13 @@ trait HasCatalogTranslations
     }
 
     /**
-     * Scope query without default translations eager-loading.
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWithoutTranslations(Builder $query): Builder
     {
-        return $query->withoutGlobalScope('catalog_translations')->without('translations');
+        return $query->withoutGlobalScope('catalog_translations')
+                     ->without('translations');
     }
 
     /**
@@ -45,47 +56,65 @@ trait HasCatalogTranslations
     }
 
     /**
+     * @return array<string, array<string, string>>
+     */
+    private function getTranslationsIndex(): array
+    {
+        if ($this->translationsIndex !== null) {
+            return $this->translationsIndex;
+        }
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $rows */
+        $rows = $this->relationLoaded('translations') ? $this->translations : $this->translations()->get();
+
+        $index = [];
+
+        foreach ($rows as $translation) {
+            $index[$translation->locale][$translation->field] = $translation->value;
+        }
+
+        return $this->translationsIndex = $index;
+    }
+
+    /**
      * @param string $field
      * @param string|null $locale
      * @return string|null
      */
     public function translatedValue(string $field, ?string $locale = null): ?string
     {
-        $targetLocale = $locale ?? app()->getLocale();
+        $locale = $locale ?? app()->getLocale();
 
-        if ($this->relationLoaded('translations')) {
-            $match = $this->translations->first(static function (CatalogTranslation $translation) use ($field, $targetLocale): bool {
-                return $translation->field === $field && $translation->locale === $targetLocale;
-            });
+        $index = $this->getTranslationsIndex();
 
-            if ($match !== null) {
-                return $match->value;
-            }
-        }
-
-        return $this->translations()
-                    ->where('field', $field)
-                    ->where('locale', $targetLocale)
-                    ->value('value');
+        return $index[$locale][$field] ?? null;
     }
 
     /**
-     * @param array<int, string> $fields
+     * Get translations grouped by locale for given fields.
+     *
+     * @param array<string, string> $fields [field => fallback value]
      * @return array<string, array<string, string>>
      */
     public function translationsForFields(array $fields): array
     {
-        $rows = $this->relationLoaded('translations') ? $this->translations : $this->translations()->get();
-
+        $index = $this->getTranslationsIndex();
         $result = [];
 
-        foreach ($rows as $translation) {
-            if (!in_array($translation->field, $fields, true)) {
-                continue;
+        foreach ($index as $locale => $translations) {
+            foreach ($fields as $field => $fallback) {
+                if (isset($translations[$field])) {
+                    $result[$locale][$field] = $translations[$field];
+                }
             }
+        }
 
-            $result[$translation->locale] ??= [];
-            $result[$translation->locale][$translation->field] = $translation->value;
+        $fallbackLocale = config('app.fallback_locale');
+
+        foreach ($fields as $field => $fallback) {
+            if (!isset($result[$fallbackLocale][$field])) {
+                $result[$fallbackLocale][$field] = $fallback;
+            }
         }
 
         return $result;

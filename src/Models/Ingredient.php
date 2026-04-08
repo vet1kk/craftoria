@@ -38,6 +38,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $product_ingredients
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
  * @property-read \App\Models\ProductIngredient|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class Ingredient extends Model
 {
@@ -46,7 +47,6 @@ class Ingredient extends Model
     use HasTranslationConfig;
     use HasUuids;
     use SoftDeletes;
-
 
     /**
      * @var array<int, string>

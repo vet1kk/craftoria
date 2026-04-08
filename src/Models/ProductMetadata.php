@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Product $product
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class ProductMetadata extends Model
 {
@@ -32,11 +33,6 @@ class ProductMetadata extends Model
      * @var array<int, string>
      */
     protected array $translatableFields = ['value'];
-
-    /**
-     * @var array<string, string>
-     */
-    protected array $translationFieldMap = ['value' => ''];
 
     protected $table = 'product_metadata';
 
