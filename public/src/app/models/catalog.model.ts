@@ -6,6 +6,27 @@ export interface Category {
   image_url?: string | null;
   position: number;
   is_active: boolean;
+  is_system: boolean;
+  translations?: Record<string, { name?: string | null }>;
+}
+
+export interface CategoryUpsertPayload {
+  name: string;
+  icon: string | null;
+  position: number;
+  is_active: boolean;
+  image: File | null;
+}
+
+export interface CategoryProductOption {
+  id: string;
+  name: string;
+  category_id: string | null;
+}
+
+export interface CatalogData {
+  categories: Category[];
+  products: Product[];
 }
 
 export interface NutritionFacts {
@@ -33,26 +54,23 @@ export interface Ingredient {
   product?: Product;
   image_url?: string | null;
   nutrition_totals?: NutritionFacts;
-}
-
-export interface ProductIngredient {
-
+  translations?: Record<string, { name?: string | null }>;
 }
 
 export interface PackageDetails {
-  [key: string]: string | undefined;
+  [key: string]: string | number | undefined;
 
   packaging?: string;
   contents?: string;
   storage?: string;
-  shelf_life?: string;
+  shelf_life?: number;
 }
 
 export interface Product {
   id: string;
   slug: string;
   sku: string;
-  category_id: string;
+  category_id: string | null;
   name: string;
   description: string;
   price: number;
@@ -60,7 +78,7 @@ export interface Product {
   images: ProductImage[];
   metadata: Metadata[];
   ingredients: Ingredient[];
-  shelf_life?: string | undefined;
+  shelf_life?: number | undefined;
   position: number;
   stock_quantity: number;
   reorder_level: number;
@@ -69,6 +87,27 @@ export interface Product {
   nutrition_totals: NutritionFacts;
   created_at?: string | null;
   updated_at?: string | null;
+  translations?: Record<string, { name?: string | null; description?: string | null }>;
+}
+
+export interface ProductUpsertPayload {
+  category_id: string | null;
+  name: string;
+  translations?: Record<string, { name?: string | null; description?: string | null }>;
+  sku: string | null;
+  description: string;
+  price: number;
+  featured_image: File | null;
+  shelf_life: number | null;
+  position: number;
+  stock_quantity: number;
+  reorder_level: number;
+  is_active: boolean;
+  is_available: boolean;
+}
+
+export interface ProductUpdatePayload extends ProductUpsertPayload {
+  id: string;
 }
 
 export interface Metadata {
@@ -76,6 +115,7 @@ export interface Metadata {
   product_id: string;
   type: string;
   value: string;
+  translations?: Record<string, { value?: string | null }>;
   created_at?: string | null;
   updated_at?: string | null;
 }

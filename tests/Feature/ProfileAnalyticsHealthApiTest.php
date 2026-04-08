@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -39,7 +40,7 @@ class ProfileAnalyticsHealthApiTest extends TestCase
         ])->assertAccepted();
 
         $user = User::factory()->create();
-        $this->actingAs($user);
+        $this->actingAs($user, 'api');
 
         $this->postJson('/api/analytics/events', [
             'session_id' => 'auth-session',
@@ -67,11 +68,28 @@ class ProfileAnalyticsHealthApiTest extends TestCase
 
         $this->getJson('/api/profile')->assertUnauthorized();
 
-        $this->actingAs($user);
+        $this->actingAs($user, 'api');
 
         $this->getJson('/api/profile')
             ->assertOk()
-            ->assertJsonPath('data.email', 'self@example.test');
+            ->assertJsonPath('data.email', 'self@example.test')
+            ->assertJsonMissingPath('data.orders');
+
+        Order::factory()->create([
+            'user_id' => $user->getKey(),
+            'customer_name' => 'Self Customer',
+            'customer_phone' => '+380671112255',
+        ]);
+        Order::factory()->create([
+            'user_id' => $otherUser->getKey(),
+            'customer_name' => 'Other Customer',
+            'customer_phone' => '+380671112244',
+        ]);
+
+        $this->getJson('/api/profile/orders')
+             ->assertOk()
+             ->assertJsonCount(1, 'data')
+             ->assertJsonPath('data.0.user_id', $user->getKey());
 
         $this->putJson('/api/profile', [
             'name' => 'Updated Self',

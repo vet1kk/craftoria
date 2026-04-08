@@ -10,9 +10,16 @@ use App\Http\Requests\Product\ProductMetadata\ProductMetadataUpdateRequest;
 use App\Http\Resources\ProductMetadataResource;
 use App\Models\Product;
 use App\Models\ProductMetadata;
+use App\Services\ProductMetadataService;
 
 class ProductMetadataController extends Controller
 {
+    public function __construct(
+        private readonly ProductMetadataService $productMetadataService,
+    )
+    {
+    }
+
     /**
      * @param \App\Http\Requests\Product\ProductMetadata\ProductMetadataStoreRequest $request
      * @param \App\Models\Product $product
@@ -22,7 +29,7 @@ class ProductMetadataController extends Controller
     {
         $this->authorize('create', $product);
 
-        $metadata = $product->metadata()->create($request->validated());
+        $metadata = $this->productMetadataService->store($product, $request->validated());
 
         return new ProductMetadataResource($metadata);
     }
@@ -37,9 +44,7 @@ class ProductMetadataController extends Controller
     {
         $this->authorize('update', $product);
 
-        $metadata->update($request->validated());
-
-        return new ProductMetadataResource($metadata->refresh());
+        return new ProductMetadataResource($this->productMetadataService->update($metadata, $request->validated()));
     }
 
     /**
@@ -51,7 +56,7 @@ class ProductMetadataController extends Controller
     {
         $this->authorize('delete', $productMetadata);
 
-        $productMetadata->delete();
+        $this->productMetadataService->delete($productMetadata);
 
         return response()->noContent();
     }

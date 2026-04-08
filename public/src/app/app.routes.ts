@@ -19,6 +19,11 @@ export const appRoutes: Routes = [
       import('./pages/account/account.component').then((module) => module.AccountComponent)
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./pages/profile/profile.component').then((module) => module.ProfileComponent)
+  },
+  {
     path: 'admin',
     canActivate: [adminGuard],
     loadComponent: () =>

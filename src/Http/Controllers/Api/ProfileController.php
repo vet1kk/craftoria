@@ -6,8 +6,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Http\Resources\OrderResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ProfileController extends Controller
 {
@@ -22,7 +24,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $this->authorize('view', $user);
 
-        return new UserResource($user->load(['orders.orderItems']));
+        return new UserResource($user);
     }
 
     /**
@@ -38,6 +40,26 @@ class ProfileController extends Controller
 
         $user->update($request->validated());
 
-        return new UserResource($user->refresh()->load(['orders.orderItems']));
+        return new UserResource($user->refresh());
+    }
+
+    /**
+     * Return authenticated user orders as a separate payload.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function orders(Request $request): AnonymousResourceCollection
+    {
+        $user = $request->user();
+        $this->authorize('view', $user);
+
+        $orders = $user->orders()
+                       ->with(['orderItems'])
+                       ->orderByDesc('placed_at')
+                       ->orderByDesc('created_at')
+                       ->get();
+
+        return OrderResource::collection($orders);
     }
 }

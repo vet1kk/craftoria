@@ -15,7 +15,7 @@ class OrderApiTest extends TestCase
     public function test_client_can_place_order(): void
     {
         $user = User::factory()->create(['role' => 'client']);
-        $this->actingAs($user);
+        $this->actingAs($user, 'api');
 
         $response = $this->postJson('/api/orders', [
             'customer_name' => 'John Doe',
@@ -36,7 +36,7 @@ class OrderApiTest extends TestCase
         $order = Order::factory()->create();
         $product = Product::factory()->create(['price' => 100]);
 
-        $this->actingAs($admin);
+        $this->actingAs($admin, 'api');
 
         $this
             ->postJson("/api/orders/{$order->id}/items", [
@@ -68,7 +68,7 @@ class OrderApiTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $order = Order::factory()->create();
 
-        $this->actingAs($admin);
+        $this->actingAs($admin, 'api');
 
         $this
             ->putJson("/api/orders/{$order->getKey()}", [
@@ -85,7 +85,7 @@ class OrderApiTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create(['price' => 1000]);
 
-        $response = $this->actingAs($user)->postJson('/api/orders', [
+        $response = $this->actingAs($user, 'api')->postJson('/api/orders', [
             'delivery_address' => '456 Side St',
             'total_amount' => 2500,
             'quantity' => 1,
@@ -109,7 +109,7 @@ class OrderApiTest extends TestCase
         $order = Order::factory()->create(['status' => 'pending']);
 
         $this
-            ->actingAs($admin)->putJson("/api/orders/{$order->id}", [
+            ->actingAs($admin, 'api')->putJson("/api/orders/{$order->id}", [
                 'status' => 'ready',
             ])
             ->assertOk()

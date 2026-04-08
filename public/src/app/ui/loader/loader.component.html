@@ -1,0 +1,14 @@
+<span class="inline-flex items-center gap-2">
+  <span class="inline-block rounded-full border-2 animate-spin"
+        [class.h-3]="size() === 'sm'"
+        [class.w-3]="size() === 'sm'"
+        [class.h-4]="size() === 'md'"
+        [class.w-4]="size() === 'md'"
+        [style.border-color]="tone() === 'light' ? 'rgb(255 255 255 / 0.3)' : 'rgb(214 211 209)'"
+        [style.border-top-color]="tone() === 'light' ? 'rgb(255 255 255)' : 'rgb(68 64 60)'"></span>
+  @if (label()) {
+    <span class="whitespace-nowrap leading-none">
+      {{ label() }}
+    </span>
+  }
+</span>

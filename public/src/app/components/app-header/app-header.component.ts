@@ -1,9 +1,10 @@
 import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { take } from 'rxjs';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthService, CartDrawerService, CartService, DataService } from '../../services';
+import { AuthApiService, CartDrawerService, CartService, SettingsApiService, UserService } from '../../services';
 
 @Component({
   selector: 'app-header',
@@ -15,15 +16,23 @@ import { AuthService, CartDrawerService, CartService, DataService } from '../../
 export class AppHeaderComponent {
   @ViewChild('headerNav', { static: true }) private readonly headerNav?: ElementRef<HTMLElement>;
 
-  readonly dataService = inject(DataService);
+  private readonly settingsApiService = inject(SettingsApiService);
+  private readonly authApiService = inject(AuthApiService);
   readonly cartService = inject(CartService);
   readonly cartDrawerService = inject(CartDrawerService);
-  readonly authService = inject(AuthService);
+  readonly userService = inject(UserService);
   readonly isMobileMenuOpen = signal(false);
+  readonly currency = signal('');
   protected readonly router = inject(Router);
 
+  constructor() {
+    this.settingsApiService.settings().pipe(take(1)).subscribe((response) => {
+      this.currency.set(response.data.currency);
+    });
+  }
+
   get avatarInitials(): string {
-    const user = this.authService.currentUser();
+    const user = this.userService.currentUser();
 
     if (!user) {
       return '';
@@ -50,9 +59,18 @@ export class AppHeaderComponent {
     this.cartDrawerService.open();
   }
 
-  async logout(): Promise<void> {
+  logout(): void {
     this.closeMobileMenu();
-    await this.authService.logout();
-    await this.router.navigate(['/products']);
+    this.authApiService.logout().pipe(take(1)).subscribe({
+      next: () => {
+        this.userService.clearToken();
+        this.userService.clearCurrentUser();
+        void this.router.navigate(['/products']);
+      },
+      error: () => {
+        this.userService.clearToken();
+        this.userService.clearCurrentUser();
+      }
+    });
   }
 }

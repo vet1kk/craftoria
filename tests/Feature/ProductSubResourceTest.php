@@ -18,7 +18,7 @@ class ProductSubResourceTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $product = Product::factory()->create();
-        $this->actingAs($admin);
+        $this->actingAs($admin, 'api');
 
         $res = $this->postJson("/api/products/{$product->id}/metadata", [
             'type' => 'color',
@@ -45,7 +45,7 @@ class ProductSubResourceTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client']);
         $product = Product::factory()->create();
-        $this->actingAs($client);
+        $this->actingAs($client, 'api');
 
         $this->postJson("/api/products/{$product->id}/metadata", [
             'type' => 'color',
@@ -59,7 +59,7 @@ class ProductSubResourceTest extends TestCase
         $product = Product::factory()->create();
         $ingredient = Ingredient::factory()->create();
 
-        $this->actingAs($admin)->postJson("/api/products/{$product->id}/ingredients", [
+        $this->actingAs($admin, 'api')->postJson("/api/products/{$product->id}/ingredients", [
             'product_id' => $product->id,
             'ingredient_id' => $ingredient->id,
             'quantity' => 50,

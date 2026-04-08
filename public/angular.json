@@ -19,10 +19,10 @@
               ]
             },
             "outputPath": {
-              "base": "../webroot",
+              "base": "../webroot/dist",
               "browser": "."
             },
-            "deleteOutputPath": false,
+            "deleteOutputPath": true,
             "index": "src/index.html",
             "baseHref": "/",
             "browser": "src/main.ts",

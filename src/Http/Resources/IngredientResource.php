@@ -27,7 +27,7 @@ class IngredientResource extends JsonResource
             'slug' => $this->slug,
             'unit' => $this->unit,
             'nutrition_totals' => [
-                'calories' => $this->calories,
+                'calories' => (float)$this->calories,
                 'proteins' => (float)$this->proteins,
                 'fats' => (float)$this->fats,
                 'carbs' => (float)$this->carbs,

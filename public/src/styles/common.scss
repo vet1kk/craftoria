@@ -19,3 +19,51 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+.ui-select {
+  width: 100%;
+  appearance: none;
+  background-color: #fff;
+  color: #292524;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:not(.ui-select-multiple) {
+    background-image: linear-gradient(45deg, transparent 50%, #78716c 50%),
+    linear-gradient(135deg, #78716c 50%, transparent 50%);
+    background-position: calc(100% - 1.05rem) calc(50% - 0.1rem),
+    calc(100% - 0.75rem) calc(50% - 0.1rem);
+    background-size: 0.35rem 0.35rem, 0.35rem 0.35rem;
+    background-repeat: no-repeat;
+    padding-right: 2.2rem;
+  }
+
+  &:disabled {
+    background-color: #f5f5f4;
+    color: #78716c;
+    cursor: not-allowed;
+  }
+}
+
+.ui-select-multiple {
+  background-image: none;
+  min-height: 8.5rem;
+  padding-right: 1rem;
+
+  option {
+    border-radius: 0.35rem;
+    margin: 0.1rem 0;
+    padding: 0.35rem 0.5rem;
+  }
+
+  option:checked {
+    background: #fed7aa linear-gradient(0deg, #fed7aa 0%, #fdba74 100%);
+    color: #7c2d12;
+    font-weight: 600;
+  }
+}
+
+.ui-native-select,
+.ui-native-select option {
+  font-size: 16px;
+  line-height: 1.4;
+}

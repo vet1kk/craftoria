@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\ProductIngredient;
 use App\Models\ProductMetadata;
 use App\Models\User;
+use App\Observers\CategoryObserver;
 use App\Observers\OrderItemObserver;
 use App\Observers\OrderObserver;
 use App\Policies\CategoryPolicy;
@@ -53,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ProductIngredient::class, ProductIngredientPolicy::class);
         Gate::policy(ProductMetadata::class, ProductMetadataPolicy::class);
 
+        Category::observe(CategoryObserver::class);
         Order::observe(OrderObserver::class);
         OrderItem::observe(OrderItemObserver::class);
     }

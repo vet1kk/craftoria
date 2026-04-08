@@ -17,6 +17,7 @@ export class AccountProfileSummaryComponent {
   private readonly i18n = inject(I18nService);
   readonly user = input.required<User>();
   readonly isAdmin = input.required<boolean>();
+  readonly ordersCount = input(0);
 
   getRoleLabel(role: 'admin' | 'client'): string {
     return role === 'admin'

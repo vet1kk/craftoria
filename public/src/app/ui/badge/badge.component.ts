@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-
-export type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'orange' | 'sky';
+import { BadgeVariant } from '../../models';
 
 @Component({
   selector: 'ui-badge',

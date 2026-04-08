@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Concerns\HasTranslationConfig;
-use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,25 +19,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Product $product
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class ProductMetadata extends Model
 {
+    use HasCatalogTranslations;
     use HasFactory;
     use HasTranslationConfig;
-    use HasTranslationKey;
     use HasUuids;
 
-    protected string $translationKeyField = 'type';
 
     /**
      * @var array<int, string>
      */
     protected array $translatableFields = ['value'];
-
-    /**
-     * @var array<string, string>
-     */
-    protected array $translationFieldMap = ['value' => ''];
 
     protected $table = 'product_metadata';
 
@@ -47,21 +42,6 @@ class ProductMetadata extends Model
         'value',
     ];
 
-    /**
-     * Resolve the translation prefix used for lang-file lookups.
-     */
-    public function translationPrefix(): ?string
-    {
-        $product = $this->relationLoaded('product') ? $this->product : $this->product()->first();
-
-        if ($product === null) {
-            return null;
-        }
-
-        $translationKey = $product->translationLookupKey($product->slug);
-
-        return "catalog.products.{$translationKey}.metadata";
-    }
 
     /**
      * Get the owning product.

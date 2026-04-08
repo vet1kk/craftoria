@@ -49,7 +49,7 @@ class ProductResource extends JsonResource
     /**
      * Calculate aggregate nutrition totals for the product.
      *
-     * @return array{calories:int, proteins:float, fats:float, carbs:float}
+     * @return array{calories:float, proteins:float, fats:float, carbs:float}
      */
     private function calculateNutritionTotals(): array
     {
@@ -62,14 +62,14 @@ class ProductResource extends JsonResource
 
         foreach ($this->ingredients as $ingredient) {
             $multiplier = ((float)$ingredient->pivot->quantity);
-            $totals['calories'] += $ingredient->calories * $multiplier;
+            $totals['calories'] += (float)$ingredient->calories * $multiplier;
             $totals['proteins'] += (float)$ingredient->proteins * $multiplier;
             $totals['fats'] += (float)$ingredient->fats * $multiplier;
             $totals['carbs'] += (float)$ingredient->carbs * $multiplier;
         }
 
         return [
-            'calories' => (int)round($totals['calories']),
+            'calories' => round($totals['calories'], 2),
             'proteins' => round($totals['proteins'], 2),
             'fats' => round($totals['fats'], 2),
             'carbs' => round($totals['carbs'], 2),

@@ -57,6 +57,21 @@ export interface OrderRequest {
   total_price: number;
 }
 
+export interface CreateOrderPayload {
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string;
+  fulfillment_type: 'pickup';
+  currency: string;
+  payment_method: 'cash';
+}
+
+export interface CreateOrderItemPayload {
+  product_id: string;
+  quantity: number;
+  notes: string | null;
+}
+
 export interface OrderItem {
   id: string;
   product_id: string;

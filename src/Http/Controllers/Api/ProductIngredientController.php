@@ -4,32 +4,37 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\FileUpload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\ProductIngredient\ProductIngredientStoreRequest;
 use App\Http\Requests\Product\ProductIngredient\ProductIngredientUpdateRequest;
 use App\Http\Resources\ProductIngredientResource;
+use App\Models\Product;
 use App\Models\ProductIngredient;
+use App\Services\ProductIngredientService;
 
 class ProductIngredientController extends Controller
 {
+    public function __construct(private readonly ProductIngredientService $productIngredientService)
+    {
+    }
+
     /**
      * @param \App\Http\Requests\Product\ProductIngredient\ProductIngredientStoreRequest $request
+     * @param \App\Models\Product $product
      * @return \App\Http\Resources\ProductIngredientResource
+     * @throws \Throwable
      */
-    public function store(ProductIngredientStoreRequest $request): ProductIngredientResource
+    public function store(ProductIngredientStoreRequest $request, Product $product): ProductIngredientResource
     {
         $this->authorize('create', ProductIngredient::class);
 
         $validated = $request->validated();
 
         if ($request->hasFile('image')) {
-            $validated['image_url'] = FileUpload::storePublicImage(
-                $request->file('image'),
-                'uploads/products/ingredients'
-            );
+            $validated['image'] = $request->file('image');
         }
-        $productIngredient = ProductIngredient::create($validated);
+
+        $productIngredient = $this->productIngredientService->store($product, $validated);
 
         return new ProductIngredientResource($productIngredient);
     }
@@ -38,6 +43,7 @@ class ProductIngredientController extends Controller
      * @param \App\Http\Requests\Product\ProductIngredient\ProductIngredientUpdateRequest $request
      * @param \App\Models\ProductIngredient $productIngredient
      * @return \App\Http\Resources\ProductIngredientResource
+     * @throws \Throwable
      */
     public function update(ProductIngredientUpdateRequest $request, ProductIngredient $productIngredient): ProductIngredientResource
     {
@@ -46,26 +52,22 @@ class ProductIngredientController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image_url'] = FileUpload::storePublicImage(
-                $request->file('image'),
-                'uploads/products/ingredients'
-            );
+            $data['image'] = $request->file('image');
         }
 
-        $productIngredient->update($data);
-
-        return new ProductIngredientResource($productIngredient->refresh());
+        return new ProductIngredientResource($this->productIngredientService->update($productIngredient, $data));
     }
 
     /**
      * @param \App\Models\ProductIngredient $productIngredient
      * @return \Illuminate\Http\Response
+     * @throws \Throwable
      */
     public function destroy(ProductIngredient $productIngredient): \Illuminate\Http\Response
     {
         $this->authorize('delete', $productIngredient);
 
-        $productIngredient->delete();
+        $this->productIngredientService->delete($productIngredient);
 
         return response()->noContent();
     }

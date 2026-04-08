@@ -1,0 +1,11 @@
+<div class="relative w-full flex">
+  @if (error) {
+    <i class="cursor-help z-5 text-xs font-bold text-red-500 absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 rounded-full border border-red-200 bg-white px-1"
+       [attr.title]="error">
+      !
+    </i>
+  }
+  <div class="flex-1">
+    <ng-content></ng-content>
+  </div>
+</div>

@@ -8,11 +8,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ingredient\IngredientUpsertRequest;
 use App\Http\Resources\IngredientResource;
 use App\Models\Ingredient;
+use App\Services\IngredientService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 class IngredientController extends Controller
 {
+    public function __construct(
+        private readonly IngredientService $ingredientService,
+    )
+    {
+    }
+
     /**
      * Return the full admin ingredient collection.
      *
@@ -22,9 +29,7 @@ class IngredientController extends Controller
     {
         $this->authorize('viewAny', Ingredient::class);
 
-        $ingredients = Ingredient::query()
-                                 ->orderBy('name')
-                                 ->get();
+        $ingredients = $this->ingredientService->index();
 
         return IngredientResource::collection($ingredients);
     }
@@ -39,7 +44,7 @@ class IngredientController extends Controller
     {
         $this->authorize('create', Ingredient::class);
 
-        $ingredient = Ingredient::create($request->validated());
+        $ingredient = $this->ingredientService->store($request->validated());
 
         return new IngredientResource($ingredient);
     }
@@ -64,9 +69,7 @@ class IngredientController extends Controller
     {
         $this->authorize('update', $ingredient);
 
-        $ingredient->update($request->validated());
-
-        return new IngredientResource($ingredient->refresh());
+        return new IngredientResource($this->ingredientService->update($ingredient, $request->validated()));
     }
 
     /**
@@ -79,7 +82,7 @@ class IngredientController extends Controller
     {
         $this->authorize('delete', $ingredient);
 
-        $ingredient->delete();
+        $this->ingredientService->delete($ingredient);
 
         return response()->noContent();
     }

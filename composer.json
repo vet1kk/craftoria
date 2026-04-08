@@ -13,7 +13,8 @@
     "ext-pdo_pgsql": "*",
     "laravel/framework": "^13.0",
     "laravel/tinker": "^3.0",
-    "mcamara/laravel-localization": "^2.0"
+    "mcamara/laravel-localization": "^2.0",
+    "php-open-source-saver/jwt-auth": "^2.9"
   },
   "require-dev": {
     "fakerphp/faker": "^1.23",
@@ -38,6 +39,7 @@
   "scripts": {
     "deploy": [
       "php artisan migrate --force --isolated --no-interaction",
+      "php artisan storage:link --force",
       "php artisan optimize:clear",
       "php artisan config:cache",
       "php artisan route:cache"
@@ -46,6 +48,7 @@
       "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
       "composer install",
       "php artisan key:generate --ansi",
+      "php artisan storage:link --force",
       "php artisan migrate",
       "php artisan db:seed --ansi"
     ],

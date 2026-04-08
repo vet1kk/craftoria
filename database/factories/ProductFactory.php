@@ -17,7 +17,7 @@ class ProductFactory extends Factory
     use BuildsInlineImage;
 
     /**
-     * @var array<int, array{name:string, slug:string, description:string, price:float, shelfLife:string|null}>
+     * @var array<int, array{name:string, slug:string, description:string, price:float, shelfLife:int|null}>
      */
     private const array PROFILES = [
         [
@@ -25,140 +25,140 @@ class ProductFactory extends Factory
             'slug' => 'classic-burger',
             'description' => 'Juicy beef, cheddar, pickles, and house sauce on a brioche bun.',
             'price' => 249.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Double Cheese Burger',
             'slug' => 'double-cheese-burger',
             'description' => 'Two beef patties with double cheddar and caramelized onions.',
             'price' => 319.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'BBQ Bacon Burger',
             'slug' => 'bbq-bacon-burger',
             'description' => 'Smoky barbecue glaze, crispy bacon, and cheddar in every bite.',
             'price' => 329.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Mushroom Swiss Burger',
             'slug' => 'mushroom-swiss-burger',
             'description' => 'Sauteed mushrooms, creamy cheese, and garlic aioli.',
             'price' => 309.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Crispy Chicken Burger',
             'slug' => 'crispy-chicken-burger',
             'description' => 'Crunchy chicken fillet with lettuce, tomato, and garlic sauce.',
             'price' => 279.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Margherita Pizza',
             'slug' => 'margherita-pizza',
             'description' => 'Classic pizza with tomato sauce, mozzarella, and basil notes.',
             'price' => 289.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Pepperoni Pizza',
             'slug' => 'pepperoni-pizza',
             'description' => 'Thin crust pizza loaded with pepperoni and mozzarella.',
             'price' => 329.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'BBQ Chicken Pizza',
             'slug' => 'bbq-chicken-pizza',
             'description' => 'Grilled chicken, barbecue sauce, red onion, and mozzarella.',
             'price' => 339.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Quattro Formaggi Pizza',
             'slug' => 'quattro-formaggi-pizza',
             'description' => 'A rich blend of four cheeses on a crisp golden crust.',
             'price' => 349.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Veggie Pizza',
             'slug' => 'veggie-pizza',
             'description' => 'Colorful vegetables, mushrooms, and mozzarella on tomato sauce.',
             'price' => 299.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Caesar Salad',
             'slug' => 'caesar-salad',
             'description' => 'Romaine, chicken, parmesan, and creamy Caesar dressing.',
             'price' => 229.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Greek Salad',
             'slug' => 'greek-salad',
             'description' => 'Tomato, cucumber, olives, and feta with olive oil.',
             'price' => 219.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Avocado Chicken Salad',
             'slug' => 'avocado-chicken-salad',
             'description' => 'Grilled chicken, avocado, greens, and citrus dressing.',
             'price' => 259.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Quinoa Bowl',
             'slug' => 'quinoa-bowl',
             'description' => 'Warm quinoa, spinach, vegetables, and a bright herb dressing.',
             'price' => 239.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Salmon Spinach Salad',
             'slug' => 'salmon-spinach-salad',
             'description' => 'Smoked salmon, spinach, cucumber, and lemon yogurt sauce.',
             'price' => 289.00,
-            'shelf_life' => '24 hours',
+            'shelf_life' => 24,
         ],
         [
             'name' => 'Chocolate Brownie',
             'slug' => 'chocolate-brownie',
             'description' => 'Dense chocolate brownie with a glossy cocoa finish.',
             'price' => 159.00,
-            'shelf_life' => '72 hours',
+            'shelf_life' => 72,
         ],
         [
             'name' => 'New York Cheesecake',
             'slug' => 'new-york-cheesecake',
             'description' => 'Creamy baked cheesecake with a buttery biscuit base.',
             'price' => 179.00,
-            'shelf_life' => '72 hours',
+            'shelf_life' => 72,
         ],
         [
             'name' => 'Tiramisu Cup',
             'slug' => 'tiramisu-cup',
             'description' => 'Espresso-soaked layers with mascarpone cream and cocoa.',
             'price' => 169.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Berry Panna Cotta',
             'slug' => 'berry-panna-cotta',
             'description' => 'Silky vanilla panna cotta with a bright berry topping.',
             'price' => 165.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Cinnamon Roll',
             'slug' => 'cinnamon-roll',
             'description' => 'Soft sweet roll with cinnamon sugar and cream glaze.',
             'price' => 149.00,
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ],
         [
             'name' => 'Flat White',
@@ -262,7 +262,7 @@ class ProductFactory extends Factory
     }
 
     /**
-     * @return array{name:string, slug:string, description:string, price:float, shelfLife:string|null}
+     * @return array{name:string, slug:string, description:string, price:float, shelfLife:int|null}
      */
     private function profile(int $index): array
     {

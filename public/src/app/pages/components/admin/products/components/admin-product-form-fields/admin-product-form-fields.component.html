@@ -1,0 +1,114 @@
+<div class="mt-5 grid gap-4">
+  <ui-form-tag-select [label]="'ui.admin.productCategoryPlaceholder' | t"
+                      [control]="$any(productForm().controls['category_id'])"
+                      [options]="categoryOptions()"
+                      [validationGroup]="validationGroupName()"
+                      validationKey="category_id"
+                      [validationMessages]="{}"
+                      [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+  </ui-form-tag-select>
+
+  @if (categoryOptions().length === 0) {
+    <p class="text-sm text-stone-500">{{ 'ui.admin.productCategoriesEmptyTip' | t }}</p>
+  }
+
+  <ui-form-input [label]="'ui.admin.productNameLabel' | t"
+                 [required]="true"
+                 [control]="$any(productForm().controls['name'])"
+                 [validationGroup]="validationGroupName()"
+                 validationKey="name"
+                 [validationMessages]="{ required: ('ui.admin.productNameRequired' | t), maxlength: ('ui.admin.productNameMaxLength' | t) }"
+                 [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+  </ui-form-input>
+
+  <ui-form-input [label]="('ui.admin.productNameLabel' | t) + ' (ua)'"
+                 [control]="$any(productForm().controls['name_uk'])"
+                 [validationGroup]="validationGroupName()"
+                 validationKey="translations.uk.name"
+                 [validationMessages]="{ maxlength: ('ui.admin.productNameMaxLength' | t) }"
+                 [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+  </ui-form-input>
+
+  <ui-form-input [label]="'ui.admin.productSkuLabel' | t"
+                 [control]="$any(productForm().controls['sku'])"
+                 [validationGroup]="validationGroupName()"
+                 validationKey="sku"
+                 [validationMessages]="{ maxlength: ('ui.admin.productSkuMaxLength' | t) }"
+                 [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+  </ui-form-input>
+
+  <label class="grid gap-1 text-sm text-stone-600">
+    <span>{{ 'ui.admin.productDescriptionLabel' | t }} <span class="text-red-500">*</span></span>
+    <textarea rows="3"
+              [formControl]="$any(productForm().controls['description'])"
+              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+  </label>
+
+  <label class="grid gap-1 text-sm text-stone-600">
+    <span>{{ 'ui.admin.productDescriptionLabel' | t }} (ua)</span>
+    <textarea rows="3"
+              [formControl]="$any(productForm().controls['description_uk'])"
+              class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+  </label>
+
+  <label class="grid gap-1 text-sm text-stone-600">
+    <span>{{ 'ui.itemDetail.price' | t }} <span class="text-red-500">*</span></span>
+    <input type="number"
+           step="0.01"
+           min="0"
+           [formControl]="$any(productForm().controls['price'])"
+           class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
+  </label>
+
+  <ui-form-input [label]="'ui.admin.productShelfLifeLabel' | t"
+                 [type]="'number'"
+                 [control]="$any(productForm().controls['shelf_life'])"
+                 [validationGroup]="validationGroupName()"
+                 validationKey="shelf_life"
+                 [validationMessages]="{}"
+                 [fallbackErrorMessage]="'ui.account.validation.fieldInvalid' | t">
+  </ui-form-input>
+
+  <label class="grid gap-2 text-sm text-stone-600">
+    <span>{{ 'ui.admin.productImageLabel' | t }}</span>
+    <input type="file" accept="image/*" (change)="imageSelected.emit($event)"
+           class="w-full min-w-0 rounded-xl border border-dashed border-stone-300 px-3 py-2 text-sm text-stone-600">
+    @if (selectedImageName()) {
+      <span class="text-xs text-stone-500">{{ selectedImageName() }}</span>
+    }
+  </label>
+
+  <div class="grid gap-3 sm:grid-cols-3">
+    <label class="grid gap-1 text-sm text-stone-600">
+      <span>{{ 'ui.admin.productPositionLabel' | t }}</span>
+      <input type="number" min="0" [formControl]="$any(productForm().controls['position'])"
+             class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
+    </label>
+
+    <label class="grid gap-1 text-sm text-stone-600">
+      <span>{{ 'ui.admin.productStockQuantityLabel' | t }}</span>
+      <input type="number" min="0" [formControl]="$any(productForm().controls['stock_quantity'])"
+             class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
+    </label>
+
+    <label class="grid gap-1 text-sm text-stone-600">
+      <span>{{ 'ui.admin.productReorderLevelLabel' | t }}</span>
+      <input type="number" min="0" [formControl]="$any(productForm().controls['reorder_level'])"
+             class="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-800 transition-colors focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
+    </label>
+  </div>
+
+  <label class="inline-flex items-center gap-3 text-sm text-stone-700">
+    <input type="checkbox"
+           [formControl]="$any(productForm().controls['is_active'])"
+           class="h-5 w-5 rounded-md border border-orange-300 accent-orange-500 transition-colors focus:ring-2 focus:ring-orange-500 focus:ring-offset-0">
+    <span>{{ 'ui.admin.productIsActiveLabel' | t }}</span>
+  </label>
+
+  <label class="inline-flex items-center gap-3 text-sm text-stone-700">
+    <input type="checkbox"
+           [formControl]="$any(productForm().controls['is_available'])"
+           class="h-5 w-5 rounded-md border border-orange-300 accent-orange-500 transition-colors focus:ring-2 focus:ring-orange-500 focus:ring-offset-0">
+    <span>{{ 'ui.admin.productIsAvailableLabel' | t }}</span>
+  </label>
+</div>

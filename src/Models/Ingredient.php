@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Builders\IngredientBuilder;
+use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Concerns\HasTranslationConfig;
-use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property string $slug
  * @property string $unit
- * @property int $calories
+ * @property string $calories
  * @property string $proteins
  * @property string $fats
  * @property string $carbs
@@ -38,16 +38,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductIngredient> $product_ingredients
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
  * @property-read \App\Models\ProductIngredient|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class Ingredient extends Model
 {
+    use HasCatalogTranslations;
     use HasFactory;
     use HasTranslationConfig;
-    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
-
-    protected ?string $translationPrefix = 'catalog.ingredients';
 
     /**
      * @var array<int, string>
@@ -74,7 +73,7 @@ class Ingredient extends Model
     protected function casts(): array
     {
         return [
-            'calories' => 'integer',
+            'calories' => 'decimal:2',
             'proteins' => 'decimal:2',
             'fats' => 'decimal:2',
             'carbs' => 'decimal:2',

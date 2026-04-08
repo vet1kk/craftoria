@@ -31,7 +31,7 @@ class ResourceTest extends TestCase
             'image_url' => 'https://example.com/cat.jpg',
         ]);
         $ingredient = Ingredient::factory()->create([
-            'calories' => 123,
+            'calories' => 123.45,
             'proteins' => 10.5,
             'fats' => 2.4,
             'carbs' => 18.7,
@@ -43,7 +43,7 @@ class ResourceTest extends TestCase
 
         $this->assertSame('cake', $categoryPayload['icon']);
         $this->assertSame('https://example.com/cat.jpg', $categoryPayload['image_url']);
-        $this->assertSame(123, $ingredientPayload['nutrition_totals']['calories']);
+        $this->assertSame(123.45, $ingredientPayload['nutrition_totals']['calories']);
         $this->assertSame(10.5, $ingredientPayload['nutrition_totals']['proteins']);
         $this->assertSame(14.2, $ingredientPayload['cost_amount']);
     }
@@ -56,19 +56,46 @@ class ResourceTest extends TestCase
             'name' => 'Burgers',
             'slug' => 'burgers',
         ]);
+        $category->translations()->create([
+            'locale' => 'uk',
+            'field' => 'name',
+            'value' => 'Бургери',
+        ]);
         $ingredient = Ingredient::factory()->create([
             'name' => 'Beef',
             'slug' => 'beef',
+        ]);
+        $ingredient->translations()->create([
+            'locale' => 'uk',
+            'field' => 'name',
+            'value' => 'Яловичина',
         ]);
         $product = Product::factory()->for($category)->create([
             'name' => 'Classic Burger',
             'slug' => 'classic-burger',
             'description' => 'A solid burger.',
-            'shelf_life' => '48 hours',
+            'shelf_life' => 48,
         ]);
-        $product->metadata()->create([
+        $product->translations()->createMany([
+            [
+                'locale' => 'uk',
+                'field' => 'name',
+                'value' => 'Класичний бургер',
+            ],
+            [
+                'locale' => 'uk',
+                'field' => 'description',
+                'value' => 'Надійний бургер на щодень.',
+            ],
+        ]);
+        $metadata = $product->metadata()->create([
             'type' => 'serving_details',
             'value' => 'Serve warm.',
+        ]);
+        $metadata->translations()->create([
+            'locale' => 'uk',
+            'field' => 'value',
+            'value' => 'Подавати теплим.',
         ]);
         $product->productIngredients()->create([
             'ingredient_id' => $ingredient->getKey(),
@@ -78,8 +105,9 @@ class ResourceTest extends TestCase
 
         $categoryPayload = (new CategoryResource($category))->toArray(new Request());
         $ingredientPayload = (new IngredientResource($ingredient))->toArray(new Request());
+        App::setLocale('uk');
         $productPayload = (new ProductResource($product->fresh()->load([
-            'metadata',
+            'metadata.translations',
             'ingredients'
         ])))->toArray(new Request());
 
@@ -89,14 +117,14 @@ class ResourceTest extends TestCase
         $this->assertSame('Надійний бургер на щодень.', $productPayload['description']);
         $this->assertSame('Serve warm.', $productPayload['metadata'][0]['value']);
         $this->assertSame('Beef', $productPayload['ingredients'][0]['name']);
-        $this->assertSame('48 hours', $productPayload['shelf_life']);
+        $this->assertSame(48, $productPayload['shelf_life']);
     }
 
     public function test_product_resource_returns_nested_relations_and_nutrition_totals(): void
     {
         $category = Category::factory()->create();
         $ingredient = Ingredient::factory()->create([
-            'calories' => 200,
+            'calories' => 2.25,
             'proteins' => 10,
             'fats' => 5,
             'carbs' => 20,
@@ -115,7 +143,7 @@ class ResourceTest extends TestCase
 
         $this->assertSame('https://example.com/p1.jpg', $payload['images'][0]['image_url']);
         $this->assertSame('serving_details', $payload['metadata'][0]['type']);
-        $this->assertSame(10000, $payload['nutrition_totals']['calories']);
+        $this->assertSame(112.5, $payload['nutrition_totals']['calories']);
         $this->assertSame(500.0, $payload['nutrition_totals']['proteins']);
     }
 

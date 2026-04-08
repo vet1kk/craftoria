@@ -1,54 +1,79 @@
-<div class="sticky top-0 z-20 w-full border-b border-stone-100 bg-white/90 backdrop-blur-md">
+<div class="w-full border-b border-stone-100 bg-white/95">
   <div class="mx-auto max-w-7xl px-4 py-3">
-
-    <div class="flex items-center justify-between md:hidden gap-4">
-      <div class="flex items-center gap-3 flex-wrap">
-        <span class="text-xs font-black uppercase tracking-widest text-stone-400">{{ 'ui.products.selectedCategory' | t }}</span>
-        <span class="text-sm font-bold text-orange-600">{{ activeCategoryName() }}</span>
-      </div>
-
+    <div class="flex justify-between gap-5">
+      <h3 class="text-2xl font-black leading-none text-stone-900">{{ 'ui.products.filtersTitle' | t }}</h3>
       <button type="button"
-              (click)="isMenuOpen.set(!isMenuOpen())"
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-50 border border-stone-200 text-stone-600 active:bg-stone-100">
-        @if (!isMenuOpen()) {
-          <span class="text-xl">☰</span>
-        } @else {
-          <span class="text-xl">✕</span>
-        }
+              class="text-sm font-medium text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-default disabled:opacity-40"
+              [disabled]="!hasActiveFilters()"
+              (click)="resetAllFilters()">
+        {{ 'ui.actions.clearFilters' | t }}
       </button>
     </div>
 
-    <div [class.hidden]="!isMenuOpen()"
-         class="mt-4 flex flex-col gap-2 md:mt-0 md:flex md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-3">
+    <app-products-list-controls [searchQuery]="searchQuery()"
+                                [availabilityFilter]="availabilityFilter()"
+                                (searchQueryChange)="searchQueryChange.emit($event)"
+                                (availabilityFilterChange)="availabilityFilterChange.emit($event)">
+    </app-products-list-controls>
 
-      @for (category of categories(); track category.id) {
-        <button type="button"
-                (click)="selectCategory(category.slug)"
-                class="group relative flex items-center gap-3 rounded-2xl border p-2 pr-4 transition-all md:rounded-xl md:px-4 md:py-2"
-                [class]="isSelected(category.slug)
-                  ? 'border-orange-500 bg-orange-50 text-orange-900 shadow-sm'
-                  : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
+    <div class="mt-4 md:pb-2">
+      <div class="mb-3 md:hidden">
+        <span class="mb-1 block text-sm font-medium text-stone-500">{{ 'ui.products.selectedCategory' | t }}</span>
+        <ui-dropdown ariaLabelKey="ui.products.filtersTitle"
+                     [selectedValue]="selectedCategorySlug()"
+                     [selectedLabelKey]="selectedCategoryLabelKey()"
+                     [options]="categoryOptions()"
+                     buttonClassName="h-11 w-full rounded-md border border-stone-200 bg-white px-4 text-left text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                     menuClassName="absolute left-0 right-0 z-20 mt-1 overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                     (valueChange)="selectCategory($event)">
+        </ui-dropdown>
+      </div>
 
-          <div class="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white md:h-6 md:w-6">
-            @if (category.image_url) {
-              <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
-            } @else {
-              <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs"> 📦</div>
+      <div class="hidden items-center justify-between gap-3 md:flex w-full">
+        <div class="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden w-full">
+          <div class="flex min-w-max items-end gap-2 border-b border-stone-300">
+            @for (category of categories(); track category.id) {
+              <div class="flex flex-col gap-1">
+                <button type="button"
+                        (click)="selectCategory(category.slug)"
+                        class="group relative mb-1 inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 transition-all"
+                        [class]="isSelected(category.slug)
+                      ? 'border-orange-400 bg-white text-orange-800 shadow-sm ring-1 ring-orange-200'
+                      : 'border-stone-100 bg-white text-stone-600 hover:border-stone-200'">
+                  <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-stone-100 bg-white">
+                    @if (category.image_url) {
+                      <img [src]="category.image_url" class="h-full w-full object-cover" alt="">
+                    } @else {
+                      <div class="flex h-full w-full items-center justify-center bg-stone-50 text-xs">{{ category.icon ?? '📦' }}</div>
+                    }
+                  </div>
+
+                  <span class="text-xs font-semibold tracking-tight md:text-sm">{{ category.name }}</span>
+                </button>
+                <span class="pointer-events-none h-1 w-full transition-colors"
+                      [class.bg-orange-400]="isSelected(category.slug)"
+                      [class.bg-transparent]="!isSelected(category.slug)">
+                </span>
+              </div>
             }
           </div>
+        </div>
+      </div>
+    </div>
 
-          <span class="text-sm font-bold tracking-tight md:font-semibold">
-            {{ category.name }}
-          </span>
-
-          @if (isSelected(category.slug)) {
-            <span class="absolute -right-1 -top-1 flex h-3 w-3">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-            </span>
-          }
-        </button>
-      }
+    <div class="mt-3 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm font-medium text-stone-500">{{ resultsCount() }} {{ 'ui.products.resultsLabel' | t }}</p>
+      <label class="flex items-center gap-3 text-sm text-stone-600">
+        <span class="font-medium">{{ 'ui.products.sortLabel' | t }}</span>
+        <ui-dropdown ariaLabelKey="ui.products.sortLabel"
+                     [selectedValue]="sortBy()"
+                     [selectedLabelKey]="selectedSortLabelKey()"
+                     [options]="sortOptions"
+                     buttonClassName="h-11 w-full rounded-md border border-stone-200 bg-white px-4 text-left text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                     menuClassName="absolute right-0 z-20 mt-1 w-full overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                     (valueChange)="selectSort($event)">
+        </ui-dropdown>
+      </label>
     </div>
   </div>
 </div>

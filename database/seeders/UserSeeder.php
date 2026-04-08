@@ -10,17 +10,11 @@ use Illuminate\Database\Seeder;
 class UserSeeder extends Seeder
 {
     /**
-     * Seed system users (idempotent) and optionally fake users.
-     *
-     * @return void
+     * Seed system users.
      */
     public function run(): void
     {
         $this->seedSystemUsers();
-
-        if ($this->shouldSeedFakeData()) {
-            User::factory()->count(12)->create();
-        }
     }
 
     /**
@@ -42,13 +36,4 @@ class UserSeeder extends Seeder
         );
     }
 
-    /**
-     * Only seed fake data if no non-system users exist.
-     *
-     * @return bool
-     */
-    private function shouldSeedFakeData(): bool
-    {
-        return User::query()->where('is_system', false)->doesntExist();
-    }
 }

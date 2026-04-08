@@ -1,0 +1,12 @@
+@if (open()) {
+  <div class="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto overscroll-contain p-2 sm:items-center sm:p-4">
+    <button type="button"
+            [disabled]="disableClose()"
+            class="absolute inset-0 bg-stone-950/35"
+            (click)="onBackdropClick()"></button>
+
+    <div class="relative z-10 my-2 w-full sm:my-6" [ngClass]="maxWidthClass()">
+      <ng-content></ng-content>
+    </div>
+  </div>
+}

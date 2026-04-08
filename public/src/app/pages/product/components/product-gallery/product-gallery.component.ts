@@ -1,16 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
+import { GallerySlot } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
+import { ImagePreviewComponent } from '../../../../ui';
 
-export interface GallerySlot {
-  image_url: string | null;
-  is_placeholder: boolean;
-}
 
 @Component({
   selector: 'app-product-gallery',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, ImagePreviewComponent],
   templateUrl: './product-gallery.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

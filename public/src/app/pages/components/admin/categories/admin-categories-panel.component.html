@@ -1,31 +1,131 @@
 <div class="overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm">
   <div class="flex flex-col items-start gap-2 border-b border-stone-100 bg-stone-50 p-6 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-lg font-bold text-stone-700">{{ 'ui.admin.categoriesTitle' | t }}</h2>
+    <ui-button type="button"
+               variant="secondary"
+               rounded="full"
+               (click)="openCreateModal()">
+      {{ 'ui.admin.categoryCreateAction' | t }}
+    </ui-button>
   </div>
 
-  <div class="divide-y divide-stone-100">
-    @for (category of categories(); track category.id) {
-      <div class="flex flex-col gap-3 p-4 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex min-w-0 items-center gap-3">
-          @if (category.image_url) {
-            <img [src]="category.image_url"
-                 [alt]="category.name"
-                 width="48"
-                 height="48"
-                 loading="lazy"
-                 class="h-10 w-16 rounded-lg border border-stone-200 bg-stone-100 object-cover">
-          } @else {
-            <div class="aspect-square overflow-hidden rounded-2xl border-stone-200 bg-stone-50/70 p-2">
-              <div class="flex w-16 h-16 items-center justify-center opacity-20">
-                <span class="text-3xl">📸</span>
+  @if (isLoading() && categories().length === 0) {
+    <div class="p-4">
+      <ui-skeleton [containerClass]="'border-0 bg-transparent p-0 shadow-none'"
+                   [pulseClass]="'animate-pulse space-y-4'"
+                   [groups]="categoriesSkeletonGroups">
+      </ui-skeleton>
+    </div>
+  } @else if (categories().length === 0) {
+    <div class="p-6 text-sm text-stone-500">{{ 'ui.admin.categoriesEmpty' | t }}</div>
+  } @else {
+    <div class="divide-y divide-stone-100">
+      @for (category of categories(); track category.id) {
+        <div class="flex flex-col gap-3 p-4 hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex min-w-0 items-center gap-3">
+            @if (category.image_url) {
+              <ui-image-preview [src]="category.image_url"
+                                [alt]="category.name"
+                                [width]="48"
+                                [height]="48"
+                                [thumbnailClass]="'h-10 w-16 rounded-lg border border-stone-200 bg-stone-100 object-cover'"
+                                [fullImageClass]="'max-h-[85vh] w-full rounded-2xl object-contain'"
+                                [buttonClass]="'inline-flex overflow-hidden rounded-lg transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500'"
+                                modalMaxWidth="2xl">
+              </ui-image-preview>
+            } @else {
+              <div class="overflow-hidden rounded-lg border border-stone-200 bg-stone-50/70 p-1">
+                <div class="flex h-10 w-16 items-center justify-center opacity-20">
+                  <span class="text-3xl">📸</span>
+                </div>
               </div>
+            }
+            <div class="min-w-0">
+              <span class="block truncate font-medium text-stone-800">{{ category.name }}</span>
+              <span class="block text-xs text-stone-500">/{{ category.slug }}</span>
             </div>
-          }
-          <div class="min-w-0">
-            <span class="block font-medium text-stone-800">{{ category.name }}</span>
+          </div>
+          <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
+            <ui-button type="button"
+                       variant="outline"
+                       rounded="full"
+                       [className]="'min-w-24 flex-1 sm:flex-none'"
+                       (click)="openViewModal(category)">
+              {{ 'ui.admin.categoryViewAction' | t }}
+            </ui-button>
+            <ui-button type="button"
+                       variant="outline"
+                       rounded="full"
+                       [className]="'min-w-24 flex-1 sm:flex-none'"
+                       (click)="openEditModal(category)">
+              {{ 'ui.admin.categoryEditAction' | t }}
+            </ui-button>
+            <ui-button type="button"
+                       variant="danger"
+                       rounded="full"
+                       [className]="'min-w-24 flex-1 sm:flex-none'"
+                       (click)="openDeleteModal(category)">
+              {{ 'ui.admin.categoryDeleteAction' | t }}
+            </ui-button>
           </div>
         </div>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
 </div>
+
+<ui-modal [open]="isCreateModalOpen() || isEditModalOpen() || isDeleteModalOpen() || isViewModalOpen()"
+          [disableClose]="false"
+          (closeRequested)="closeModals()">
+  @if (isViewModalOpen() && selectedCategory()) {
+    <ng-container [ngTemplateOutlet]="viewModalTemplate"></ng-container>
+  }
+
+  @if (isCreateModalOpen()) {
+    <ng-container [ngTemplateOutlet]="createModalTemplate"></ng-container>
+  }
+
+  @if (isEditModalOpen() && hasSelection()) {
+    <ng-container [ngTemplateOutlet]="updateModalTemplate"></ng-container>
+  }
+
+  @if (isDeleteModalOpen() && selectedCategory()) {
+    <ng-container [ngTemplateOutlet]="deleteModalTemplate"></ng-container>
+  }
+</ui-modal>
+
+<ng-template #viewModalTemplate>
+  <app-admin-category-view-modal
+          [category]="selectedCategory()!"
+          [productOptions]="productOptions()"
+          (closeRequested)="closeModals()"
+          (editRequested)="openEditModal()"
+          (deleteRequested)="openDeleteModal()">
+  </app-admin-category-view-modal>
+</ng-template>
+
+<ng-template #createModalTemplate>
+  <app-admin-category-create-modal
+          [defaultPosition]="categories().length"
+          [productOptions]="productOptions()"
+          (closeRequested)="closeModals()"
+          (completed)="onModalCompleted()">
+  </app-admin-category-create-modal>
+</ng-template>
+
+<ng-template #updateModalTemplate>
+  <app-admin-category-update-modal
+          [category]="selectedCategory()!"
+          [productOptions]="productOptions()"
+          (closeRequested)="closeModals()"
+          (completed)="onModalCompleted()">
+  </app-admin-category-update-modal>
+</ng-template>
+
+<ng-template #deleteModalTemplate>
+  <app-admin-category-delete-modal
+          [category]="selectedCategory()!"
+          (closeRequested)="closeModals()"
+          (completed)="onModalCompleted()">
+  </app-admin-category-delete-modal>
+</ng-template>

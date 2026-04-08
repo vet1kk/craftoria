@@ -5,11 +5,29 @@ declare(strict_types=1);
 namespace App\Http\Requests\Product;
 
 use App\Http\Requests\AdminRequest;
+use App\Http\Requests\Concerns\GeneratesUniqueSlug;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 
 class ProductStoreRequest extends AdminRequest
 {
+    use GeneratesUniqueSlug;
+
+    /**
+     * @inheritDoc
+     */
+    protected function prepareForValidation(): void
+    {
+        $name = trim((string)$this->input('name', ''));
+        $categoryId = $this->input('category_id');
+
+        $this->merge([
+            'name' => $name,
+            'slug' => $this->generateUniqueSlug('products', $name),
+            'category_id' => $categoryId === '' ? null : $categoryId,
+        ]);
+    }
+
     /**
      * Get the validation rules for the request.
      *
@@ -19,22 +37,24 @@ class ProductStoreRequest extends AdminRequest
     {
         return [
             'category_id' => [
-                'required',
+                'nullable',
                 'uuid',
-                Rule::exists('categories', 'id')->whereNull('deleted_at'),
+                Rule::exists('categories', 'id')
+                    ->whereNull('deleted_at')
+                    ->where('is_system', 0),
             ],
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('products', 'slug')->whereNull('deleted_at'),
+                Rule::unique('products', 'slug'),
             ],
             'sku' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('products', 'sku')->whereNull('deleted_at'),
+                Rule::unique('products', 'sku'),
             ],
             'description' => ['required', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
@@ -42,7 +62,7 @@ class ProductStoreRequest extends AdminRequest
                 'nullable',
                 File::image()->max(10 * 1024),
             ],
-            'shelf_life' => ['nullable', 'string', 'max:255'],
+            'shelf_life' => ['nullable', 'integer', 'min:0'],
             'position' => ['nullable', 'integer', 'min:0'],
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
             'reorder_level' => ['nullable', 'integer', 'min:0'],

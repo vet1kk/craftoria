@@ -5,16 +5,13 @@
         {{ getRoleLabel(user().role) }}
       </p>
       <h1 class="mt-1 text-2xl font-bold text-stone-800">{{ user().name }}</h1>
-      <p class="mt-2 text-stone-500">
-        {{ 'ui.profile.syncHint' | t }}
-      </p>
     </div>
   </div>
 
   <div class="mt-8">
     <div class="rounded-2xl border border-stone-200 bg-stone-50 p-4">
       <p class="text-xs uppercase tracking-wide text-stone-500">{{ 'ui.profile.ordersLabel' | t }}</p>
-      <p class="mt-2 text-2xl font-bold text-stone-900">{{ user().orders?.length ?? 0 }}</p>
+      <p class="mt-2 text-2xl font-bold text-stone-900">{{ ordersCount() }}</p>
     </div>
   </div>
 

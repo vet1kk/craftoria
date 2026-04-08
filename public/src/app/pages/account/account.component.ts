@@ -1,59 +1,40 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { catchError, of, switchMap, take } from 'rxjs';
 
-import { CartItem, Order } from '../../models';
+import { ApiErrorHelper, extractValidationPayload, passwordsMatchValidator } from '../../helpers';
+import { AuthActionResult, AuthMode, ClientRegistrationData, JwtAuthData } from '../../models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AuthService, CartDrawerService, CartService, DataService, I18nService } from '../../services';
-import { AccountOrderHistoryComponent, AccountProfileSummaryComponent } from '../components';
-
-type AuthMode = 'login' | 'register';
-type LoginControlName = 'email' | 'password';
-type RegistrationControlName =
-  | 'fullName'
-  | 'email'
-  | 'phone'
-  | 'password'
-  | 'confirmPassword';
+import { AuthApiService, I18nService, UserService, ValidationService } from '../../services';
+import { ButtonComponent, FormInputComponent, LoaderComponent } from '../../ui';
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ReactiveFormsModule, AccountProfileSummaryComponent, AccountOrderHistoryComponent, TranslatePipe, RouterLink],
+  imports: [ReactiveFormsModule, TranslatePipe, RouterLink, LoaderComponent, ButtonComponent, FormInputComponent],
   templateUrl: './account.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AccountComponent {
-  readonly authService = inject(AuthService);
-  private readonly cartService = inject(CartService);
-  private readonly cartDrawerService = inject(CartDrawerService);
-  private readonly dataService = inject(DataService);
+  readonly loginValidationGroup = 'accountLogin';
+  readonly registerValidationGroup = 'accountRegistration';
+
+  readonly authService = inject(UserService);
+  private readonly apiErrorHelper = inject(ApiErrorHelper);
+  private readonly authApiService = inject(AuthApiService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
+  readonly validationService = inject(ValidationService);
 
-  readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = this.authService.isAuthenticated;
-  readonly isAdmin = this.authService.isAdmin;
   readonly authMode = signal<AuthMode>('login');
   readonly authError = signal('');
   readonly isSubmitting = signal(false);
-  readonly repeatOrderError = signal('');
-
-  readonly loginEmailHasError = signal(false);
-  readonly loginPasswordHasError = signal(false);
-  readonly loginEmailErrorMessage = signal<string | null>(null);
-  readonly loginPasswordErrorMessage = signal<string | null>(null);
-  readonly registrationFullNameHasError = signal(false);
-  readonly registrationEmailHasError = signal(false);
-  readonly registrationPhoneHasError = signal(false);
-  readonly registrationPasswordHasError = signal(false);
-  readonly registrationConfirmPasswordHasError = signal(false);
-  readonly registrationFullNameErrorMessage = signal<string | null>(null);
-  readonly registrationEmailErrorMessage = signal<string | null>(null);
-  readonly registrationPhoneErrorMessage = signal<string | null>(null);
-  readonly registrationPasswordErrorMessage = signal<string | null>(null);
-  readonly registrationConfirmPasswordErrorMessage = signal<string | null>(null);
+  readonly isTransitioning = signal(false);
+  private readonly loginFieldKeys = ['email', 'password'] as const;
+  private readonly registerFieldKeys = ['fullName', 'email', 'phone', 'password', 'confirmPassword'] as const;
 
   readonly loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email, Validators.maxLength(120)]],
@@ -69,220 +50,142 @@ export class AccountComponent {
       confirmPassword: ['', [Validators.required]]
     },
     {
-      validators: [AccountComponent.passwordsMatchValidator]
+      validators: [passwordsMatchValidator]
     }
   );
 
   constructor() {
-    void this.dataService.ensureCatalogLoaded();
+    effect(() => {
+      if (!this.isAuthenticated() || this.isTransitioning()) {
+        return;
+      }
+
+      this.isTransitioning.set(true);
+      void this.router.navigate(['/profile'], { replaceUrl: true }).finally(() => {
+        this.isTransitioning.set(false);
+      });
+    });
   }
 
-  async login(): Promise<void> {
+  login(): void {
     this.authError.set('');
+    this.validationService.clearGroupErrors(this.loginValidationGroup);
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.updateLoginControlErrorState('email');
-      this.updateLoginControlErrorState('password');
       return;
     }
 
     const { email, password } = this.loginForm.getRawValue();
+    let postAuthPath: '/admin' | '/profile' = '/profile';
+
     this.isSubmitting.set(true);
-    const loginResult = await this.authService.login(email.trim(), password);
+    this.authApiService.login(email.trim(), password).pipe(
+      take(1),
+      switchMap((response) => {
+        this.isTransitioning.set(true);
+        const authData: JwtAuthData = response.data;
+        this.authService.setToken(authData.access_token);
+        this.authService.setCurrentUser(authData.user);
+        postAuthPath = authData.user.role === 'admin' ? '/admin' : '/profile';
 
-    if (!loginResult.success) {
-      this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
+        return of({ success: true });
+      }),
+      catchError((error: unknown) => of({
+        ...this.resolveAuthFailure(error, this.loginValidationGroup, 'Enabled to log in. Please check your credentials and try again.')
+      }))
+    ).subscribe((loginResult: AuthActionResult) => {
+      if (!loginResult.success) {
+        this.isTransitioning.set(false);
+
+        if (!this.validationService.hasGroupErrors(this.loginValidationGroup, this.loginFieldKeys)) {
+          this.authError.set(loginResult.message ?? this.i18n.translate('ui.account.loginFailed'));
+        }
+
+        this.isSubmitting.set(false);
+        return;
+      }
+
+      this.loginForm.reset({ email: '', password: '' });
+      this.loginForm.markAsPristine();
+      this.loginForm.markAsUntouched();
+      this.validationService.clearGroupErrors(this.loginValidationGroup);
+
       this.isSubmitting.set(false);
-      return;
-    }
-
-    this.loginForm.reset({ email: '', password: '' });
-    this.loginForm.markAsPristine();
-    this.loginForm.markAsUntouched();
-
-    if (this.isAdmin()) {
-      this.isSubmitting.set(false);
-      await this.router.navigate(['/admin']);
-      return;
-    }
-
-    this.isSubmitting.set(false);
-    await this.router.navigate(['/account']);
+      void this.router.navigate([postAuthPath], { replaceUrl: true }).finally(() => {
+        this.isTransitioning.set(false);
+      });
+    });
   }
 
-  async register(): Promise<void> {
+  register(): void {
     this.authError.set('');
+    this.validationService.clearGroupErrors(this.registerValidationGroup);
 
     if (this.registrationForm.invalid) {
       this.registrationForm.markAllAsTouched();
-      this.updateRegistrationControlErrorState('fullName');
-      this.updateRegistrationControlErrorState('email');
-      this.updateRegistrationControlErrorState('phone');
-      this.updateRegistrationControlErrorState('password');
-      this.updateRegistrationControlErrorState('confirmPassword');
       return;
     }
 
     const { fullName, email, phone, password } = this.registrationForm.getRawValue();
+    let postAuthPath: '/admin' | '/profile' = '/profile';
+
     this.isSubmitting.set(true);
-    const registrationResult = await this.authService.register({
+    const registrationData: ClientRegistrationData = {
       name: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
       password
-    });
+    };
 
-    if (!registrationResult.success) {
-      this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
+    this.authApiService.register(registrationData).pipe(
+      take(1),
+      switchMap((response) => {
+        const authData: JwtAuthData = response.data;
+        this.isTransitioning.set(true);
+        this.authService.setToken(authData.access_token);
+        this.authService.setCurrentUser(authData.user);
+        postAuthPath = authData.user.role === 'admin' ? '/admin' : '/profile';
+
+        return of({ success: true });
+      }),
+      catchError((error: unknown) => of({
+        ...this.resolveAuthFailure(error, this.registerValidationGroup, 'Enabled to register. Please try again.')
+      }))
+    ).subscribe((registrationResult: AuthActionResult) => {
+      if (!registrationResult.success) {
+        this.isTransitioning.set(false);
+
+        if (!this.validationService.hasGroupErrors(this.registerValidationGroup, this.registerFieldKeys)) {
+          this.authError.set(registrationResult.message ?? this.i18n.translate('ui.account.registerFailed'));
+        }
+
+        this.isSubmitting.set(false);
+        return;
+      }
+
+      this.registrationForm.reset({
+        fullName: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: ''
+      });
+      this.registrationForm.markAsPristine();
+      this.registrationForm.markAsUntouched();
+      this.validationService.clearGroupErrors(this.registerValidationGroup);
       this.isSubmitting.set(false);
-      return;
-    }
-
-    this.registrationForm.reset({
-      fullName: '',
-      email: '',
-      phone: '',
-      password: '',
-      confirmPassword: ''
+      void this.router.navigate([postAuthPath], { replaceUrl: true }).finally(() => {
+        this.isTransitioning.set(false);
+      });
     });
-    this.registrationForm.markAsPristine();
-    this.registrationForm.markAsUntouched();
-    this.isSubmitting.set(false);
-    await this.router.navigate(['/account']);
   }
 
   setAuthMode(mode: AuthMode): void {
     this.authMode.set(mode);
     this.authError.set('');
-  }
-
-  updateLoginControlErrorState(controlName: LoginControlName): void {
-    const control = this.loginForm.controls[controlName];
-    const hasError = control.invalid && (control.touched || control.dirty);
-    const errorMessage = hasError ? this.getLoginControlErrorMessage(controlName) : null;
-
-    if (controlName === 'email') {
-      this.loginEmailHasError.set(hasError);
-      this.loginEmailErrorMessage.set(errorMessage);
-    } else {
-      this.loginPasswordHasError.set(hasError);
-      this.loginPasswordErrorMessage.set(errorMessage);
-    }
-  }
-
-  private getLoginControlErrorMessage(controlName: LoginControlName): string {
-    const control = this.loginForm.controls[controlName];
-
-    if (control.hasError('required')) {
-      return controlName === 'email'
-        ? this.i18n.translate('ui.account.validation.emailRequired')
-        : this.i18n.translate('ui.account.validation.passwordRequired');
-    }
-
-    if (controlName === 'email' && control.hasError('email')) {
-      return this.i18n.translate('ui.account.validation.emailInvalid');
-    }
-
-    if (controlName === 'email' && control.hasError('maxlength')) {
-      return this.i18n.translate('ui.account.validation.emailMaxLength');
-    }
-
-    if (controlName === 'password' && control.hasError('minlength')) {
-      return this.i18n.translate('ui.account.validation.passwordMinLength');
-    }
-
-    if (controlName === 'password' && control.hasError('maxlength')) {
-      return this.i18n.translate('ui.account.validation.passwordMaxLength');
-    }
-
-    return this.i18n.translate('ui.account.validation.fieldInvalid');
-  }
-
-  updateRegistrationControlErrorState(controlName: RegistrationControlName): void {
-    const control = this.registrationForm.controls[controlName];
-    const hasError =
-      control.invalid &&
-      (control.touched || control.dirty || this.registrationForm.hasError('passwordMismatch'));
-    const errorMessage = hasError || (controlName === 'confirmPassword' && this.registrationForm.hasError('passwordMismatch'))
-      ? this.getRegistrationControlErrorMessage(controlName)
-      : null;
-
-    switch (controlName) {
-      case 'fullName':
-        this.registrationFullNameHasError.set(hasError);
-        this.registrationFullNameErrorMessage.set(errorMessage);
-        break;
-      case 'email':
-        this.registrationEmailHasError.set(hasError);
-        this.registrationEmailErrorMessage.set(errorMessage);
-        break;
-      case 'phone':
-        this.registrationPhoneHasError.set(hasError);
-        this.registrationPhoneErrorMessage.set(errorMessage);
-        break;
-      case 'password':
-        this.registrationPasswordHasError.set(hasError);
-        this.registrationPasswordErrorMessage.set(errorMessage);
-        break;
-      case 'confirmPassword':
-        this.registrationConfirmPasswordHasError.set(hasError);
-        this.registrationConfirmPasswordErrorMessage.set(errorMessage);
-        break;
-    }
-  }
-
-  private getRegistrationControlErrorMessage(controlName: RegistrationControlName): string {
-    const control = this.registrationForm.controls[controlName];
-
-    if (control.hasError('required')) {
-      switch (controlName) {
-        case 'fullName':
-          return this.i18n.translate('ui.account.validation.fullNameRequired');
-        case 'email':
-          return this.i18n.translate('ui.account.validation.emailRequired');
-        case 'phone':
-          return this.i18n.translate('ui.account.validation.phoneRequired');
-        case 'password':
-          return this.i18n.translate('ui.account.validation.passwordRequired');
-        case 'confirmPassword':
-          return this.i18n.translate('ui.account.validation.confirmPasswordRequired');
-      }
-    }
-
-    if (controlName === 'fullName' && control.hasError('minlength')) {
-      return this.i18n.translate('ui.account.validation.fullNameMinLength');
-    }
-
-    if (controlName === 'fullName' && control.hasError('maxlength')) {
-      return this.i18n.translate('ui.account.validation.fullNameMaxLength');
-    }
-
-    if (controlName === 'email' && control.hasError('email')) {
-      return this.i18n.translate('ui.account.validation.emailInvalid');
-    }
-
-    if (controlName === 'email' && control.hasError('maxlength')) {
-      return this.i18n.translate('ui.account.validation.emailMaxLength');
-    }
-
-    if (controlName === 'phone' && control.hasError('pattern')) {
-      return this.i18n.translate('ui.account.validation.phoneInvalid');
-    }
-
-    if (controlName === 'password' && control.hasError('minlength')) {
-      return this.i18n.translate('ui.account.validation.passwordMinLength');
-    }
-
-    if (controlName === 'password' && control.hasError('maxlength')) {
-      return this.i18n.translate('ui.account.validation.passwordMaxLength');
-    }
-
-    if (controlName === 'confirmPassword' && this.registrationForm.hasError('passwordMismatch')) {
-      return this.i18n.translate('ui.account.validation.passwordMismatch');
-    }
-
-    return this.i18n.translate('ui.account.validation.fieldInvalid');
+    this.validationService.clearGroupErrors(this.loginValidationGroup);
+    this.validationService.clearGroupErrors(this.registerValidationGroup);
   }
 
   clearAuthError(): void {
@@ -291,41 +194,16 @@ export class AccountComponent {
     }
   }
 
-  repeatOrder(order: Order): void {
-    const repeatedItems = (order?.items ?? []).reduce<CartItem[]>((items, orderItem) => {
-      const product = this.dataService.products().find((item) => item.id === orderItem.product_id);
+  private resolveAuthFailure(error: unknown, validationGroup: string, fallbackMessage: string): AuthActionResult {
+    const payload = extractValidationPayload(error);
 
-      if (!product) {
-        return items;
-      }
-
-      items.push({
-        product: product,
-        quantity: orderItem.quantity,
-        ...(orderItem.notes ? { notes: orderItem.notes } : {})
-      });
-
-      return items;
-    }, []);
-
-    if (repeatedItems.length === 0) {
-      this.repeatOrderError.set(this.i18n.translate('ui.account.repeatOrderFailed'));
-      return;
+    if (payload?.errors) {
+      this.validationService.setFieldErrors(validationGroup, payload.errors);
     }
 
-    this.repeatOrderError.set('');
-    this.cartService.replaceCart(repeatedItems);
-    this.cartDrawerService.open();
-  }
-
-  private static passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password')?.value;
-    const confirmPassword = control.get('confirmPassword')?.value;
-
-    if (!password || !confirmPassword) {
-      return null;
-    }
-
-    return password === confirmPassword ? null : { passwordMismatch: true };
+    return {
+      success: false,
+      message: this.apiErrorHelper.extractApiErrorMessage(error, fallbackMessage)
+    };
   }
 }

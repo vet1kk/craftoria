@@ -4,26 +4,8 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Lang;
-
 trait ResolvesTranslatedValue
 {
-    /**
-     * Resolve a lang-file value and fall back to the stored attribute when absent.
-     */
-    protected function translated(?string $key, ?string $fallback = null): ?string
-    {
-        if ($key === null || $key === '') {
-            return $fallback;
-        }
-
-        if (!Lang::has($key) && !Lang::has($key, config('app.fallback_locale'))) {
-            return $fallback;
-        }
-
-        return (string)__($key);
-    }
-
     /**
      * Apply model-driven translations to a serialized resource payload.
      *
@@ -32,130 +14,67 @@ trait ResolvesTranslatedValue
      */
     protected function translateResource(array $payload): array
     {
-        if (!is_object($this->resource) || !method_exists($this->resource, 'translationConfig')) {
+        $model = $this->resource;
+
+        if (!$this->isTranslatable($model)) {
             return $payload;
         }
 
-        return $this->translatePayloadForModel($payload, $this->resource);
+        $fields = $model->translatableFields();
+
+        if ($fields === []) {
+            return $payload;
+        }
+
+        if (!isset($payload['translations']) && method_exists($model, 'translationsForFields')) {
+            $filtered = array_intersect_key($payload, array_flip($fields));
+
+            $payload['translations'] = $model->translationsForFields($filtered);
+        }
+
+        return $this->applyTranslations($payload, $model, $fields);
     }
 
     /**
+     * Apply DB translations over payload fallback values.
+     *
      * @param array<string, mixed> $payload
+     * @param object $model
+     * @param array<int, string> $fields
      * @return array<string, mixed>
      */
-    protected function translatePayloadForModel(array $payload, object $model): array
+    private function applyTranslations(array $payload, object $model, array $fields): array
     {
-        if (!method_exists($model, 'translationConfig')) {
+        if (!method_exists($model, 'translatedValue')) {
             return $payload;
         }
 
-        /** @var array<string, mixed> $config */
-        $config = $model->translationConfig();
-        $translationKey = $this->resolveTranslationKey($payload, $config, $model);
-        $prefix = $this->resolveTranslationPrefix($config);
-
-        if ($translationKey !== null && $prefix !== null) {
-            /** @var array<string, string> $fieldMap */
-            $fieldMap = is_array($config['field_map'] ?? null) ? $config['field_map'] : [];
-
-            foreach ($config['fields'] ?? [] as $field) {
-                if (!is_string($field) || !array_key_exists($field, $payload)) {
-                    continue;
-                }
-
-                $fallback = $this->scalarToString($payload[$field]);
-
-                if ($fallback === null) {
-                    continue;
-                }
-
-                $translationField = $fieldMap[$field] ?? $field;
-                $translationKeyPath = "{$prefix}.{$translationKey}";
-
-                if ($translationField !== '') {
-                    $translationKeyPath .= ".{$translationField}";
-                }
-
-                $payload[$field] = $this->translated($translationKeyPath, $fallback);
+        foreach ($fields as $field) {
+            if (!array_key_exists($field, $payload)) {
+                continue;
             }
+
+            $fallback = $this->scalarToString($payload[$field]);
+            if ($fallback === null) {
+                continue;
+            }
+
+            $value = $model->translatedValue($field);
+            $payload[$field] = $value !== null && $value !== '' ? $value : $fallback;
         }
 
         return $payload;
     }
 
     /**
-     * @param array<string, mixed> $payload
-     * @param array<string, mixed> $config
+     * @param mixed $model
+     * @return bool
      */
-    private function resolveTranslationKey(array $payload, array $config, ?object $model): ?string
+    private function isTranslatable(mixed $model): bool
     {
-        $keyField = $config['key'] ?? null;
-
-        if (!is_string($keyField) || $keyField === '') {
-            return null;
-        }
-
-        $fallback = $this->resolvePayloadValue($payload, $keyField)
-            ?? $this->resolveModelValue($model, $keyField)
-            ?? null;
-
-        if ($fallback === null || $fallback === '') {
-            return null;
-        }
-
-        if (($config['use_model_lookup'] ?? false) === true && $model !== null && method_exists($model, 'translationLookupKey')) {
-            return $model->translationLookupKey($fallback);
-        }
-
-        return $fallback;
-    }
-
-    /**
-     * @param array<string, mixed> $config
-     */
-    private function resolveTranslationPrefix(array $config): ?string
-    {
-        $prefix = $config['prefix'] ?? null;
-
-        if (!is_string($prefix) || $prefix === '') {
-            return null;
-        }
-
-        return $prefix;
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     */
-    private function resolvePayloadValue(array $payload, string $key): ?string
-    {
-        if (!array_key_exists($key, $payload)) {
-            return null;
-        }
-
-        return $this->scalarToString($payload[$key]);
-    }
-
-    /**
-     * @param object|null $model
-     * @param string $key
-     * @return string|null
-     */
-    private function resolveModelValue(?object $model, string $key): ?string
-    {
-        if ($model === null) {
-            return null;
-        }
-
-        if (method_exists($model, 'getAttribute')) {
-            return $this->scalarToString($model->getAttribute($key));
-        }
-
-        if (isset($model->{$key})) {
-            return $this->scalarToString($model->{$key});
-        }
-
-        return null;
+        return is_object($model)
+            && method_exists($model, 'translatableFields')
+            && method_exists($model, 'translatedValue');
     }
 
     /**
@@ -164,14 +83,6 @@ trait ResolvesTranslatedValue
      */
     private function scalarToString(mixed $value): ?string
     {
-        if ($value === null || is_array($value) || is_object($value)) {
-            return null;
-        }
-
-        if (is_bool($value)) {
-            return $value ? '1' : '0';
-        }
-
-        return (string)$value;
+        return is_scalar($value) ? (is_bool($value) ? ($value ? '1' : '0') : (string)$value) : null;
     }
 }

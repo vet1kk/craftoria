@@ -1,21 +1,27 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { catchError, Observable, shareReplay, throwError } from 'rxjs';
 
-import { AppSettings } from '../models';
-import { environment } from '../../environments/environment';
-
-interface ApiAppSettingsResponse {
-  data: AppSettings;
-}
+import { ApiResponse, AppSettings } from '../models';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AppSettingsService {
-  private readonly http = inject(HttpClient);
+export class SettingsApiService {
+  private readonly apiService = inject(ApiService);
+  private settingsRequest$: Observable<ApiResponse<AppSettings>> | null = null;
 
-  async settings(): Promise<ApiAppSettingsResponse> {
-    return firstValueFrom(this.http.get<ApiAppSettingsResponse>(`${environment.apiUrl}/settings`));
+  settings(): Observable<ApiResponse<AppSettings>> {
+    if (!this.settingsRequest$) {
+      this.settingsRequest$ = this.apiService.get<AppSettings>('/settings').pipe(
+        catchError((error: unknown) => {
+          this.settingsRequest$ = null;
+          return throwError(() => error);
+        }),
+        shareReplay(1)
+      );
+    }
+
+    return this.settingsRequest$;
   }
 }

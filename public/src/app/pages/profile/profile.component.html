@@ -1,0 +1,26 @@
+<div class="max-w-4xl mx-auto px-4 py-8 pb-20">
+  @if (isRedirecting()) {
+    <div class="min-h-[50vh] flex items-center justify-center">
+      <div class="inline-flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700 shadow-sm">
+        <ui-loader [label]="'ui.account.loggingIn' | t" tone="dark"></ui-loader>
+      </div>
+    </div>
+  } @else if (isAuthenticated()) {
+    @if (currentUser(); as user) {
+      <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <app-account-profile-summary [user]="user"
+                                     [isAdmin]="isAdmin()"
+                                     [ordersCount]="orders().length"></app-account-profile-summary>
+
+        @if (isOrdersLoading()) {
+          <ui-skeleton [groups]="ordersSkeletonGroups"></ui-skeleton>
+        } @else {
+          <app-account-order-history [orders]="orders()"
+                                     [repeatOrderError]="repeatOrderError()"
+                                     (repeatOrder)="repeatOrder($event)">
+          </app-account-order-history>
+        }
+      </div>
+    }
+  }
+</div>

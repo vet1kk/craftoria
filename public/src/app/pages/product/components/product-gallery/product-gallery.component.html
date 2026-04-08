@@ -1,13 +1,15 @@
 <section class="flex h-full flex-col rounded-4xl border border-stone-200 bg-white p-4 sm:p-5">
   <div class="relative min-h-80 flex-1 overflow-hidden rounded-3xl bg-stone-100 sm:min-h-105">
     @if (selectedImageUrl(); as imageUrl) {
-      <img [src]="imageUrl"
-           (error)="handleImageError(images()[selectedIndex()])"
-           [alt]="productName()"
-           width="1200"
-           height="900"
-           loading="eager"
-           class="absolute inset-0 h-full w-full object-cover">
+      <ui-image-preview [src]="imageUrl"
+                        [alt]="productName()"
+                        [width]="1200"
+                        [height]="900"
+                        [thumbnailClass]="'h-full w-full object-cover'"
+                        [fullImageClass]="'max-h-[85vh] w-full rounded-2xl object-contain'"
+                        [buttonClass]="'absolute inset-0 h-full w-full'"
+                        modalMaxWidth="2xl">
+      </ui-image-preview>
 
       @if (hasMultipleImages()) {
         <div class="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center justify-between px-3">

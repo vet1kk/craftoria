@@ -1,0 +1,45 @@
+<section [class]="containerClass()" aria-hidden="true">
+  <div [class]="pulseClass()">
+    @for (group of groups(); track $index) {
+      <div [class]="group.className ?? ''">
+        @if (group.lines; as lines) {
+          @for (line of lines; track $index) {
+            <div [class]="lineClass(line)"></div>
+          }
+        }
+
+        @if (group.rows; as rows) {
+          <div [class]="group.rowsClassName ?? 'space-y-3'">
+            @for (row of rows; track $index) {
+              <div [class]="rowClass(row)">
+                @if (row.left) {
+                  <div [class]="segmentClass('left', row.left.className)">
+                    @for (line of row.left.lines; track $index) {
+                      <div [class]="lineClass(line)"></div>
+                    }
+                  </div>
+                }
+
+                @if (row.center) {
+                  <div [class]="segmentClass('center', row.center.className)">
+                    @for (line of row.center.lines; track $index) {
+                      <div [class]="lineClass(line)"></div>
+                    }
+                  </div>
+                }
+
+                @if (row.right) {
+                  <div [class]="segmentClass('right', row.right.className)">
+                    @for (line of row.right.lines; track $index) {
+                      <div [class]="lineClass(line)"></div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

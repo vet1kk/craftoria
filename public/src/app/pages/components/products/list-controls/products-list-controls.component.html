@@ -1,0 +1,25 @@
+<section class="mt-3 w-full">
+  <div class="grid gap-3 md:grid-cols-[minmax(260px,2fr)_minmax(220px,1fr)]">
+    <label class="grid gap-1 text-sm text-stone-700">
+      <span class="text-sm font-medium text-stone-800">{{ 'ui.products.searchLabel' | t }}</span>
+      <input type="search"
+             [value]="searchQuery()"
+             (input)="onSearchInput($event)"
+             [placeholder]="'ui.products.searchPlaceholder' | t"
+             [attr.aria-label]="'ui.products.searchLabel' | t"
+             class="h-12 w-full rounded-md border border-stone-200 bg-white px-4 text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200">
+    </label>
+
+    <label class="grid gap-1 text-sm text-stone-700">
+      <span class="text-sm font-medium text-stone-800">{{ 'ui.products.availabilityLabel' | t }}</span>
+      <ui-dropdown ariaLabelKey="ui.products.availabilityLabel"
+                   [selectedValue]="availabilityFilter()"
+                   [selectedLabelKey]="availabilityLabelKey()"
+                   [options]="availabilityOptions"
+                   buttonClassName="h-12 w-full rounded-md border border-stone-200 bg-white px-4 text-left text-base text-stone-800 transition-colors focus:border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                   menuClassName="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-stone-200 bg-white shadow-lg"
+                   (valueChange)="selectAvailability($event)">
+      </ui-dropdown>
+    </label>
+  </div>
+</section>

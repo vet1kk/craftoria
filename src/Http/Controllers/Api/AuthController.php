@@ -13,6 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -32,36 +34,46 @@ class AuthController extends Controller
             'password' => $request->validated('password'),
         ]);
 
-        return (new UserResource($user))
-            ->response()
-            ->setStatusCode(201);
+        $token = Auth::guard('api')->login($user);
+
+        if (!is_string($token) || $token === '') {
+            throw ValidationException::withMessages([
+                'email' => ['Unable to issue authentication token.'],
+            ]);
+        }
+
+        return response()->json([
+            'data' => $this->tokenPayload($token, $user, $request),
+        ], 201);
     }
 
     /**
      * Authenticate a user with email and password.
      *
      * @param \App\Http\Requests\Auth\LoginRequest $request
-     * @return \App\Http\Resources\UserResource
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function login(LoginRequest $request): UserResource
+    public function login(LoginRequest $request): JsonResponse
     {
         $credentials = [
             'email' => strtolower($request->validated('email')),
             'password' => $request->validated('password'),
         ];
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        $token = Auth::guard('api')->attempt($credentials);
+
+        if (!is_string($token) || $token === '') {
             throw ValidationException::withMessages([
-                'email' => 'The provided credentials are incorrect.',
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        $request->session()->regenerate();
-
         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $user = Auth::guard('api')->user();
 
-        return new UserResource($user->load(['orders.orderItems']));
+        return response()->json([
+            'data' => $this->tokenPayload($token, $user, $request),
+        ]);
     }
 
     /**
@@ -72,34 +84,75 @@ class AuthController extends Controller
      */
     public function session(Request $request): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (JWTException) {
+            $user = null;
+        }
 
         if (!$user instanceof User) {
             return response()->json([
-                'authenticated' => false,
-                'user' => null,
+                'data' => [
+                    'authenticated' => false,
+                    'user' => null,
+                ],
             ]);
         }
 
         return response()->json([
-            'authenticated' => true,
-            'user' => (new UserResource($user->load(['orders.orderItems'])))->resolve($request),
+            'data' => [
+                'authenticated' => true,
+                'user' => (new UserResource($user))->resolve($request),
+            ],
         ]);
     }
 
     /**
      * Log out the authenticated user.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function logout(Request $request): \Illuminate\Http\Response
+    public function logout(): \Illuminate\Http\Response
     {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        JWTAuth::invalidate(JWTAuth::getToken());
 
         return response()->noContent();
+    }
+
+    /**
+     * Refresh the current JWT token.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refresh(Request $request): JsonResponse
+    {
+        /** @var string $token */
+        $token = Auth::guard('api')->refresh();
+
+        /** @var \App\Models\User $user */
+        $user = $request->user('api');
+
+        return response()->json([
+            'data' => $this->tokenPayload($token, $user, $request),
+        ]);
+    }
+
+    /**
+     * Build a normalized JWT auth payload.
+     *
+     * @param string $token
+     * @param \App\Models\User $user
+     * @param \Illuminate\Http\Request $request
+     * @return array<string, mixed>
+     */
+    private function tokenPayload(string $token, User $user, Request $request): array
+    {
+        return [
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
+            'user' => (new UserResource($user))->resolve($request),
+        ];
     }
 }

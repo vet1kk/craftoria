@@ -6,13 +6,14 @@ namespace App\Models;
 
 use App\Helpers\FileUpload;
 use App\Models\Builders\CategoryBuilder;
+use App\Models\Concerns\HasCatalogTranslations;
 use App\Models\Concerns\HasTranslationConfig;
-use App\Models\Concerns\HasTranslationKey;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\UploadedFile;
 
 /**
  * @method static \App\Models\Builders\CategoryBuilder query()
@@ -34,16 +35,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CatalogTranslation> $translations
  */
 class Category extends Model
 {
+    use HasCatalogTranslations;
     use HasFactory;
     use HasTranslationConfig;
-    use HasTranslationKey;
     use HasUuids;
     use SoftDeletes;
-
-    protected ?string $translationPrefix = 'catalog.categories';
 
     /**
      * @var array<int, string>
@@ -54,11 +54,28 @@ class Category extends Model
         'name',
         'slug',
         'icon',
+        'image',
         'image_url',
         'position',
         'is_active',
         'is_system',
     ];
+
+    /**
+     * @param \Illuminate\Http\UploadedFile|string|null $file
+     * @return void
+     */
+    public function setImageAttribute(UploadedFile|string|null $file): void
+    {
+        if (!$file instanceof UploadedFile) {
+            return;
+        }
+
+        $this->attributes['image_url'] = FileUpload::storePublicImage(
+            $file,
+            'uploads/categories'
+        );
+    }
 
     /**
      * Get the attributes that should be cast.

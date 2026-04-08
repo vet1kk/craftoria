@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { LocaleService } from '../../services';
+import { I18nService } from '../../services';
 
 @Component({
   selector: 'app-footer',
@@ -11,7 +11,7 @@ import { LocaleService } from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppFooterComponent {
-  readonly localeService = inject(LocaleService);
+  readonly localeService = inject(I18nService);
 
   setLocale(locale: 'en' | 'ua'): void {
     this.localeService.setLocale(locale);

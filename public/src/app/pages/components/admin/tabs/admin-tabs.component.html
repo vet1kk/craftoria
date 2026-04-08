@@ -1,14 +1,28 @@
-<div class="flex flex-wrap gap-2">
-  <button type="button"
-          (click)="tabChange.emit('items')"
-          [class]="activeTab() === 'items' ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-    <span>{{ 'ui.admin.tabItems' | t }}</span>
-  </button>
-  <button type="button"
-          (click)="tabChange.emit('categories')"
-          [class]="activeTab() === 'categories' ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-    <span>{{ 'ui.admin.tabCategories' | t }}</span>
-  </button>
+<div class="flex w-full flex-wrap gap-2 sm:w-auto">
+  <ui-button type="button"
+             size="md"
+             rounded="default"
+             [reloadable]="activeTab() === 'items'"
+             [disabled]="isReloading()"
+             [loading]="isReloading() && activeTab() === 'items'"
+             [loadingLabel]="'ui.admin.tabItems' | t"
+             [variant]="activeTab() === 'items' ? 'secondary' : 'outline'"
+             [className]="'flex-1 sm:flex-none transition-none duration-0'"
+             (reloadStateChange)="reloadStateChange.emit($event)"
+             (click)="tabChange.emit('items')">
+    {{ 'ui.admin.tabItems' | t }}
+  </ui-button>
+  <ui-button type="button"
+             size="md"
+             rounded="default"
+             [reloadable]="activeTab() === 'categories'"
+             [disabled]="isReloading()"
+             [loading]="isReloading() && activeTab() === 'categories'"
+             [loadingLabel]="'ui.admin.tabCategories' | t"
+             [variant]="activeTab() === 'categories' ? 'secondary' : 'outline'"
+             [className]="'flex-1 sm:flex-none transition-none duration-0'"
+             (reloadStateChange)="reloadStateChange.emit($event)"
+             (click)="tabChange.emit('categories')">
+    {{ 'ui.admin.tabCategories' | t }}
+  </ui-button>
 </div>

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class IngredientFactory extends Factory
 {
     /**
-     * @var array<int, array{name:string, slug:string, unit:string, calories:int, proteins:float, fats:float, carbs:float, cost_amount:float}>
+     * @var array<int, array{name:string, slug:string, unit:string, calories:float, proteins:float, fats:float, carbs:float, cost_amount:float}>
      */
     private const array PROFILES = [
         [

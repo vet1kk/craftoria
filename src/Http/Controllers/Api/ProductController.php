@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\FileUpload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\ProductStoreRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private readonly ProductService $productService,
+    )
+    {
+    }
+
     /**
      * Return the public product collection.
      *
@@ -22,11 +28,7 @@ class ProductController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $products = Product::query()
-                           ->with(['category', 'images', 'metadata', 'ingredients'])
-                           ->orderBy('position')
-                           ->orderBy('name')
-                           ->get();
+        $products = $this->productService->index();
 
         return ProductResource::collection($products);
     }
@@ -39,10 +41,7 @@ class ProductController extends Controller
      */
     public function show(string $slug): ProductResource
     {
-        $product = Product::query()
-                          ->with(['category', 'images', 'metadata', 'ingredients'])
-                          ->where('slug', $slug)
-                          ->firstOrFail();
+        $product = $this->productService->showBySlug($slug);
 
         return new ProductResource($product);
     }
@@ -62,13 +61,10 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('featured_image')) {
-            $data['featured_image_url'] = FileUpload::storePublicImage(
-                $request->file('featured_image'),
-                'uploads/products'
-            );
+            $data['featured_image'] = $request->file('featured_image');
         }
 
-        return new ProductResource(Product::create($data));
+        return new ProductResource($this->productService->store($data));
     }
 
     /**
@@ -87,15 +83,12 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('featured_image')) {
-            $data['featured_image_url'] = FileUpload::storePublicImage(
-                $request->file('featured_image'),
-                'uploads/products/featured'
-            );
+            $data['featured_image'] = $request->file('featured_image');
         }
 
-        $product->update($data);
+        $updatedProduct = $this->productService->update($product, $data);
 
-        return $this->show($product->slug);
+        return $this->show($updatedProduct->slug);
     }
 
     /**
@@ -108,7 +101,7 @@ class ProductController extends Controller
     {
         $this->authorize('delete', $product);
 
-        $product->delete();
+        $this->productService->delete($product);
 
         return response()->noContent();
     }
