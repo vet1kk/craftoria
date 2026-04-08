@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 
 import { GallerySlot } from '../../../../models';
 import { TranslatePipe } from '../../../../pipes/translate.pipe';
-import { ImagePreviewComponent } from '../../../../ui/image-preview/image-preview.component';
+import { ImagePreviewComponent } from '../../../../ui';
 
 
 @Component({

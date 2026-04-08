@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 
 import { ModalComponent } from '../modal';
-import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'ui-image-preview',
   standalone: true,
-  imports: [ModalComponent, NgOptimizedImage],
+  imports: [ModalComponent],
   templateUrl: './image-preview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
