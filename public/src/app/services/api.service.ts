@@ -66,9 +66,3 @@ export class ApiService {
     return ApiRequestHelper.build(params, filter);
   }
 }
-
-
-
-
-
-

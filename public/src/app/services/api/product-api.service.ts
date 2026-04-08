@@ -40,4 +40,3 @@ export class ProductApiService {
     return this.apiService.delete<null>(`/products/${productId}`);
   }
 }
-
